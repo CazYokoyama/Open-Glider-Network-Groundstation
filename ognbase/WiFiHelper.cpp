@@ -37,8 +37,8 @@ void WiFi_fini()    {}
 #include "NMEAHelper.h"
 #include "BatteryHelper.h"
 
-String station_ssid = settings->ssid ;
-String station_psk  = settings->wpass ;
+String station_ssid = "ognbase";
+String station_psk  = "123456789";
 
 String host_name = HOSTNAME;
 

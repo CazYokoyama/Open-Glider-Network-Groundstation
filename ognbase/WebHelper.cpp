@@ -541,11 +541,11 @@ void handleSettings() {
   }
 
     /* max Range */
-  if (rf_chip && rf_chip->type == RF_IC_SX1276) {
+  if (settings->mode == SOFTRF_MODE_GROUND) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
-<th align=left>max Range (km)</th>\
+<th align=left>OGN max Range (km)</th>\
 <td align=right>\
 <INPUT type='number' name='cov' min='01' max='500' value='%d'>\
 </td>\
@@ -557,8 +557,8 @@ void handleSettings() {
     size -= len;
   }
 
-    /* max Range */
-  if (rf_chip && rf_chip->type == RF_IC_SX1276) {
+    /* SSID */
+  if (settings->mode == SOFTRF_MODE_GROUND) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -574,8 +574,8 @@ void handleSettings() {
     size -= len;
   }
 
-     /* max Range */
-  if (rf_chip && rf_chip->type == RF_IC_SX1276) {
+     /* PASS */
+  if (settings->mode == SOFTRF_MODE_GROUND) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -585,6 +585,23 @@ void handleSettings() {
 </td>\
 </tr>"),
     settings->wpass);
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+     /* OGN allsign */
+  if (settings->mode == SOFTRF_MODE_GROUND) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>OGN Basestation Callsign</th>\
+<td align=right>\
+<INPUT type='text' name='calls' maxlength='9' value='%s'>\
+</td>\
+</tr>"),
+    settings->callsign);
 
     len = strlen(offset);
     offset += len;
@@ -771,6 +788,8 @@ void handleInput() {
       server.arg(i).toCharArray(settings->ssid, server.arg(i).length()+1);
     } else if (server.argName(i).equals("wpass")) {
       server.arg(i).toCharArray(settings->wpass, server.arg(i).length()+1);
+    } else if (server.argName(i).equals("calls")) {
+      server.arg(i).toCharArray(settings->callsign, server.arg(i).length()+1);
     }
   }
   snprintf_P ( Input_temp, 1600,
@@ -817,7 +836,7 @@ PSTR("<html>\
   settings->nmea_out, settings->gdl90, settings->d1090,
   BOOL_STR(settings->stealth), BOOL_STR(settings->no_track),
   settings->power_save, settings->freq_corr, settings->range,
-  settings->ssid, settings->wpass
+  settings->ssid, settings->wpass, settings->callsign
   );
   SoC->swSer_enableRx(false);
   server.send ( 200, "text/html", Input_temp );

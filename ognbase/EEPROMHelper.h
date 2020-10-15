@@ -59,7 +59,7 @@ typedef struct Settings {
     int16_t  range;
     char     ssid[20];
     char     wpass[20];
-    uint8_t  resvd8;
+    char  callsign[9];
     uint8_t  resvd9;
     uint8_t  resvd10;
     uint8_t  resvd11;
