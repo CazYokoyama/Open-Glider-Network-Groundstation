@@ -567,7 +567,7 @@ void handleSettings() {
 <INPUT type='text' name='ssid' maxlength='20' value='%s'>\
 </td>\
 </tr>"),
-    settings->ssid);
+    "********");
 
     len = strlen(offset);
     offset += len;
@@ -584,7 +584,7 @@ void handleSettings() {
 <INPUT type='text' name='wpass' maxlength='20' value='%s'>\
 </td>\
 </tr>"),
-    settings->wpass);
+    "********");
 
     len = strlen(offset);
     offset += len;
@@ -784,10 +784,6 @@ void handleInput() {
       settings->freq_corr = server.arg(i).toInt();
     } else if (server.argName(i).equals("cov")) {
       settings->range = server.arg(i).toInt();
-    } else if (server.argName(i).equals("ssid")) {
-      server.arg(i).toCharArray(settings->ssid, server.arg(i).length()+1);
-    } else if (server.argName(i).equals("wpass")) {
-      server.arg(i).toCharArray(settings->wpass, server.arg(i).length()+1);
     } else if (server.argName(i).equals("calls")) {
       server.arg(i).toCharArray(settings->callsign, server.arg(i).length()+1);
     }

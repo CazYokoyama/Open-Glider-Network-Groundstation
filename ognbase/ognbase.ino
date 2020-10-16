@@ -405,7 +405,7 @@ void ground()
   if(TimeToCheckWifi()){
     if (!Wifi_connected()){
       Serial.println("Reconnecting to WiFi...");
-      SoC->reset();
+      //SoC->reset();
     }
   }
 
