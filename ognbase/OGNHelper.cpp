@@ -22,12 +22,13 @@
 #include "TrafficHelper.h"
 #include "RFHelper.h"
 #include "EEPROMHelper.h"
+#include "global.h"
 
 #include <TimeLib.h>
 
 #define kKey 0x73e2
 
-String CALLSIGN = "MULHBtest";
+//String CALLSIGN = "MULHBtest";
 int MIN_SPEED = 25;
 
 const char aprsServer[] = "aprs.glidernet.org";
@@ -135,7 +136,7 @@ void OGN_APRS_Export(){
   
         APRS_AIRC.callsign = String(Container[i].addr, HEX);
         APRS_AIRC.callsign.toUpperCase();
-        APRS_AIRC.rec_callsign = CALLSIGN;
+        APRS_AIRC.rec_callsign = ogn_callsign;
         APRS_AIRC.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
         APRS_AIRC.lat_deg = String(int(Container[i].latitude));
         APRS_AIRC.lat_min = zeroPadding(String((Container[i].latitude - int(Container[i].latitude))*60),5);
@@ -254,7 +255,7 @@ bool OGN_APRS_Register(ufo_t *this_aircraft){
   if (aprs_registred){
     struct  aprs_reg_packet APRS_REG;
 
-    APRS_REG.origin = CALLSIGN;
+    APRS_REG.origin = ogn_callsign;
     APRS_REG.callsign = String(this_aircraft->addr, HEX);
     APRS_REG.alt = zeroPadding(String(int(this_aircraft->altitude * 3.28084)),6);
     APRS_REG.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
@@ -289,7 +290,7 @@ void OGN_APRS_KeepAlive(){
 
 void OGN_APRS_Status(ufo_t *this_aircraft){
   struct aprs_stat_packet APRS_STAT;
-  APRS_STAT.origin = CALLSIGN;
+  APRS_STAT.origin = ogn_callsign;
   APRS_STAT.callsign = String(this_aircraft->addr, HEX);
   APRS_STAT.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
   APRS_STAT.platform = "v0.0.1.ESP32";

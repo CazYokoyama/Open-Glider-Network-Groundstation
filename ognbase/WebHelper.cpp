@@ -37,6 +37,7 @@ void Web_fini()     {}
 #include "NMEAHelper.h"
 #include "GDL90Helper.h"
 #include "D1090Helper.h"
+#include "global.h"
 
 #if defined(ENABLE_AHRS)
 #include "AHRSHelper.h"
@@ -44,7 +45,7 @@ void Web_fini()     {}
 
 String ogn_ssid = "ognbase";
 String ogn_wpass = "123456789";
-String ogn_calls = "callsign";
+String ogn_callsign = "callsign";
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -88,14 +89,14 @@ bool OGN_config_load()
     return false;
   }
 
-  while(configFile.available())
+  while(configFile.available() && line < 5)
   {
     if (line == 0)
-      ogn_ssid = configFile.readStringUntil('\r\n');
+      ogn_ssid = configFile.readStringUntil('\n');
     if (line == 1)
-      ogn_wpass = configFile.readStringUntil('\r\n');
+      ogn_wpass = configFile.readStringUntil('\n');
     if (line == 2)
-      ogn_calls = configFile.readStringUntil('\r\n');
+      ogn_callsign = configFile.readStringUntil('\n');
     line++;
     }
   
@@ -103,13 +104,11 @@ bool OGN_config_load()
 
   ogn_ssid.trim();
   ogn_wpass.trim();
-  ogn_calls.trim();
+  ogn_callsign.trim();
 
-  Serial.println("----- file content -----");
-  Serial.println("----- file content -----");
+  Serial.println("----- loading config webhelper -----");
   Serial.println("ssid: " + ogn_ssid);
-  Serial.println("psk:  " + ogn_wpass);
-  Serial.println("callsign:  " + ogn_calls);
+  Serial.println("callsign:  " + ogn_callsign);
 
   return true;
 } 
@@ -117,14 +116,21 @@ bool OGN_config_load()
 
 bool OGN_config_store(String *ssid, String *pass, String *callsign)
 {
+  SPIFFS.format();
+  // Deleting old file
+  
   // Open config file for writing.
   File configFile = SPIFFS.open("/ogn_conf.txt", "w");
   if (!configFile)
   {
     Serial.println(F("Failed to open ogn_conf.txt for writing"));
-
     return false;
   }
+
+  Serial.println("----- save config webhelper -----");
+  Serial.println("ssid: " + *ssid);
+  Serial.println("psk:  " + *pass);
+  Serial.println("callsign:  " + *callsign);
 
   // Save SSID and PSK.
   configFile.println(*ssid);
@@ -193,7 +199,7 @@ Copyright (C) 2015-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 5500;
+  size_t size = 5600;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -548,45 +554,46 @@ void handleSettings() {
   }
 
   /* Common part 6 */
-  snprintf_P ( offset, size,
-    PSTR("\
-</select>\
-</td>\
-</tr>\
-<tr>\
-<th align=left>Power save</th>\
-<td align=right>\
-<select name='power_save'>\
-<option %s value='%d'>Disabled</option>\
-<option %s value='%d'>WiFi OFF (10 min.)</option>\
-<option %s value='%d'>GNSS</option>\
-</select>\
-</td>\
-</tr>\
-<tr>\
-<th align=left>Stealth</th>\
-<td align=right>\
-<input type='radio' name='stealth' value='0' %s>Off\
-<input type='radio' name='stealth' value='1' %s>On\
-</td>\
-</tr>\
-<tr>\
-<th align=left>No track</th>\
-<td align=right>\
-<input type='radio' name='no_track' value='0' %s>Off\
-<input type='radio' name='no_track' value='1' %s>On\
-</td>\
-</tr>"),
-  (settings->power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
-  (settings->power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
-  (settings->power_save == POWER_SAVE_GNSS ? "selected" : ""), POWER_SAVE_GNSS,
-  (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
-  (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
-  );
-
-  len = strlen(offset);
-  offset += len;
-  size -= len;
+  if(settings->mode != SOFTRF_MODE_GROUND){
+    snprintf_P ( offset, size,
+      PSTR("\
+  </select>\
+  </td>\
+  </tr>\
+  <tr>\
+  <th align=left>Power save</th>\
+  <td align=right>\
+  <select name='power_save'>\
+  <option %s value='%d'>Disabled</option>\
+  <option %s value='%d'>WiFi OFF (10 min.)</option>\
+  <option %s value='%d'>GNSS</option>\
+  </select>\
+  </td>\
+  </tr>\
+  <tr>\
+  <th align=left>Stealth</th>\
+  <td align=right>\
+  <input type='radio' name='stealth' value='0' %s>Off\
+  <input type='radio' name='stealth' value='1' %s>On\
+  </td>\
+  </tr>\
+  <tr>\
+  <th align=left>No track</th>\
+  <td align=right>\
+  <input type='radio' name='no_track' value='0' %s>Off\
+  <input type='radio' name='no_track' value='1' %s>On\
+  </td>\
+  </tr>"),
+    (settings->power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
+    (settings->power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
+    (settings->power_save == POWER_SAVE_GNSS ? "selected" : ""), POWER_SAVE_GNSS,
+    (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
+    (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
+    );
+  
+    len = strlen(offset);
+    offset += len;
+    size -= len;
 
   /* Radio specific part 2 */
   if (rf_chip && rf_chip->type == RF_IC_SX1276) {
@@ -603,6 +610,7 @@ void handleSettings() {
     len = strlen(offset);
     offset += len;
     size -= len;
+  }
   }
 
     /* max Range */
@@ -646,10 +654,10 @@ void handleSettings() {
 <tr>\
 <th align=left>Wifi Pass</th>\
 <td align=right>\
-<INPUT type='text' name='wpass' maxlength='25' value='%s'>\
+<INPUT type='password' name='wpass' maxlength='30' value='%s'>\
 </td>\
 </tr>"),
-    ogn_wpass);
+    "**********");
 
     len = strlen(offset);
     offset += len;
@@ -666,7 +674,7 @@ void handleSettings() {
 <INPUT type='text' name='calls' maxlength='9' value='%s'>\
 </td>\
 </tr>"),
-    ogn_calls);
+    ogn_callsign);
 
     len = strlen(offset);
     offset += len;
@@ -858,10 +866,10 @@ void handleInput() {
       ogn_wpass = server.arg(i);
     }
     else if (server.argName(i).equals("calls")) {
-      ogn_calls = server.arg(i);
+      ogn_callsign = server.arg(i);
     }
   }
-  snprintf_P ( Input_temp, 1600,
+  snprintf_P ( Input_temp, 1550,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -912,7 +920,7 @@ PSTR("<html>\
   delay(1000);
   free(Input_temp);
   EEPROM_store();
-  OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_calls);
+  OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_callsign);
   RF_Shutdown();
   delay(1000);
   SoC->reset();
@@ -943,9 +951,10 @@ void Web_setup()
   {
     Serial.println(F("Failed to mount file system"));
     return;
+  }else{
+    OGN_config_load();  
   }
   
-  OGN_config_load();
   
   server.on ( "/", handleRoot );
   server.on ( "/settings", handleSettings );

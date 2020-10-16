@@ -84,35 +84,35 @@ static unsigned long WiFi_No_Clients_Time_ms = 0;
 bool loadConfig(String *ssid, String *pass)
 {
   int line = 0;
-  
+
   // open file for reading.
   File configFile = SPIFFS.open("/ogn_conf.txt", "r");
   if (!configFile)
   {
     Serial.println(F("Failed to open ogn_conf.txt."));
-
     return false;
   }
 
-   
-  while(configFile.available())
+  while(configFile.available() && line < 5)
   {
     if (line == 0)
-      *ssid = configFile.readStringUntil('\r\n');
+      *ssid = configFile.readStringUntil('\n').c_str();
     if (line == 1)
-      *pass = configFile.readStringUntil('\r\n');
+      *pass = configFile.readStringUntil('\n').c_str();
     line++;
     }
-  
+
   configFile.close();
+
+  if(line<2){
+    return false;
+  }
 
   ssid->trim();
   pass->trim();
 
-  Serial.println("----- file content -----");
-  Serial.println("----- file content -----");
+  Serial.println("----- load config wifi -----");
   Serial.println("ssid: " + *ssid);
-  Serial.println("psk:  " + *pass);
 
   return true;
 } // loadConfig
@@ -124,25 +124,23 @@ bool loadConfig(String *ssid, String *pass)
  * @param pass PSK as string pointer,
  * @return True or False.
  */
-bool saveConfig(String *ssid, String *pass)
+/*bool saveConfig(String *ssid, String *pass)
 {
   // Open config file for writing.
   File configFile = SPIFFS.open("/ogn_conf.txt", "w");
   if (!configFile)
   {
     Serial.println(F("Failed to open ogn_conf.txt for writing"));
-
     return false;
   }
 
   // Save SSID and PSK.
   configFile.println(*ssid);
   configFile.println(*pass);
-
   configFile.close();
 
   return true;
-} // saveConfig
+} // saveConfig*/
 
 size_t Raw_Receive_UDP(uint8_t *buf)
 {
@@ -179,7 +177,7 @@ void Raw_Transmit_UDP()
  */
 void WiFi_setup()
 {
-#if 0
+#if 1
   // Initialize file system.
   if (!SPIFFS.begin())
   {
