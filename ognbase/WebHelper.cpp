@@ -42,6 +42,10 @@ void Web_fini()     {}
 #include "AHRSHelper.h"
 #endif /* ENABLE_AHRS */
 
+String ogn_ssid = "ognbase";
+String ogn_wpass = "123456789";
+String ogn_calls = "callsign";
+
 static uint32_t prev_rx_pkt_cnt = 0;
 
 static const char Logo[] PROGMEM = {
@@ -70,6 +74,67 @@ void Hex2Bin(String str, byte *buffer)
   }
 }
 #endif
+
+bool OGN_config_load()
+{
+  int line = 0;
+  
+  // open file for reading.
+  File configFile = SPIFFS.open("/ogn_conf.txt", "r");
+  if (!configFile)
+  {
+    Serial.println(F("Failed to open ogn_conf.txt."));
+
+    return false;
+  }
+
+  while(configFile.available())
+  {
+    if (line == 0)
+      ogn_ssid = configFile.readStringUntil('\r\n');
+    if (line == 1)
+      ogn_wpass = configFile.readStringUntil('\r\n');
+    if (line == 2)
+      ogn_calls = configFile.readStringUntil('\r\n');
+    line++;
+    }
+  
+  configFile.close();
+
+  ogn_ssid.trim();
+  ogn_wpass.trim();
+  ogn_calls.trim();
+
+  Serial.println("----- file content -----");
+  Serial.println("----- file content -----");
+  Serial.println("ssid: " + ogn_ssid);
+  Serial.println("psk:  " + ogn_wpass);
+  Serial.println("callsign:  " + ogn_calls);
+
+  return true;
+} 
+
+
+bool OGN_config_store(String *ssid, String *pass, String *callsign)
+{
+  // Open config file for writing.
+  File configFile = SPIFFS.open("/ogn_conf.txt", "w");
+  if (!configFile)
+  {
+    Serial.println(F("Failed to open ogn_conf.txt for writing"));
+
+    return false;
+  }
+
+  // Save SSID and PSK.
+  configFile.println(*ssid);
+  configFile.println(*pass);
+  configFile.println(*callsign);
+
+  configFile.close();
+
+  return true;
+}
 
 static const char about_html[] PROGMEM = "<html>\
   <head>\
@@ -128,7 +193,7 @@ Copyright (C) 2015-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 5400;
+  size_t size = 5500;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -564,10 +629,10 @@ void handleSettings() {
 <tr>\
 <th align=left>Wifi SSID </th>\
 <td align=right>\
-<INPUT type='text' name='ssid' maxlength='20' value='%s'>\
+<INPUT type='text' name='ssid' maxlength='25' value='%s'>\
 </td>\
 </tr>"),
-    "********");
+    ogn_ssid);
 
     len = strlen(offset);
     offset += len;
@@ -581,10 +646,10 @@ void handleSettings() {
 <tr>\
 <th align=left>Wifi Pass</th>\
 <td align=right>\
-<INPUT type='text' name='wpass' maxlength='20' value='%s'>\
+<INPUT type='text' name='wpass' maxlength='25' value='%s'>\
 </td>\
 </tr>"),
-    "********");
+    ogn_wpass);
 
     len = strlen(offset);
     offset += len;
@@ -601,7 +666,7 @@ void handleSettings() {
 <INPUT type='text' name='calls' maxlength='9' value='%s'>\
 </td>\
 </tr>"),
-    settings->callsign);
+    ogn_calls);
 
     len = strlen(offset);
     offset += len;
@@ -784,8 +849,16 @@ void handleInput() {
       settings->freq_corr = server.arg(i).toInt();
     } else if (server.argName(i).equals("cov")) {
       settings->range = server.arg(i).toInt();
-    } else if (server.argName(i).equals("calls")) {
-      server.arg(i).toCharArray(settings->callsign, server.arg(i).length()+1);
+    }
+
+    else if (server.argName(i).equals("ssid")) {
+      ogn_ssid = server.arg(i);
+    }
+    else if (server.argName(i).equals("wpass")) {
+      ogn_wpass = server.arg(i);
+    }
+    else if (server.argName(i).equals("calls")) {
+      ogn_calls = server.arg(i);
     }
   }
   snprintf_P ( Input_temp, 1600,
@@ -818,7 +891,7 @@ PSTR("<html>\
 <tr><th align=left>No track</th><td align=right>%s</td></tr>\
 <tr><th align=left>Power save</th><td align=right>%d</td></tr>\
 <tr><th align=left>Freq. correction</th><td align=right>%d</td></tr>\
-<tr><th align=left>max. range</th><td align=right>%d</td></tr>\
+<tr><th align=left>OGN max. range</th><td align=right>%d</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
@@ -831,8 +904,7 @@ PSTR("<html>\
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
   settings->nmea_out, settings->gdl90, settings->d1090,
   BOOL_STR(settings->stealth), BOOL_STR(settings->no_track),
-  settings->power_save, settings->freq_corr, settings->range,
-  settings->ssid, settings->wpass, settings->callsign
+  settings->power_save, settings->freq_corr, settings->range
   );
   SoC->swSer_enableRx(false);
   server.send ( 200, "text/html", Input_temp );
@@ -840,6 +912,7 @@ PSTR("<html>\
   delay(1000);
   free(Input_temp);
   EEPROM_store();
+  OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_calls);
   RF_Shutdown();
   delay(1000);
   SoC->reset();
@@ -865,6 +938,15 @@ void handleNotFound() {
 
 void Web_setup()
 {
+
+  if (!SPIFFS.begin())
+  {
+    Serial.println(F("Failed to mount file system"));
+    return;
+  }
+  
+  OGN_config_load();
+  
   server.on ( "/", handleRoot );
   server.on ( "/settings", handleSettings );
   server.on ( "/about", []() {

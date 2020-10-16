@@ -56,10 +56,10 @@ typedef struct Settings {
 
     uint8_t  power_save;
     int8_t   freq_corr; /* +/-, kHz */
-    int16_t  range;
-    char     ssid[20];
-    char     wpass[20];
-    char     callsign[9];
+    int16_t  range;     /*OGN Basestation max Range*/
+    uint8_t  resvd6;
+    uint8_t  resvd7;
+    uint8_t  resvd8;
     uint8_t  resvd9;
     uint8_t  resvd10;
     uint8_t  resvd11;

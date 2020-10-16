@@ -76,7 +76,7 @@ void EEPROM_defaults()
 {
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
-  eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
+  eeprom_block.field.settings.mode          = SOFTRF_MODE_GROUND;
   eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
@@ -112,9 +112,6 @@ void EEPROM_defaults()
   eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
   eeprom_block.field.settings.freq_corr  = 0;
   eeprom_block.field.settings.range      = 10;
-  String callsign = "callsign";
-  callsign.toCharArray(eeprom_block.field.settings.callsign, 9);
-
 }
 
 void EEPROM_store()

@@ -402,12 +402,12 @@ void ground()
     ExportTimeStatusOGN = seconds();
   }
 
-  if(TimeToCheckWifi()){
+  /*if(TimeToCheckWifi()){
     if (!Wifi_connected()){
       Serial.println("Reconnecting to WiFi...");
       //SoC->reset();
     }
-  }
+  }*/
 
   // Handle Air Connect
   NMEA_loop();

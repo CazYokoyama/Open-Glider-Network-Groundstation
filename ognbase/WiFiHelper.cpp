@@ -83,58 +83,36 @@ static unsigned long WiFi_No_Clients_Time_ms = 0;
  */
 bool loadConfig(String *ssid, String *pass)
 {
+  int line = 0;
+  
   // open file for reading.
-  File configFile = SPIFFS.open("/cl_conf.txt", "r");
+  File configFile = SPIFFS.open("/ogn_conf.txt", "r");
   if (!configFile)
   {
-    Serial.println(F("Failed to open cl_conf.txt."));
+    Serial.println(F("Failed to open ogn_conf.txt."));
 
     return false;
   }
 
-  // Read content from config file.
-  String content = configFile.readString();
-  configFile.close();
-
-  content.trim();
-
-  // Check if ther is a second line available.
-  int8_t pos = content.indexOf("\r\n");
-  uint8_t le = 2;
-  // check for linux and mac line ending.
-  if (pos == -1)
+   
+  while(configFile.available())
   {
-    le = 1;
-    pos = content.indexOf("\n");
-    if (pos == -1)
-    {
-      pos = content.indexOf("\r");
+    if (line == 0)
+      *ssid = configFile.readStringUntil('\r\n');
+    if (line == 1)
+      *pass = configFile.readStringUntil('\r\n');
+    line++;
     }
-  }
-
-  // If there is no second line: Some information is missing.
-  if (pos == -1)
-  {
-    Serial.println(F("Invalid content."));
-    Serial.println(content);
-
-    return false;
-  }
-
-  // Store SSID and PSK into string vars.
-  *ssid = content.substring(0, pos);
-  *pass = content.substring(pos + le);
+  
+  configFile.close();
 
   ssid->trim();
   pass->trim();
 
-#ifdef SERIAL_VERBOSE
   Serial.println("----- file content -----");
-  Serial.println(content);
   Serial.println("----- file content -----");
   Serial.println("ssid: " + *ssid);
   Serial.println("psk:  " + *pass);
-#endif
 
   return true;
 } // loadConfig
@@ -149,10 +127,10 @@ bool loadConfig(String *ssid, String *pass)
 bool saveConfig(String *ssid, String *pass)
 {
   // Open config file for writing.
-  File configFile = SPIFFS.open("/cl_conf.txt", "w");
+  File configFile = SPIFFS.open("/ogn_conf.txt", "w");
   if (!configFile)
   {
-    Serial.println(F("Failed to open cl_conf.txt for writing"));
+    Serial.println(F("Failed to open ogn_conf.txt for writing"));
 
     return false;
   }
