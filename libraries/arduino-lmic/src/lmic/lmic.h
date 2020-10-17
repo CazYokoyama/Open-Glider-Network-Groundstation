@@ -189,6 +189,8 @@ struct lmic_t {
     u1_t        rxsyms;
     u1_t        dndr;
     s1_t        txpow;     // dBm
+    s1_t		agcref;
+
 
     osjob_t     osjob;
 

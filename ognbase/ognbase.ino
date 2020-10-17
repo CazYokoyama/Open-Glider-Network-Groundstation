@@ -82,6 +82,7 @@
 #include "TrafficHelper.h"
 
 #include "OGNHelper.h"
+#include "global.h"
 
 #include <TimeLib.h>
 
@@ -353,7 +354,6 @@ void ground()
 
   bool success;
 
-
   GNSS_loop();
 
   if (!groundstation) {
@@ -366,7 +366,7 @@ void ground()
 
   ThisAircraft.timestamp = now();
 
-  if (isValidFix()) {
+  if (isValidFix() && ogn_lat == 0 && ogn_lon == 0 && ogn_alt == 0) {
     ThisAircraft.latitude = gnss.location.lat();
     ThisAircraft.longitude = gnss.location.lng();
     ThisAircraft.altitude = gnss.altitude.meters();
@@ -374,6 +374,15 @@ void ground()
     ThisAircraft.speed = gnss.speed.knots();
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
+  } 
+  if (ogn_lat != 0 && ogn_lon != 0 && ogn_alt != 0){
+    ThisAircraft.latitude = ogn_lat;
+    ThisAircraft.longitude = ogn_lon;
+    ThisAircraft.altitude = ogn_alt;
+    ThisAircraft.course = 0;
+    ThisAircraft.speed = 0;
+    ThisAircraft.hdop = 0;
+    ThisAircraft.geoid_separation = 0;
   }
 
   if ( (TimeToRegisterOGN() && isValidFix()) || (!ground_registred && isValidFix()) )

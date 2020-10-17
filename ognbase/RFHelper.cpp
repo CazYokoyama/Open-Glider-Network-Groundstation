@@ -896,6 +896,17 @@ static void sx12xx_setvars()
     /* for only a few nodes around, increase the coding rate to ensure a more robust transmission */
     LMIC.rps = setCr(LMIC.rps, CR_4_8);
   }
+
+  // set SX1276 AGC Reference
+  if(settings->sxlna){
+    LMIC.agcref = 0x13;
+   // Serial.printf("setting agc ref to 0x%x\n", 0x13);
+  }
+  else{
+    LMIC.agcref = 0x00;
+    //Serial.printf("setting agc ref to 0x%x\n", 0x00);
+  }
+  
 }
 
 static bool sx12xx_receive()

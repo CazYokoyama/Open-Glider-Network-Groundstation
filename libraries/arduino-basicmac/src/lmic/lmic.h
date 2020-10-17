@@ -298,6 +298,7 @@ struct lmic_t {
     u1_t        rxsyms;
     u1_t        dndr;
     s1_t        txpow;     // dBm -- needs to be combined with txPowAdj
+    s1_t		agcref;    // agc reflevel 0x00 - 0x13
 
     osjob_t     osjob;
 

@@ -46,6 +46,9 @@ void Web_fini()     {}
 String ogn_ssid = "ognbase";
 String ogn_wpass = "123456789";
 String ogn_callsign = "callsign";
+float ogn_lat = 0;
+float ogn_lon = 0;
+int ogn_alt = 0;
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -89,7 +92,7 @@ bool OGN_config_load()
     return false;
   }
 
-  while(configFile.available() && line < 5)
+  while(configFile.available() && line < 6)
   {
     if (line == 0)
       ogn_ssid = configFile.readStringUntil('\n');
@@ -97,6 +100,12 @@ bool OGN_config_load()
       ogn_wpass = configFile.readStringUntil('\n');
     if (line == 2)
       ogn_callsign = configFile.readStringUntil('\n');
+    if (line == 3)
+      ogn_lat = configFile.readStringUntil('\n').toFloat();
+    if (line == 4)
+      ogn_lon = configFile.readStringUntil('\n').toFloat();
+    if (line == 5)
+      ogn_alt = configFile.readStringUntil('\n').toInt();
     line++;
     }
   
@@ -105,16 +114,21 @@ bool OGN_config_load()
   ogn_ssid.trim();
   ogn_wpass.trim();
   ogn_callsign.trim();
-
+  
   Serial.println("----- loading config webhelper -----");
   Serial.println("ssid: " + ogn_ssid);
   Serial.println("callsign:  " + ogn_callsign);
+  Serial.println("pass:  " + ogn_wpass);
+
+  Serial.println("lat:  " + String(ogn_lat,6));
+  Serial.println("lon:  " + String(ogn_lon,6));
+  Serial.println("alt:  " + String(ogn_alt));
 
   return true;
 } 
 
 
-bool OGN_config_store(String *ssid, String *pass, String *callsign)
+bool OGN_config_store(String *ssid, String *pass, String *callsign, float lat, float lon, int alt)
 {
   SPIFFS.format();
   // Deleting old file
@@ -131,12 +145,19 @@ bool OGN_config_store(String *ssid, String *pass, String *callsign)
   Serial.println("ssid: " + *ssid);
   Serial.println("psk:  " + *pass);
   Serial.println("callsign:  " + *callsign);
+  Serial.println(lat, 6);
+  Serial.println(lon, 6);
+  Serial.println(alt);
 
   // Save SSID and PSK.
   configFile.println(*ssid);
   configFile.println(*pass);
   configFile.println(*callsign);
-
+  
+  configFile.println(lat,6);
+  configFile.println(lon,6);
+  configFile.println(alt);
+  
   configFile.close();
 
   return true;
@@ -553,6 +574,7 @@ void handleSettings() {
     size -= len;
   }
 
+
   /* Common part 6 */
   if(settings->mode != SOFTRF_MODE_GROUND){
     snprintf_P ( offset, size,
@@ -630,6 +652,27 @@ void handleSettings() {
     size -= len;
   }
 
+  /*SX1276 LNA AGC REF*/
+  if(settings->mode == SOFTRF_MODE_GROUND && rf_chip && rf_chip->type == RF_IC_SX1276){
+    snprintf_P ( offset, size,
+      PSTR("\
+  </select>\
+  </td>\
+  </tr>\
+  <tr>\
+  <th align=left>SX1276 LNA AGC REF</th>\
+  <td align=right>\
+  <input type='radio' name='sxlna' value='0' %s>Off\
+  <input type='radio' name='sxlna' value='1' %s>On\
+  </td>\
+  </tr>"),
+    (!settings->sxlna ? "checked" : "") , (settings->sxlna ? "checked" : ""));
+  
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
     /* SSID */
   if (settings->mode == SOFTRF_MODE_GROUND) {
     snprintf_P ( offset, size,
@@ -640,7 +683,7 @@ void handleSettings() {
 <INPUT type='text' name='ssid' maxlength='25' value='%s'>\
 </td>\
 </tr>"),
-    ogn_ssid);
+    ogn_ssid.c_str());
 
     len = strlen(offset);
     offset += len;
@@ -654,10 +697,10 @@ void handleSettings() {
 <tr>\
 <th align=left>Wifi Pass</th>\
 <td align=right>\
-<INPUT type='password' name='wpass' maxlength='30' value='%s'>\
+<INPUT type='password' name='wpass' maxlength='45' value='%s'>\
 </td>\
 </tr>"),
-    "**********");
+    ogn_wpass.c_str());
 
     len = strlen(offset);
     offset += len;
@@ -674,7 +717,58 @@ void handleSettings() {
 <INPUT type='text' name='calls' maxlength='9' value='%s'>\
 </td>\
 </tr>"),
-    ogn_callsign);
+    ogn_callsign.c_str());
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+    /* OGN LAT  altitude longitude latitude */
+  if (settings->mode == SOFTRF_MODE_GROUND) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>OGN Latitude</th>\
+<td align=right>\
+<INPUT type='number' step='0.000001' name='lat' value='%s'>\
+</td>\
+</tr>"),
+    String(ogn_lat,6));
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+    /* OGN LON */
+  if (settings->mode == SOFTRF_MODE_GROUND) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>OGN Longitude </th>\
+<td align=right>\
+<INPUT type='number' step='0.000001' name='lon' value='%s'>\
+</td>\
+</tr>"),
+    String(ogn_lon,6));
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+    /* OGN ALT */
+  if (settings->mode == SOFTRF_MODE_GROUND) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>OGN Altitude</th>\
+<td align=right>\
+<INPUT type='number' name='alt' value='%s'>\
+</td>\
+</tr>"),
+    String(ogn_alt));
 
     len = strlen(offset);
     offset += len;
@@ -868,6 +962,20 @@ void handleInput() {
     else if (server.argName(i).equals("calls")) {
       ogn_callsign = server.arg(i);
     }
+    else if (server.argName(i).equals("sxlna")) {
+      settings->sxlna = server.arg(i).toInt();
+    }
+    
+    else if (server.argName(i).equals("lat")) {
+      ogn_lat = server.arg(i).toFloat();
+    }
+    else if (server.argName(i).equals("lon")) {
+      ogn_lon = server.arg(i).toFloat();
+    }
+    else if (server.argName(i).equals("alt")) {
+      ogn_alt = server.arg(i).toInt();
+    }
+    
   }
   snprintf_P ( Input_temp, 1550,
 PSTR("<html>\
@@ -920,7 +1028,7 @@ PSTR("<html>\
   delay(1000);
   free(Input_temp);
   EEPROM_store();
-  OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_callsign);
+  OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_callsign, ogn_lat, ogn_lon, ogn_alt);
   RF_Shutdown();
   delay(1000);
   SoC->reset();

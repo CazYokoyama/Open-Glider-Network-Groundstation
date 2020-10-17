@@ -123,6 +123,16 @@ static bool OGN_APRS_DisConnect()
   return(false);
 }
 
+static void OGN_APRS_DEBUG(String *buf){
+
+  int  debug_port = 12000;
+  
+  int debug_len = buf->length() + 1;
+  byte debug_msg[debug_len];
+  buf->getBytes(debug_msg, debug_len);
+  SoC->WiFi_transmit_UDP_debug(debug_port, debug_msg, debug_len);
+}
+
 void OGN_APRS_Export(){
   struct aprs_airc_packet APRS_AIRC;
   time_t this_moment = now();
@@ -218,6 +228,7 @@ void OGN_APRS_Export(){
   
         if(!Container[i].stealth && !Container[i].no_track){
           SoC->WiFi_transmit_TCP(AircraftPacket);
+          OGN_APRS_DEBUG(&AircraftPacket);
         }
       }
     }
@@ -277,6 +288,7 @@ bool OGN_APRS_Register(ufo_t *this_aircraft){
     RegisterPacket += APRS_REG.alt;
     RegisterPacket += "\r\n";
     SoC->WiFi_transmit_TCP(RegisterPacket);
+    OGN_APRS_DEBUG(&RegisterPacket);
   }
   return(aprs_registred);
 }
@@ -311,6 +323,7 @@ void OGN_APRS_Status(ufo_t *this_aircraft){
   StatusPacket += APRS_STAT.board_voltage;
   StatusPacket += "\r\n";
   SoC->WiFi_transmit_TCP(StatusPacket);
+  OGN_APRS_DEBUG(&StatusPacket);
   return;
 
 }

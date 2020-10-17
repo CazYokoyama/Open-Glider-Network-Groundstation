@@ -896,9 +896,11 @@ static void rxfsk (bool rxcontinuous) {
     default:
       writeReg(FSKRegBitrateMsb, 0x01); // 100kbps
       writeReg(FSKRegBitrateLsb, 0x40);
-	  writeReg(RegAgcRef, 0x00); // TEST
       break;
     }
+
+	// setting agc refrenz level
+	writeReg(RegAgcRef, LMIC.agcref); // AGC REF Level 0x00 - 0x13
 
     // set LNA gain
     //writeReg(RegLna, LNA_RX_GAIN);

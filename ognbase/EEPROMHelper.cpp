@@ -112,6 +112,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
   eeprom_block.field.settings.freq_corr  = 0;
   eeprom_block.field.settings.range      = 10;
+  eeprom_block.field.settings.sxlna      = true;
 }
 
 void EEPROM_store()

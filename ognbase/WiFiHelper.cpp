@@ -179,7 +179,7 @@ void WiFi_setup()
 {
 #if 1
   // Initialize file system.
-  if (!SPIFFS.begin())
+  if (!SPIFFS.begin(true))
   {
     Serial.println(F("Failed to mount file system"));
     return;

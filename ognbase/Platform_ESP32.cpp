@@ -571,22 +571,46 @@ static IPAddress ESP32_WiFi_get_broadcast()
   return broadcastIp;
 }
 
-static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
+static void ESP32_WiFi_transmit_UDP_debug(int port, byte *buf, size_t size)
 {
   IPAddress ClientIP;
-  IPAddress ip(10, 0, 0, 200);
   unsigned int localPort = 8888;
-
+  
   WiFiMode_t mode = WiFi.getMode();
   int i = 0;
 
   switch (mode)
   {
   case WIFI_STA:
-    //ClientIP = ESP32_WiFi_get_broadcast();
-
+    ClientIP = WiFi.gatewayIP();
+    ClientIP[3] = 200;
+    Serial.print(ClientIP);
     Uni_Udp.begin(localPort);
-    Uni_Udp.beginPacket(ip, port);
+    Uni_Udp.beginPacket(ClientIP, port);
+    Uni_Udp.write(buf, size);
+    Uni_Udp.endPacket();
+
+    break;
+  case WIFI_AP:
+    break;
+  case WIFI_OFF:
+  default:
+    break;
+  }
+}
+
+static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
+{
+  IPAddress ClientIP;
+  WiFiMode_t mode = WiFi.getMode();
+  int i = 0;
+
+  switch (mode)
+  {
+  case WIFI_STA:
+    ClientIP = ESP32_WiFi_get_broadcast();
+
+    Uni_Udp.beginPacket(ClientIP, port);
     Uni_Udp.write(buf, size);
     Uni_Udp.endPacket();
 
@@ -1209,6 +1233,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_maxSketchSpace,
   ESP32_WiFi_setOutputPower,
   ESP32_WiFi_transmit_UDP,
+  ESP32_WiFi_transmit_UDP_debug,
   ESP32_WiFi_connect_TCP,
   ESP32_WiFi_disconnect_TCP,
   ESP32_WiFi_transmit_TCP,
