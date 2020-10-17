@@ -268,12 +268,13 @@ bool OGN_APRS_Register(ufo_t *this_aircraft){
 
     APRS_REG.origin = ogn_callsign;
     APRS_REG.callsign = String(this_aircraft->addr, HEX);
+    APRS_REG.callsign.toUpperCase();
     APRS_REG.alt = zeroPadding(String(int(this_aircraft->altitude * 3.28084)),6);
-    APRS_REG.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
-    APRS_REG.lat_deg = String(int(this_aircraft->latitude));
-    APRS_REG.lat_min = String((this_aircraft->latitude - int(this_aircraft->latitude))*60);
+    APRS_REG.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";// KKLtest>APRS,TCPIP*,qAC,24E1C0:/174903h 47 35.33 NI 008 08.86E&/A=001017
+    APRS_REG.lat_deg = zeroPadding(String(int(this_aircraft->latitude)),2);                                                                        // HLBtest>APRS,TCPIP*,qAC,2486a0:/172706h 46 57.38 NI 007 15.50E&/A=001832
+    APRS_REG.lat_min = zeroPadding(String((this_aircraft->latitude - int(this_aircraft->latitude))*60),4);
     APRS_REG.lon_deg = zeroPadding(String(int(this_aircraft->longitude)),3);
-    APRS_REG.lon_min = String((this_aircraft->longitude - int(this_aircraft->longitude))*60);
+    APRS_REG.lon_min = zeroPadding(String((this_aircraft->longitude - int(this_aircraft->longitude))*60),5);
 
     String RegisterPacket = "";
     RegisterPacket += APRS_REG.origin;
@@ -304,6 +305,7 @@ void OGN_APRS_Status(ufo_t *this_aircraft){
   struct aprs_stat_packet APRS_STAT;
   APRS_STAT.origin = ogn_callsign;
   APRS_STAT.callsign = String(this_aircraft->addr, HEX);
+  APRS_STAT.callsign.toUpperCase();
   APRS_STAT.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
   APRS_STAT.platform = "v0.0.1.ESP32";
   APRS_STAT.realtime_clock = String(0.0);
