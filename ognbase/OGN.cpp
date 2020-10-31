@@ -71,14 +71,14 @@ short AprsPasscode(const char* theCall)
 
     *p1 = 0;
 
-    short hash = kKey;     
+    short hash = kKey;
     short i    = 0;
     short len  = strlen(rootCall);
     char* ptr  = rootCall;
 
-    while (i < len) {  
+    while (i < len) {
         hash ^= (*ptr++) << 8;
-        hash ^= (*ptr++); 
+        hash ^= (*ptr++);
         i    += 2;
     }
 
