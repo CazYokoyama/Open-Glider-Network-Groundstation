@@ -2,7 +2,7 @@
  *
  * Protocol_OGNTP.cpp
  * Encoder and decoder for Open Glider Network tracker radio protocol
- * Copyright (C) 2017-2020 Linar Yusupov
+ * Copyright (C) 2017-2020 Manuel Roesel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include "SoftRF.h"
 #include "Protocol_OGNTP.h"
 #include "Protocol_Legacy.h"
-#include "RFHelper.h"
+#include "RF.h"
 
 const rf_proto_desc_t ogntp_proto_desc = {
   "OGNTP",

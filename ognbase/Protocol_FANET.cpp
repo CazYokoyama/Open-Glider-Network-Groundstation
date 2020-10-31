@@ -7,7 +7,7 @@
  *    Development -  https://github.com/3s1d/fanet-stm32
  *    Deprecated  -  https://github.com/3s1d/fanet
  *
- * Copyright (C) 2017-2020 Linar Yusupov
+ * Copyright (C) 2017-2020 Manuel Roesel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 #include "SoftRF.h"
 #include "Protocol_FANET.h"
 #include "Protocol_Legacy.h"
-#include "RFHelper.h"
+#include "RF.h"
 
 const rf_proto_desc_t fanet_proto_desc = {
   "FANET",
@@ -116,7 +116,7 @@ static uint16_t coord2payload_compressed(float deg)
 /* ------------------------------------------------------------------------- */
 /*
  *  Created on: 06 Dec 2017
- *      Author: Linar Yusupov
+ *      Author: Manuel Roesel
  */
 static float payload_compressed2coord(uint16_t payload, float ref_deg)
 {
@@ -176,7 +176,7 @@ static void coord2payload_absolut(float lat, float lon, uint8_t *buf)
 /* ------------------------------------------------------------------------- */
 /*
  *  Created on: 06 Dec 2017
- *      Author: Linar Yusupov
+ *      Author: Manuel Roesel
  */
 static void payload_absolut2coord(float *lat, float *lon, uint8_t *buf)
 {

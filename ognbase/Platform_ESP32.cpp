@@ -1,6 +1,6 @@
 /*
  * Platform_ESP32.cpp
- * Copyright (C) 2018-2020 Linar Yusupov
+ * Copyright (C) 2018-2020 Manuel Roesel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,15 +31,15 @@
 #include <TFT_eSPI.h>
 
 #include "Platform_ESP32.h"
-#include "SoCHelper.h"
-#include "SoundHelper.h"
-#include "EEPROMHelper.h"
-#include "RFHelper.h"
-#include "WiFiHelper.h"
-#include "BluetoothHelper.h"
-#include "LEDHelper.h"
-#include "BaroHelper.h"
-#include "BatteryHelper.h"
+#include "SoC.h"
+
+#include "EEPROM.h"
+#include "RF.h"
+#include "WiFi.h"
+#include "Bluetooth.h"
+
+
+#include "Battery.h"
 
 #include <battery.h>
 #include <U8x8lib.h>
@@ -56,20 +56,6 @@ lmic_pinmap lmic_pins = {
 };
 
 WebServer server ( 80 );
-
-#if defined(USE_NEOPIXELBUS_LIBRARY)
-NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PIX_NUM, SOC_GPIO_PIN_LED);
-#else /* USE_ADAFRUIT_NEO_LIBRARY */
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = Arduino pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
-                              NEO_GRB + NEO_KHZ800);
-#endif /* USE_NEOPIXELBUS_LIBRARY */
 
 U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ttgo(TTGO_V2_OLED_PIN_RST,
                                                 TTGO_V2_OLED_PIN_SCL,
@@ -479,7 +465,7 @@ static long ESP32_random(long howsmall, long howBig)
   return random(howsmall, howBig);
 }
 
-static void ESP32_Sound_test(int var)
+/*static void ESP32_Sound_test(int var)
 {
   if (settings->volume != BUZZER_OFF) {
 
@@ -512,7 +498,7 @@ static void ESP32_Sound_test(int var)
     ledcDetachPin(SOC_GPIO_PIN_BUZZER);
     pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
   }
-}
+}*/
 
 static uint32_t ESP32_maxSketchSpace()
 {
@@ -759,13 +745,12 @@ static void ESP32_swSer_enableRx(boolean arg)
 
 }
 
-static byte ESP32_Display_setup()
+/*static byte ESP32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
   if (esp32_board != ESP32_TTGO_T_WATCH) {
 
-    /* SSD1306 I2C OLED probing */
     if (GPIO_21_22_are_busy) {
       Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
       Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
@@ -811,7 +796,7 @@ static byte ESP32_Display_setup()
       u8x8->draw2x2String(2, 3, SoftRF_text);
     }
 
-  } else {  /* ESP32_TTGO_T_WATCH */
+  } else {  
 
     ESP32_SPI_begin();
 
@@ -841,9 +826,9 @@ static byte ESP32_Display_setup()
   }
 
   return rval;
-}
+}*/
 
-static void ESP32_Display_loop()
+/*static void ESP32_Display_loop()
 {
   char buf[16];
   uint32_t disp_value;
@@ -913,7 +898,7 @@ static void ESP32_Display_loop()
 
         OLED_display_frontpage = true;
 
-      } else { /* OLED_display_frontpage */
+      } else { 
 
         if (rx_packets_counter > prev_rx_packets_counter) {
           disp_value = rx_packets_counter % 1000;
@@ -971,7 +956,6 @@ static void ESP32_Display_loop()
         u8x8->draw2x2String(0, 2, "GNSS");
         u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
         u8x8->draw2x2String(0, 4, "OLED");
-        u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
         u8x8->draw2x2String(0, 6, "BARO");
         u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
 
@@ -1011,7 +995,7 @@ static void ESP32_Display_loop()
 
         OLED_display_frontpage = true;
 
-      } else {  /* OLED_display_frontpage */
+      } else { 
 
         if (rx_packets_counter > prev_rx_packets_counter) {
           disp_value = rx_packets_counter % 1000;
@@ -1047,12 +1031,8 @@ static void ESP32_Display_loop()
     }
 
     break;
-
-  case DISPLAY_NONE:
-  default:
-    break;
   }
-}
+}*/
 
 static void ESP32_Display_fini(const char *msg)
 {
@@ -1121,7 +1101,7 @@ static unsigned long ESP32_get_PPS_TimeMarker()
   return rval;
 }
 
-static bool ESP32_Baro_setup()
+/*static bool ESP32_Baro_setup()
 {
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
@@ -1138,24 +1118,20 @@ static bool ESP32_Baro_setup()
     Serial.println(F("INFO: RESET pin of SX12xx radio is not connected to MCU."));
 #endif
 
-    /* Pre-init 1st ESP32 I2C bus to stick on these pins */
+    
     Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
 
   } else {
 
-    /* Start from 1st I2C bus */
+  
     Wire.begin(SOC_GPIO_PIN_TBEAM_SDA, SOC_GPIO_PIN_TBEAM_SCL);
-    if (Baro_probe())
-      return true;
 
     if (hw_info.revision == 2)
       return false;
 
 #if !defined(ENABLE_AHRS)
-    /* Try out OLED I2C bus */
+    
     Wire.begin(TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
-    if (!Baro_probe())
-      return false;
 
     GPIO_21_22_are_busy = true;
 #else
@@ -1164,7 +1140,7 @@ static bool ESP32_Baro_setup()
   }
 
   return true;
-}
+}*/
 
 static void ESP32_UATSerial_begin(unsigned long baud)
 {
@@ -1229,7 +1205,6 @@ const SoC_ops_t ESP32_ops = {
   ESP32_getResetReason,
   ESP32_getFreeHeap,
   ESP32_random,
-  ESP32_Sound_test,
   ESP32_maxSketchSpace,
   ESP32_WiFi_setOutputPower,
   ESP32_WiFi_transmit_UDP,
@@ -1247,14 +1222,10 @@ const SoC_ops_t ESP32_ops = {
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
   &ESP32_Bluetooth_ops,
-  ESP32_Display_setup,
-  ESP32_Display_loop,
-  ESP32_Display_fini,
   ESP32_Battery_setup,
   ESP32_Battery_voltage,
   ESP32_GNSS_PPS_Interrupt_handler,
   ESP32_get_PPS_TimeMarker,
-  ESP32_Baro_setup,
   ESP32_UATSerial_begin,
   ESP32_UATModule_restart,
   ESP32_WDT_setup,

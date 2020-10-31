@@ -1,6 +1,6 @@
 /*
  * Library.cpp
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2020 Manuel Roesel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "SoC.h"
 
 #if DEBUG
 String TxDataTemplate = "0282dd204901f981798a85b69764bdf99ed77fd3c2300000";

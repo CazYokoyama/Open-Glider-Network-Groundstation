@@ -3,7 +3,7 @@
  * Copyright (C) 2014-2015 Stanislaw Pusep
  *
  * Protocol_Legacy, encoder for legacy radio protocol
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2020 Manuel Roesel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@
 #include <protocol.h>
 
 #include "SoftRF.h"
-#include "RFHelper.h"
+#include "RF.h"
 #include "Protocol_Legacy.h"
-#include "EEPROMHelper.h"
+#include "EEPROM.h"
 
 const rf_proto_desc_t legacy_proto_desc = {
   "Legacy",
@@ -187,12 +187,6 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     fop->ns[2] = pkt->ns[2]; fop->ns[3] = pkt->ns[3];
     fop->ew[0] = pkt->ew[0]; fop->ew[1] = pkt->ew[1];
     fop->ew[2] = pkt->ew[2]; fop->ew[3] = pkt->ew[3];
-
-    Serial.println("FLARM ADDRESS: ");
-    Serial.println(fop->addr);
-    Serial.println("\r\nAircraft Type FLARM: ");
-    Serial.println(fop->aircraft_type);
-    Serial.println("\r\n");
 
     return true;
 }

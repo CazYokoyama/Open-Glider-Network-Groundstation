@@ -2,7 +2,7 @@
  *
  * Protocol_UAT978.cpp
  * Decoder for UAT 978 MHz ADS-B radio protocol
- * Copyright (C) 2019-2020 Linar Yusupov
+ * Copyright (C) 2019-2020 Manuel Roesel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 
 #include "SoftRF.h"
 #include "Protocol_UAT978.h"
-#include "RFHelper.h"
-#include "GDL90Helper.h"
+#include "RF.h"
+#include "GDL90.h"
 
 const rf_proto_desc_t uat978_proto_desc = {
   "UAT",

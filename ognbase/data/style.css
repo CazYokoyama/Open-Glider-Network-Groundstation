@@ -1,0 +1,121 @@
+html {
+  font-family: Helvetica;
+  display: inline-block;
+  margin: 0px auto;
+  text-align: center;
+}
+h1{
+  color: #0F3376;
+  padding: 1vh;
+}
+p{
+  font-size: 1.2rem;
+}
+.button_save {
+  display: inline-block;
+  background-color:blue;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-size: 15px;
+  margin: 2px;
+  cursor: pointer;
+}
+
+.button_reset {
+  display: inline-block;
+  background-color:red;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-size: 15px;
+  margin: 2px;
+  cursor: pointer;
+}
+
+table {
+  background-color:white;
+}
+
+select {
+    border: 0;
+    width: 100%;
+}
+.dashboard{
+     text-align: center;
+}
+
+.circle-container {
+     display: inline-block;
+     margin: 10px;
+}
+
+.power {
+    border: 5px solid #0074D9;
+    border-radius: 500%;
+    display: table-cell;
+    height: 100px;
+    vertical-align: middle;
+    width: 100px;
+}
+
+.rssi {
+    border: 5px solid #0074D9;
+    border-radius: 500%;
+    display: table-cell;
+    height: 100px;
+    vertical-align: middle;
+    width: 100px;
+}
+
+.range {
+    border: 5px solid #0074D9;
+    border-radius: 500%;
+    display: table-cell;
+    height: 100px;
+    vertical-align: middle;
+    width: 100px;
+}
+
+.satfix {
+    border: 5px solid yellow;
+    border-radius: 500%;
+    display: table-cell;
+    height: 100px;
+    vertical-align: middle;
+    width: 100px;
+}
+
+.largest_range {
+    border: 5px solid yellow;
+    border-radius: 500%;
+    display: table-cell;
+    height: 100px;
+    vertical-align: middle;
+    width: 100px;
+}
+
+.timestamp {
+    border: 5px solid magenta;
+    border-radius: 500%;
+    display: table-cell;
+    height: 100px;
+    vertical-align: middle;
+    width: 100px;
+}
+
+.circle__content{
+    color: gray;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 34px;
+}
+
+.circle__lower-text{
+     color: gray;
+     font-family: Arial, Helvetica, sans-serif;
+     font-size: 11px;
+}

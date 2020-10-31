@@ -112,12 +112,11 @@
 #define RegDioMapping1                             0x40 // common
 #define RegDioMapping2                             0x41 // common
 #define RegVersion                                 0x42 // common
+#define RegAgcRef                                  0x61 // common
+#define RegAgcThresh1                              0x62 // common
+#define RegAgcThresh2                              0x63 // common
+#define RegAgcThresh3                              0x64 // common
 
-#define RegAgcRef                                  0x61 // TEST
-
-// #define RegAgcThresh1                              0x44 // common
-// #define RegAgcThresh2                              0x45 // common
-// #define RegAgcThresh3                              0x46 // common
 // #define RegPllHop                                  0x4B // common
 #define SX1272_RegTcxo                             0x58 // common
 #define SX1276_RegTcxo                             0x4B // common
@@ -899,8 +898,10 @@ static void rxfsk (bool rxcontinuous) {
       break;
     }
 
-	// setting agc refrenz level
-	writeReg(RegAgcRef, LMIC.agcref); // AGC REF Level 0x00 - 0x13
+	writeReg(RegAgcRef, 0x00);
+	//writeReg(RegAgcThresh1, 0x5B);
+	//writeReg(RegAgcThresh2, 0x5B);
+	//writeReg(RegAgcThresh3, 0xDB);
 
     // set LNA gain
     //writeReg(RegLna, LNA_RX_GAIN);
@@ -911,7 +912,7 @@ static void rxfsk (bool rxcontinuous) {
     //writeReg(RegLna, 0xC0 | 0x00); // -48dB gain, default LNA current
 
     // configure receiver
-    //writeReg(FSKRegRxConfig, 0x1E); // AFC auto, AGC, trigger on preamble?!? TEST
+    //writeReg(FSKRegRxConfig, 0x1E); // AFC auto, AGC, trigger on preamble?!?
     writeReg(FSKRegRxConfig, 0x0E); // AFC off, AGC on, trigger on preamble?!?
     //writeReg(FSKRegRxConfig, 0x06); // AFC off, AGC off, trigger on preamble?!?
 
@@ -922,7 +923,7 @@ static void rxfsk (bool rxcontinuous) {
       writeReg(FSKRegRxBw, 0x0B); // 50kHz SSb
       break;
     case RF_RX_BANDWIDTH_SS_100KHZ:
-      writeReg(FSKRegRxBw, 0x0A); // 100kHz SSb
+      writeReg(FSKRegRxBw, 0x06); // 100kHz SSb
       break;
     case RF_RX_BANDWIDTH_SS_166KHZ:
       writeReg(FSKRegRxBw, 0x11); // 166.6kHz SSB
@@ -936,6 +937,12 @@ static void rxfsk (bool rxcontinuous) {
     case RF_RX_BANDWIDTH_SS_125KHZ:
     default:
       writeReg(FSKRegRxBw, 0x02); // 125kHz SSb; BW >= (DR + 2 X FDEV)
+      break;
+    case RF_RX_BANDWIDTH_SS_62KHZ:
+      writeReg(FSKRegRxBw, 0x03); // 62.5kHz SSb;
+      break;
+    case RF_RX_BANDWIDTH_SS_83KHZ:
+      writeReg(FSKRegRxBw, 0x0A); // 83.3kHz SSb;
       break;
     }
 
@@ -1028,7 +1035,7 @@ static void rxfsk (bool rxcontinuous) {
     state.fifoptr = LMIC.frame;
 
     // I hope that 256 samples will cover full Rx packet
-    // writeReg(FSKRegRssiConfig, 0x07);
+    writeReg(FSKRegRssiConfig, 0x00);
 
     // configure DIO mapping DIO0=PayloadReady DIO1=NOP DIO2=TimeOut
     writeReg(RegDioMapping1, MAP1_FSK_DIO0_RXDONE | MAP1_FSK_DIO1_NOP | MAP1_FSK_DIO2_RXTOUT);
