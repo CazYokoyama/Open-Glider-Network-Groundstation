@@ -40,4 +40,14 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 
 **Feel free to contact me - manuel.roesel@ros-it.ch**
 
-![alt text](https://ros-it.ch/wp-content/uploads/2020/10/ogn_base.png)
+## Configuration example
+
+* MULHBtest - origin
+* Lat / Lon / Alt - if zero, GPS position is used
+* GeoID - if Lat / Lon / Alt is zero - GPS is used
+* APRS Debug - UDP - sending UDP messages to xxx.xxx.xxx.200 with port 12000
+* Ignore Track / Stealth Bit - if False - Aircrafts with Stealth or No-Track bit set will not be forwarded to OGN
+* Sleep Mode - Full - ESP32 and GPS will go sleep after RX ilde seconds
+* Wake up Timer - ESP will wake up after 3600 sec even if no package was received
+
+![alt text](https://ros-it.ch/wp-content/uploads/2020/10/OGN_Base-1.png)

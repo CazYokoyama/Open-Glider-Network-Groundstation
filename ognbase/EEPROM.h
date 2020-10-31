@@ -63,7 +63,7 @@ typedef struct Settings {
     bool     ignore_stealth;
     bool     ignore_no_track;
     uint8_t  rf_protocol2;
-    bool     sleep_mode;
+    uint8_t  sleep_mode;
     uint16_t sleep_after_rx_idle;
     uint16_t wake_up_timer;
     uint8_t  resvd15;

@@ -282,8 +282,9 @@ void Web_setup(void)
              ogn_ssid.c_str(),
              ogn_wpass.c_str(),
 
-             (settings->sleep_mode == true ? "selected" : ""), "True",
-             (settings->sleep_mode == false ? "selected" : ""), "False",
+             (settings->sleep_mode == 0 ? "selected" : ""), "Disabled",
+             (settings->sleep_mode == 1 ? "selected" : ""), "Full",
+             (settings->sleep_mode == 2 ? "selected" : ""), "without GPS",
 
              String(settings->sleep_after_rx_idle),
              String(settings->wake_up_timer)
