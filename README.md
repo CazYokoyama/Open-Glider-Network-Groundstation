@@ -34,4 +34,6 @@ Features:
 * Connect to OGN Wifi AP and configure
 * You can update you installation http://you-ogn-ground-ip/update
 
+***Feel free to contact me - manuel.roesel@ros-it.ch*
+
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/10/ogn_base.png)
