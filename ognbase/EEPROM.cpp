@@ -123,7 +123,7 @@ void EEPROM_defaults()
     eeprom_block.field.settings.ogndebugp           = 12000;
     eeprom_block.field.settings.ignore_stealth      = false;
     eeprom_block.field.settings.ignore_no_track     = false;
-    eeprom_block.field.settings.sleep_mode          = false;
+    eeprom_block.field.settings.sleep_mode          = 0;
     eeprom_block.field.settings.sleep_after_rx_idle = 3600;
     eeprom_block.field.settings.wake_up_timer       = 3600;
 }

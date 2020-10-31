@@ -48,6 +48,8 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * APRS Debug - UDP - sending UDP messages to xxx.xxx.xxx.200 with port 12000
 * Ignore Track / Stealth Bit - if False - Aircrafts with Stealth or No-Track bit set will not be forwarded to OGN
 * Sleep Mode - Full - ESP32 and GPS will go sleep after RX ilde seconds
+ * minimum 1800 seconds
 * Wake up Timer - ESP will wake up after 3600 sec even if no package was received
+ * to disable enter zero
 
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/10/OGN_Base-1.png)
