@@ -285,7 +285,8 @@ void Web_setup(void)
              (settings->sleep_mode == true ? "selected" : ""), "True",
              (settings->sleep_mode == false ? "selected" : ""), "False",
 
-             String(settings->sleep_after_rx_idle)
+             String(settings->sleep_after_rx_idle),
+             String(settings->wake_up_timer)
              );
 
     size_t len = strlen(offset);
@@ -433,14 +434,17 @@ void Web_setup(void)
             Serial.println(ogn_geoid_separation);
         }
 
-        if (request->hasParam("ogn_ignore_track"))
+        if (request->hasParam("ogn_ignore_track")){
             settings->ignore_no_track = request->getParam("ogn_ignore_track")->value().toInt();
+        }
 
-        if (request->hasParam("ogn_ignore_stealth"))
+        if (request->hasParam("ogn_ignore_stealth")){
             settings->ignore_stealth = request->getParam("ogn_ignore_stealth")->value().toInt();
+        }
 
-        if (request->hasParam("ogn_deep_sleep"))
+        if (request->hasParam("ogn_deep_sleep")){
             settings->sleep_mode = request->getParam("ogn_deep_sleep")->value().toInt();
+        }
 
         if (request->hasParam("ogn_sleep_time"))
         {
@@ -448,6 +452,9 @@ void Web_setup(void)
                 settings->sleep_after_rx_idle = 180;
             else
                 settings->sleep_after_rx_idle = request->getParam("ogn_sleep_time")->value().toInt();
+        }
+        if (request->hasParam("ogn_wakeup_time")){
+            settings->wake_up_timer = request->getParam("ogn_wakeup_time")->value().toInt();
         }
 
 
