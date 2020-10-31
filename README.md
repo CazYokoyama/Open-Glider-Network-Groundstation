@@ -31,3 +31,4 @@ Features:
 * Install ESP32 Filesystem Uploader
 * Compile and upload Sketch and files (.css and .html)
 * Connect to OGN Wifi AP and configure
+* You can update you installation http://you-ogn-ground-ip/update
