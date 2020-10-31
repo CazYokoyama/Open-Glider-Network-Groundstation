@@ -21,3 +21,5 @@ Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode ;
 * auto wakeup on RX packages ;
 * No additional computer necessary - only wireless ;
+* Ideal for solar and battery supply
+* low cost hardware
