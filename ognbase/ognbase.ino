@@ -380,9 +380,11 @@ void ground()
   
   if ( TimeToSleep() && settings->sleep_mode )
   {
-    GNSS_sleep();
+    if(settings->wake_up_timer > 0){
+      esp_sleep_enable_timer_wakeup(settings->wake_up_timer*1000000);
+    }
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_26,1);
-    //esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP*1000000);
+    GNSS_sleep();
     esp_deep_sleep_start();
   }
 

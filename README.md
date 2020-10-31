@@ -16,7 +16,7 @@ Only WiFi and callsign have to be configured, the position is determined via gps
 
 Since the T-Beam is very energy-saving, it can be operated very easily on a battery with solar panels.
 
-There are also a few drawbacks to the traditional OGN receivers. Several protocols cannot be decoded at the same time (at the moment).
+There are also a few drawbacks to the traditional OGN receivers. Several protocols cannot be decoded at the same time (at the moment - second protocol has no function).
 
 Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode ;
@@ -30,3 +30,4 @@ Features:
 * Install arduino ide
 * Install ESP32 Filesystem Uploader
 * Compile and upload Sketch and files (.css and .html)
+* Connect to OGN Wifi AP and configure

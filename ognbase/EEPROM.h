@@ -65,7 +65,7 @@ typedef struct Settings {
     uint8_t  rf_protocol2;
     bool     sleep_mode;
     uint16_t sleep_after_rx_idle;
-    uint8_t  resvd14;
+    uint16_t wake_up_timer;
     uint8_t  resvd15;
 } settings_t;
 
