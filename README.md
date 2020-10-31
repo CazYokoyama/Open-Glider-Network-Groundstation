@@ -20,7 +20,8 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 
 Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode ;
-* auto wakeup on RX packages ;
+* Auto wakeup on RX packages ;
+* Wakeup Timer
 * No additional computer necessary - only wireless ;
 * Ideal for solar and battery supply
 * low cost hardware
@@ -32,3 +33,5 @@ Features:
 * Compile and upload Sketch and files (.css and .html)
 * Connect to OGN Wifi AP and configure
 * You can update you installation http://you-ogn-ground-ip/update
+
+![alt text](https://ros-it.ch/wp-content/uploads/2020/10/ogn_base.png)
