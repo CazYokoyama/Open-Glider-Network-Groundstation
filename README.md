@@ -18,13 +18,17 @@ Since the T-Beam is very energy-saving, it can be operated very easily on a batt
 
 There are also a few drawbacks to the traditional OGN receivers. Several protocols cannot be decoded at the same time (at the moment - second protocol has no function).
 
-Features:
+## Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode ;
 * Auto wakeup on RX packages ;
 * Wakeup Timer
 * No additional computer necessary - only wireless ;
 * Ideal for solar and battery supply
 * low cost hardware
+
+## Planed Features
+* Protocol hopping - aprs messages are sent every 5 seconds - there should be enough time to decode a second protocol
+* Send APRS messages over LoraWan
 
 ## Installation
 
