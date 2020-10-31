@@ -41,6 +41,7 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventTyp
     else if (type == WS_EVT_DISCONNECT)
 
         globalClient = NULL;
+
 }
 
 // Replaces placeholder with LED state value

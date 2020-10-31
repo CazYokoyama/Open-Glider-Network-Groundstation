@@ -3,6 +3,7 @@
 Groundstation for Open Glider Network with ESP32 
 
 **I want to highlight that I am a non-professional programmer.**
+**This software is at alpha status.**
 
 The aim of this project is to create a simple base station for the OGN network. The SoftRF project was used as the base. Thanks to Linar Yusupov for this great work!
 
@@ -23,3 +24,9 @@ Features:
 * No additional computer necessary - only wireless ;
 * Ideal for solar and battery supply
 * low cost hardware
+
+## Installation
+
+* Install arduino ide
+* Install ESP32 Filesystem Uploader
+* Compile and upload Sketch and files (.css and .html)

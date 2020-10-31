@@ -442,7 +442,7 @@ static void GDL90_Out(byte* buf, size_t size)
                     if (SoC->Bluetooth)
                         SoC->Bluetooth->write(buf, size);
                 }
-                break;
+        break;
             case GDL90_TCP:
             case GDL90_OFF:
             default:

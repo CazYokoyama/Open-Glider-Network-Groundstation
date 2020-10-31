@@ -195,7 +195,7 @@ static void ESP32_Bluetooth_loop()
                     // do stuff here on connecting
                     oldDeviceConnected = deviceConnected;
             }
-            break;
+      break;
         case BLUETOOTH_OFF:
         case BLUETOOTH_SPP:
         case BLUETOOTH_A2DP_SOURCE:

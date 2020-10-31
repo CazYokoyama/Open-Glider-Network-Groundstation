@@ -50,7 +50,7 @@ static void D1090_Out(byte* buf, size_t size)
                 if (SoC->Bluetooth)
                     SoC->Bluetooth->write(buf, size);
             }
-            break;
+      break;
         case D1090_OFF:
         default:
             break;
@@ -137,4 +137,5 @@ void D1090_Export()
                     D1090_Out((byte *) str.c_str(), str.length());
                 }
             }
+
 }
