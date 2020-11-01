@@ -50,13 +50,13 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 ### ogn_conf.txt example
 
 
-ssid
-pass
-callsign / origin
-latitude
-longitude
-altitude
-geoid sep
+ssid  
+pass  
+callsign / origin  
+latitude  
+longitude  
+altitude  
+geoid sep  
 
 
 
