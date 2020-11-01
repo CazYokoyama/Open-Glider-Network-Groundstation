@@ -6,10 +6,12 @@
 #include "RF.h"
 #include "global.h"
 #include "Battery.h"
-#include "RF.h"
+#include <FS.h>   // Include the SPIFFS library
 
 #define  U_PART U_FLASH
 
+
+File fsUploadFile;   
 
 String ogn_ssid     = "ognbase";
 String ogn_wpass    = "123456789";
@@ -30,6 +32,13 @@ AsyncWebSocket ws("/ws");
 AsyncWebSocketClient* globalClient = NULL;
 
 size_t content_len;
+
+static const char upload_html[] PROGMEM = "<div class = 'upload'>\
+                                           <form method = 'POST' action = '/doUpload' enctype='multipart/form-data'>\
+                                           <input type='file' name='data'/>\
+                                           <input type='submit' name='upload' value='Upload' title = 'Upload Files'>\
+                                           </form>\
+                                           </div>";
 
 
 void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)
@@ -62,14 +71,6 @@ bool OGN_config_store(String* ssid, String* pass, String* callsign, float lat, f
         Serial.println(F("Failed to open ogn_conf.txt for writing"));
         return false;
     }
-
-    Serial.println("----- save config webhelper -----");
-    Serial.println("ssid: " + *ssid);
-    Serial.println("psk:  " + *pass);
-    Serial.println("callsign:  " + *callsign);
-    Serial.println(lat, 6);
-    Serial.println(lon, 6);
-    Serial.println(alt);
 
     // Save SSID and PSK.
     configFile.println(*ssid);
@@ -138,6 +139,21 @@ void handleUpdate(AsyncWebServerRequest* request)
     request->send(200, "text/html", html);
 }
 
+void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+  Serial.println("uploading file...");
+  if(!index){
+    request->_tempFile = SPIFFS.open("/"+filename, "w");
+  }
+  if(len) {
+    // stream the incoming chunk to the opened file
+    request->_tempFile.write(data,len);
+  }
+  if(final){
+    request->_tempFile.close();
+    request->redirect("/");
+  }
+}
+
 void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size_t index, uint8_t* data, size_t len, bool final)
 {
     if (!index)
@@ -188,7 +204,32 @@ void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size
 
 void Web_setup(void)
 {
-    loadConfig();
+    if (!SPIFFS.begin(true))
+    {
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        return;
+    }
+
+    if (!SPIFFS.exists("/index.html")){
+      
+      wserver.on("/", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
+      request->send(200, "text/html", upload_html);
+      });
+      
+      wserver.on("/doUpload", HTTP_POST, [](AsyncWebServerRequest *request) {
+      }, handleUpload);
+
+      wserver.begin();
+      return;      
+      }
+    
+    File file = SPIFFS.open("/index.html", "r");
+    if (!file)
+    {
+      Serial.println("An Error has occurred while opening index.html");
+      return;
+    }
+
     IPAddress own_ip;
     bool      shouldReboot = false;
 
@@ -202,21 +243,8 @@ void Web_setup(void)
     IP += ".";
     IP += String(own_ip[3]);
 
-    if (!SPIFFS.begin())
-    {
-        Serial.println("An Error has occurred while mounting SPIFFS");
-        return;
-    }
-
     ws.onEvent(onWsEvent);
     wserver.addHandler(&ws);
-
-    File file = SPIFFS.open("/index.html");
-    if (!file)
-    {
-        Serial.println("Failed to open index for reading");
-        return;
-    }
 
 
     size_t filesize   = file.size();
@@ -309,13 +337,21 @@ void Web_setup(void)
     wserver.on("/update", HTTP_GET, [](AsyncWebServerRequest* request){
         handleUpdate(request);
     });
+    
     wserver.on("/doUpdate", HTTP_POST,
                [](AsyncWebServerRequest* request) {},
                [](AsyncWebServerRequest* request, const String& filename, size_t index, uint8_t* data,
                   size_t len, bool final) {
         handleDoUpdate(request, filename, index, data, len, final);
-    }
-               );
+    });
+
+    wserver.on("/upload", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
+      request->send(200, "text/html", upload_html);
+    });
+      
+    wserver.on("/doUpload", HTTP_POST, [](AsyncWebServerRequest *request) {
+    }, handleUpload);
+
 
 
     // Send a GET request to <ESP_IP>/get?inputString=<inputMessage>
