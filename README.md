@@ -1,6 +1,6 @@
 # OGN-Basestation
 
-Groundstation for Open Glider Network with ESP32 
+Groundstation for Open Glider Network with ESP32
 
 **I want to highlight that I am a non-professional programmer.**
 **This software is at alpha status.**
@@ -12,7 +12,7 @@ A TTGO T-Beam (SoftRF Prime Edition MkII) is used as hardware, which has Wifi, B
 [TTGO T-Beam Aliexpress](https://s.click.aliexpress.com/e/_dTnxWSv)
 
 The TT-Beam does not need another computer (Raspberry) and sends the APRS messages directly into the Open Glider network.
-Only WiFi and callsign have to be configured, the position is determined via gps. 
+Only WiFi and callsign have to be configured, the position is determined via gps.
 
 Since the T-Beam is very energy-saving, it can be operated very easily on a battery with solar panels.
 
@@ -22,13 +22,23 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode ;
 * Auto wakeup on RX packages ;
 * Wakeup Timer
-* No additional computer necessary - only wireless ;
+* No additional computer necessary - only Wifi ;
 * Ideal for solar and battery supply
 * low cost hardware
 
 ## Planed Features
-* Protocol hopping - aprs messages are sent every 5 seconds - there should be enough time to decode a second protocol
+* Protocol hopping - aprs messages are sent every 5 seconds
+	- there should be enough time to decode a second protocol
+* ADS-B decoder
+	- we still need some hardware
 * Send APRS messages over LoraWan
+
+## Known bugs / Missing features
+* SNR calculation not correct
+* No RAM and CPU data in APRS status messages
+* no GPS signal quality data in APRS messages
+* no  turn rate in APRS messages (always zero)
+* and a lot more...
 
 ## Installation
 
@@ -37,53 +47,103 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * Compile and upload Sketch and files (.css and .html)
 * Connect to OGN Wifi AP and configure
 * You can update you installation http://you-ogn-ground-ip/update
+* You can upload new .html .css files http://you-ogn-ground-ip/upload
 
 ## Easy Installation
 
 * Download binary image and install it with web-updater
 * Connect to Wifi OGN-XXXXXX with password 987654321
-* Type 192.168.1.1 in you browser and you will see a file-upload page
+* Type 192.168.1.1 in you browser and you will see a file-upload page (only on first startup)
 * Upload index.html, update.html and style.css
-* You can alos upload a file called <ogn_conf.txt> with Wifi and Callsign configuration
+* You can also upload a file called <ogn_conf.txt> with Wifi and Callsign configuration
 * Reset and connect again
 
 ## Update / File Uploader
 
-Firmware updater can be reached at http://<ip>/update  
-File uploader can be reached at http://<ip>/upload
+Firmware updater can be reached at http://you-ogn-ground-ip/update  
+File uploader can be reached at http://you-ogn-ground-ip/upload  
 
 During the first start-up you will be automatically directed to the file upload page.  
-After the html and css files have been uploaded, the T-Beam can be restarted. After that, the surface should be visible like the picture.  
+After the html and css files have been uploaded, the T-Beam can be restarted.   After that, the surface should be visible like the picture.  
 
 ### ogn_conf.txt example
 
+| Line    | Example    |
+| ------- |:----------:|
+| ssid    | myNetwork  |
+| pass    | myPassword |
+| origin  | LSZX       |
+| Lat			| 46.12345	 |
+| Lon     | 7.123456	 |
+| Alt     | 550        |
+| geoid   | 45         |
 
-ssid  
-pass  
-callsign / origin  
-latitude  
-longitude  
-altitude  
-geoid sep 
+```
+myNetwork
+myPassword
+LSZX
+46.123456
+7.123456
+550
+45
+```
 
-myNetwork  
-myPassword  
-LSZG  
-46.12345  
-7.876544  
-550    
-45  
 
+## UDP Debugging
+
+A simple Python script is sufficient to debug the APRS messages. APRS messages are not output via the serial interface.
+
+When the T-Beam is connected to the wifi it will send the debug messages to the ip address ending with 200.
+
+As an an example
+
+* 10.0.0.200
+* 192.168.1.200
+* 172.21.1.200
+
+The destination port can be freely selected in the web interface. 12000 is used as the default port.
+
+```python
+#!usr/bin/python3
+
+import socket
+import datetime
+
+sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+
+udp_host = "xxx.xxx.xxx.xxx"		# Host IP
+udp_port = 12000		    # specified port to connect
+
+sock.bind((udp_host,udp_port))
+
+while True:
+	data,addr = sock.recvfrom(1024)
+	now = datetime.datetime.now()
+	print("%s Received Messages: %s"%(now,data))
+```
 
 ## Configuration example
 
-* MULHBtest - origin
-* Lat / Lon / Alt - if zero, GPS position is used
-* GeoID - if Lat / Lon / Alt is zero - GPS is used
-* APRS Debug - UDP - sending UDP messages to xxx.xxx.xxx.200 with port 12000
-* Ignore Track / Stealth Bit - if False - Aircrafts with Stealth or No-Track bit set will not be forwarded to OGN
-* Sleep Mode - Full - ESP32 and GPS will go sleep after RX ilde seconds - minimum 1800 seconds
-* Wake up Timer - ESP will wake up after 3600 sec even if no package was received - to disable enter zero
+* MULHBtest
+	- origin
+* Lat / Lon / Alt
+	- if zero, GPS position is used
+* GeoID
+	- if Lat / Lon / Alt is zero - GPS is used
+* APRS Debug
+	- sending UDP messages to xxx.xxx.xxx.200 with port 12000
+	- take a look to udp_client.py
+* Ignore Track / Stealth Bit
+	- if False, Aircrafts with Stealth or No-Track bit set will not be forwarded to OGN
+* Sleep Mode
+	- Full - ESP32 and GPS will go sleep after RX ilde seconds (min. 1800 seconds) ~ 20mA
+		- only SX12xx stay awake
+	- Without GPS ~80mA
+	- Disabled ~120mA
+* Wake up Timer
+	- ESP will wake up after 3600 sec even if no package was received
+		- ***Attention, the T-Beam cannot be brought out of sleep mode remotely!***
+	- to disable enter zero
 
 
 
