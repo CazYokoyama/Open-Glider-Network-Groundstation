@@ -22,7 +22,7 @@
   </script>
 </head>
 <body>
-  <h1>OGN Ground Station</h1>
+  <h1>OGN Ground Station %s</h1>
   <table cellspacing="4" align="center" cellpadding="5">
   <class="circle-container">
     <td>
@@ -166,9 +166,9 @@
 </td>
 </tr>
 <tr>
-  <td>SSID</td>
+  <td>Wifi SSID</td>
   <td><INPUT type='text' name='ogn_ssid' maxlength='45' value='%s' size="8" ></td>
-  <td>PASS</td>
+  <td>Wifi PASS</td>
   <td><INPUT type='password' name='ogn_wifi_password' value='%s' size="8" ></td>
 </tr>
 <tr>
@@ -185,6 +185,8 @@
 <tr>
   <td>Wake up Timer:</td>
   <td><INPUT type='number' name='ogn_wakeup_time' placeholder="3600" value='%s' size="8" ></td>
+  <td>RESET:</td>
+  <td><INPUT type="checkbox" name="ogn_reset_all"></td>
 </tr>
 <td><p><button class="button_save">SAVE</button></a></p></td>
 </form>

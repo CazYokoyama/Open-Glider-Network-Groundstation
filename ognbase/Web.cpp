@@ -52,11 +52,9 @@ AsyncWebSocketClient* globalClient = NULL;
 size_t content_len;
 
 static const char upload_html[] PROGMEM = "<div class = 'upload'>\
-                                           <form method = 'POST' action = '/doUpload' enctype='multipart/form-data'>\
-                                           <input type='file' name='data'/>\
-                                           <input type='submit' name='upload' value='Upload' title = 'Upload Files'>\
-                                           </form>\
-                                           </div>";
+                                            <form method = 'POST' action = '/doUpload' enctype='multipart/form-data'>\
+                                            <input type='file' name='data'/><input type='submit' name='upload' value='Upload' title = 'Upload Files'>\
+                                            </form></div>";
 
 
 void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)
@@ -159,7 +157,6 @@ void handleUpdate(AsyncWebServerRequest* request)
 
 void handleUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final)
 {
-    Serial.println("uploading file...");
     if (!index)
         request->_tempFile = SPIFFS.open("/" + filename, "w");
     if (len)
@@ -281,8 +278,9 @@ void Web_setup(void)
 
     offset = Settings_temp;
 
-    snprintf(offset, size, index_html,
+    snprintf(offset, size, index_html, 
              IP,
+             SOFTRF_FIRMWARE_VERSION,
              ogn_callsign,
              String(ogn_lat, 6),
              String(ogn_lon, 6),
@@ -510,12 +508,21 @@ void Web_setup(void)
 
         request->send(200, "text/html", "Updating...reboot");
 
+        // ogn_reset_all
+        if (request->hasParam("ogn_reset_all"))
+            if(request->getParam("ogn_reset_all")->value() == "on"){
+              SPIFFS.format();
+              RF_Shutdown();
+              delay(1000);
+              SoC->reset();
+            }
+            
+       EEPROM_store();
+       OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_callsign, ogn_lat, ogn_lon, ogn_alt);
+       RF_Shutdown();
+       delay(1000);
+       SoC->reset();
 
-        EEPROM_store();
-        OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_callsign, ogn_lat, ogn_lon, ogn_alt);
-        RF_Shutdown();
-        delay(1000);
-        SoC->reset();
     });
 
     SoC->swSer_enableRx(true);
