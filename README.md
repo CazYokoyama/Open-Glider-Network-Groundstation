@@ -49,7 +49,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 
 ### ogn_conf.txt example
 
-'''
+´´´
 ssid
 pass
 callsign / origin
@@ -57,7 +57,7 @@ latitude
 longitude
 altitude
 geoid sep
-'''
+´´´
 
 
 ## Configuration example
@@ -72,5 +72,5 @@ geoid sep
 
 
 **Feel free to contact me - manuel.roesel@ros-it.ch**
-
+^^
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/10/OGN_Base-1.png)
