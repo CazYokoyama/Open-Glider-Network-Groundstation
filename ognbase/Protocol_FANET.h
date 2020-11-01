@@ -39,14 +39,14 @@
 
 enum
 {
-	FANET_AIRCRAFT_TYPE_OTHER,
-	FANET_AIRCRAFT_TYPE_PARAGLIDER,
-	FANET_AIRCRAFT_TYPE_HANGGLIDER,
-	FANET_AIRCRAFT_TYPE_BALLOON,
-	FANET_AIRCRAFT_TYPE_GLIDER,
-	FANET_AIRCRAFT_TYPE_POWERED,
-	FANET_AIRCRAFT_TYPE_HELICOPTER,
-	FANET_AIRCRAFT_TYPE_UAV
+    FANET_AIRCRAFT_TYPE_OTHER,
+    FANET_AIRCRAFT_TYPE_PARAGLIDER,
+    FANET_AIRCRAFT_TYPE_HANGGLIDER,
+    FANET_AIRCRAFT_TYPE_BALLOON,
+    FANET_AIRCRAFT_TYPE_GLIDER,
+    FANET_AIRCRAFT_TYPE_POWERED,
+    FANET_AIRCRAFT_TYPE_HELICOPTER,
+    FANET_AIRCRAFT_TYPE_UAV
 };
 
 /*
@@ -55,43 +55,44 @@ enum
  * No signature,
  * Broadcast
  */
-typedef struct {
-  unsigned int type           :6;
-  unsigned int forward        :1;
-  unsigned int ext_header     :1;
+typedef struct
+{
+    unsigned int type           : 6;
+    unsigned int forward        : 1;
+    unsigned int ext_header     : 1;
 
-  unsigned int vendor         :8;
-  unsigned int address        :16;
+    unsigned int vendor         : 8;
+    unsigned int address        : 16;
 
 #if defined(FANET_DEPRECATED)
-  unsigned int latitude       :16;
-  unsigned int longitude      :16;
+    unsigned int latitude       : 16;
+    unsigned int longitude      : 16;
 #else
-  unsigned int latitude       :24;
-  unsigned int longitude      :24;
+    unsigned int latitude       : 24;
+    unsigned int longitude      : 24;
 #endif
 
-	/* units are degrees, seconds, and meter */
-  unsigned int altitude_lsb   :8; /* FANET+ reported alt. comes from ext. source */
-  unsigned int altitude_msb   :3; /* I assume that it is geo (GNSS) altitude */
-  unsigned int altitude_scale :1;
-  unsigned int aircraft_type  :3;
-  unsigned int track_online   :1;
+    /* units are degrees, seconds, and meter */
+    unsigned int altitude_lsb   : 8; /* FANET+ reported alt. comes from ext. source */
+    unsigned int altitude_msb   : 3; /* I assume that it is geo (GNSS) altitude */
+    unsigned int altitude_scale : 1;
+    unsigned int aircraft_type  : 3;
+    unsigned int track_online   : 1;
 
-  unsigned int speed          :7;
-  unsigned int speed_scale    :1;
+    unsigned int speed          : 7;
+    unsigned int speed_scale    : 1;
 
-  unsigned int climb          :7;
-  unsigned int climb_scale    :1;
+    unsigned int climb          : 7;
+    unsigned int climb_scale    : 1;
 
-  unsigned int heading        :8;
+    unsigned int heading        : 8;
 
-  unsigned int turn_rate      :7;
-  unsigned int turn_scale     :1;
+    unsigned int turn_rate      : 7;
+    unsigned int turn_scale     : 1;
 
 #if defined(FANET_NEXT)
-  unsigned int qne_offset     :7;
-  unsigned int qne_scale      :1;
+    unsigned int qne_offset     : 7;
+    unsigned int qne_scale      : 1;
 #endif
 } __attribute__((packed)) fanet_packet_t;
 
@@ -105,6 +106,7 @@ typedef struct {
 extern const rf_proto_desc_t fanet_proto_desc;
 
 bool fanet_decode(void *, ufo_t *, ufo_t *);
+
 size_t fanet_encode(void *, ufo_t *);
 
 #endif /* PROTOCOL_FANET_H */

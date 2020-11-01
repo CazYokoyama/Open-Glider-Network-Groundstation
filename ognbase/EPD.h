@@ -20,6 +20,7 @@
 #define EPDHELPER_H
 
 bool EPD_setup();
+
 void EPD_loop();
 
 #endif /* EPDHELPER_H */

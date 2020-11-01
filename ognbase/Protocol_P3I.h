@@ -24,12 +24,12 @@
  *  The module is based on Ti's CC1110 RF+MCU combo.
  *  The Ciseco went out of buisness but some ARF firmare is still available
  *  on GitHub: https://github.com/CisecoPlc/XRF-Firmware-downloads
- *  
+ *
  *  Current PAW RF hardware design is "PilotAware Bridge".
  *  The bridge contains:
  *  --------------------
  *  - NiceRF SV650 module (Si4432/63 RF + R5R0C002SN MCU + Tx amp.)
- *  - MPL3115A2 I2C baro sensor  
+ *  - MPL3115A2 I2C baro sensor
  *
  *  The bridge wiring:
  *  ------------------
@@ -105,7 +105,7 @@
 /* Valid for NiceRF SV610 firmware ver. 4.66 */
 /*
  *  RF frame:
- *  ---------  
+ *  ---------
  * +--------------+-------------------+------------------+
  * | Size (bits)  |   Description     |     Value        |
  * +--------------+-------------------+------------------+
@@ -148,7 +148,7 @@
  * Example:
  * --------
  * icao=374780 type=1f (GS) lat=56.50000 lon=38.90000 alt=138
- * 
+ *
  * Raw:
  * ----
  * 0x24,
@@ -158,24 +158,26 @@
  * 0x1f,
  * 0x3b
  */
-typedef struct {
-    uint8_t  sync;      // $
-    uint32_t  icao:24;   // 24bit identifier 
-    float    longitude; // IEEE-754 
-    float    latitude;  // IEEE-754 
+typedef struct
+{
+    uint8_t sync;       // $
+    uint32_t icao : 24; // 24bit identifier
+    float longitude;    // IEEE-754
+    float latitude;     // IEEE-754
     uint16_t altitude;  // Geo altitude (GNSS) in metres
     uint16_t track;     // degrees Relative to true north
-    uint8_t  msd[4];    // sequencer
+    uint8_t msd[4];     // sequencer
     uint16_t knots;     //  ground speed of the aircraft in knots
-    uint8_t  aircraft;  //  aircraft type
-    uint8_t  crc;
+    uint8_t aircraft;   //  aircraft type
+    uint8_t crc;
     /* No vertical speed available */
 } __attribute__((packed)) p3i_packet_t;
 
 extern const rf_proto_desc_t p3i_proto_desc;
-extern const uint8_t whitening_pattern[] PROGMEM;
+extern const uint8_t         whitening_pattern[] PROGMEM;
 
 bool p3i_decode(void *, ufo_t *, ufo_t *);
+
 size_t p3i_encode(void *, ufo_t *);
 
 #endif /* PROTOCOL_P3I_H */

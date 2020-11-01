@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
@@ -28,7 +29,7 @@
 #define  U_PART U_FLASH
 
 
-File fsUploadFile;   
+File fsUploadFile;
 
 String ogn_ssid     = "ognbase";
 String ogn_wpass    = "123456789";
@@ -156,19 +157,19 @@ void handleUpdate(AsyncWebServerRequest* request)
     request->send(200, "text/html", html);
 }
 
-void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-  Serial.println("uploading file...");
-  if(!index){
-    request->_tempFile = SPIFFS.open("/"+filename, "w");
-  }
-  if(len) {
-    // stream the incoming chunk to the opened file
-    request->_tempFile.write(data,len);
-  }
-  if(final){
-    request->_tempFile.close();
-    request->redirect("/");
-  }
+void handleUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final)
+{
+    Serial.println("uploading file...");
+    if (!index)
+        request->_tempFile = SPIFFS.open("/" + filename, "w");
+    if (len)
+        // stream the incoming chunk to the opened file
+        request->_tempFile.write(data, len);
+    if (final)
+    {
+        request->_tempFile.close();
+        request->redirect("/");
+    }
 }
 
 void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size_t index, uint8_t* data, size_t len, bool final)
@@ -227,24 +228,23 @@ void Web_setup(void)
         return;
     }
 
-    if (!SPIFFS.exists("/index.html")){
-      
-      wserver.on("/", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
-      request->send(200, "text/html", upload_html);
-      });
-      
-      wserver.on("/doUpload", HTTP_POST, [](AsyncWebServerRequest *request) {
-      }, handleUpload);
+    if (!SPIFFS.exists("/index.html"))
+    {
+        wserver.on("/", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
+            request->send(200, "text/html", upload_html);
+        });
 
-      wserver.begin();
-      return;      
-      }
-    
+        wserver.on("/doUpload", HTTP_POST, [](AsyncWebServerRequest* request) {}, handleUpload);
+
+        wserver.begin();
+        return;
+    }
+
     File file = SPIFFS.open("/index.html", "r");
     if (!file)
     {
-      Serial.println("An Error has occurred while opening index.html");
-      return;
+        Serial.println("An Error has occurred while opening index.html");
+        return;
     }
 
     IPAddress own_ip;
@@ -354,7 +354,7 @@ void Web_setup(void)
     wserver.on("/update", HTTP_GET, [](AsyncWebServerRequest* request){
         handleUpdate(request);
     });
-    
+
     wserver.on("/doUpdate", HTTP_POST,
                [](AsyncWebServerRequest* request) {},
                [](AsyncWebServerRequest* request, const String& filename, size_t index, uint8_t* data,
@@ -363,12 +363,10 @@ void Web_setup(void)
     });
 
     wserver.on("/upload", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
-      request->send(200, "text/html", upload_html);
+        request->send(200, "text/html", upload_html);
     });
-      
-    wserver.on("/doUpload", HTTP_POST, [](AsyncWebServerRequest *request) {
-    }, handleUpload);
 
+    wserver.on("/doUpload", HTTP_POST, [](AsyncWebServerRequest* request) {}, handleUpload);
 
 
     // Send a GET request to <ESP_IP>/get?inputString=<inputMessage>
@@ -488,17 +486,14 @@ void Web_setup(void)
             Serial.println(ogn_geoid_separation);
         }
 
-        if (request->hasParam("ogn_ignore_track")){
+        if (request->hasParam("ogn_ignore_track"))
             settings->ignore_no_track = request->getParam("ogn_ignore_track")->value().toInt();
-        }
 
-        if (request->hasParam("ogn_ignore_stealth")){
+        if (request->hasParam("ogn_ignore_stealth"))
             settings->ignore_stealth = request->getParam("ogn_ignore_stealth")->value().toInt();
-        }
 
-        if (request->hasParam("ogn_deep_sleep")){
+        if (request->hasParam("ogn_deep_sleep"))
             settings->sleep_mode = request->getParam("ogn_deep_sleep")->value().toInt();
-        }
 
         if (request->hasParam("ogn_sleep_time"))
         {
@@ -507,9 +502,8 @@ void Web_setup(void)
             else
                 settings->sleep_after_rx_idle = request->getParam("ogn_sleep_time")->value().toInt();
         }
-        if (request->hasParam("ogn_wakeup_time")){
+        if (request->hasParam("ogn_wakeup_time"))
             settings->wake_up_timer = request->getParam("ogn_wakeup_time")->value().toInt();
-        }
 
 
         request->send(200, "text/html", "Updating...reboot");

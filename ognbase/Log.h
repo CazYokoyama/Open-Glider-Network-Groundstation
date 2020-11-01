@@ -27,7 +27,9 @@
 
 extern File LogFile;
 void Logger_setup(void);
+
 void Logger_loop(void);
+
 void Logger_fini(void);
 
 #endif /* LOGGER_IS_ENABLED */

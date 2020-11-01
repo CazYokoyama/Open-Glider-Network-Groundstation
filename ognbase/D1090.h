@@ -21,9 +21,9 @@
 
 enum
 {
-	D1090_OFF,
-	D1090_UART,
-	D1090_BLUETOOTH
+    D1090_OFF,
+    D1090_UART,
+    D1090_BLUETOOTH
 };
 
 void D1090_Export(void);

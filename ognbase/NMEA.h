@@ -23,11 +23,11 @@
 
 enum
 {
-	NMEA_OFF,
-	NMEA_UART,
-	NMEA_UDP,
-	NMEA_TCP,
-	NMEA_BLUETOOTH
+    NMEA_OFF,
+    NMEA_UART,
+    NMEA_UDP,
+    NMEA_TCP,
+    NMEA_BLUETOOTH
 };
 
 #define NMEA_BUFFER_SIZE    128
@@ -37,22 +37,30 @@ enum
 #define MAX_PSRFC_LEN       64
 
 void NMEA_setup(void);
+
 void NMEA_loop(void);
+
 void NMEA_fini();
+
 void NMEA_Export(void);
+
 void NMEA_Position(void);
+
 void NMEA_Out(byte *, size_t, bool);
+
 void NMEA_GGA(void);
+
 void NMEA_add_checksum(char *, size_t);
 
 extern char NMEABuffer[NMEA_BUFFER_SIZE];
 
 #if defined(NMEA_TCP_SERVICE)
 
-typedef struct NmeaTCP_struct {
-  WiFiClient client;
-  time_t connect_ts;  /* connect time stamp */
-  bool ack;           /* acknowledge */
+typedef struct NmeaTCP_struct
+{
+    WiFiClient client;
+    time_t connect_ts; /* connect time stamp */
+    bool ack;          /* acknowledge */
 } NmeaTCP_t;
 
 #define MAX_NMEATCP_CLIENTS    2

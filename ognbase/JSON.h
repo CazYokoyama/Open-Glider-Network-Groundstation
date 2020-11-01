@@ -34,56 +34,64 @@
 
 enum
 {
-	JSON_OFF,
-	JSON_PING
+    JSON_OFF,
+    JSON_PING
 };
 
-struct dump1090_aircraft_struct {
-  const char* hex;
-  const char* squawk;
-  const char* flight;
-  float       lat;
-  float       lon;
-  int         nucp;
-  float       seen_pos;
-  int         altitude;   // in feet
-  int         vert_rate;  // in feet/minute
-  int         track;      // degrees, 0-360
-  int         speed;      // in knots
-  int         messages;
-  float       seen;
-  float       rssi;
+struct dump1090_aircraft_struct
+{
+    const char* hex;
+    const char* squawk;
+    const char* flight;
+    float lat;
+    float lon;
+    int nucp;
+    float seen_pos;
+    int altitude;         // in feet
+    int vert_rate;        // in feet/minute
+    int track;            // degrees, 0-360
+    int speed;            // in knots
+    int messages;
+    float seen;
+    float rssi;
 };
 
-struct ping_aircraft_struct {
-  const char* icaoAddress;
-  int         trafficSource;
-  float       latDD;
-  float       lonDD;
-  long        altitudeMM;
-  int         headingDE2;
-  int         horVelocityCMS;
-  int         verVelocityCMS;
-  int         squawk;
-  int         altitudeType;
-  const char* Callsign;
-  int         emitterType;
-  int         utcSync;
-  const char* timeStamp;
+struct ping_aircraft_struct
+{
+    const char* icaoAddress;
+    int trafficSource;
+    float latDD;
+    float lonDD;
+    long altitudeMM;
+    int headingDE2;
+    int horVelocityCMS;
+    int verVelocityCMS;
+    int squawk;
+    int altitudeType;
+    const char* Callsign;
+    int emitterType;
+    int utcSync;
+    const char* timeStamp;
 };
 
 typedef  struct dump1090_aircraft_struct dump1090_aircraft_t;
 typedef  struct ping_aircraft_struct ping_aircraft_t;
 
 extern StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
-extern bool hasValidGPSDFix;
+extern bool                               hasValidGPSDFix;
 
 extern void JSON_Export();
+
 extern void parseTPV(JsonObject&);
+
 extern void parseSettings(JsonObject&);
+
 extern void parseD1090(JsonObject&);
+
 extern void parsePING(JsonObject&);
+
 extern void parseRAW(JsonObject&);
+
 extern byte getVal(char);
 
 #endif /* JSONHELPER_H */

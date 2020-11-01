@@ -35,15 +35,15 @@
 
 #include "ogn.h"
 
-typedef struct {
-
-  /* Dummy type definition. Actual Tx/Rx packet format is defined in ogn.h */
-
+typedef struct
+{
+    /* Dummy type definition. Actual Tx/Rx packet format is defined in ogn.h */
 } ogntp_packet_t;
 
 extern const rf_proto_desc_t ogntp_proto_desc;
 
 bool ogntp_decode(void *, ufo_t *, ufo_t *);
+
 size_t ogntp_encode(void *, ufo_t *);
 
 #endif /* PROTOCOL_OGNTP_H */

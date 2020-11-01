@@ -28,12 +28,16 @@
 #include <mavlink.h>        // Mavlink interface
 #include <aircraft.h>
 
-#define isValidMAVFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */ )
+#define isValidMAVFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */)
 
 void MAVLink_setup();
+
 void PickMAVLinkFix();
+
 void MAVLinkTimeSync();
+
 void MAVLinkShareTraffic();
+
 void MAVLinkSetWiFiPower();
 
 #endif /* MAVLINKHELPER_H */

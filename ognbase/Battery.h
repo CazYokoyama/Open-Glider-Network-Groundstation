@@ -32,15 +32,19 @@
 
 enum
 {
-	POWER_SAVE_NONE = 0,
-	POWER_SAVE_WIFI = 1,
-	POWER_SAVE_GNSS = 2
+    POWER_SAVE_NONE = 0,
+    POWER_SAVE_WIFI = 1,
+    POWER_SAVE_GNSS = 2
 };
 
-void  Battery_setup(void);
-void  Battery_loop(void);
+void Battery_setup(void);
+
+void Battery_loop(void);
+
 float Battery_voltage(void);
+
 float Battery_threshold(void);
+
 float Battery_cutoff(void);
 
 extern unsigned long Battery_TimeMarker;

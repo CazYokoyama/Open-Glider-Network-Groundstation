@@ -41,9 +41,9 @@
 #include "Protocol_FANET.h"
 #include "Protocol_UAT978.h"
 
-#define maxof2(a,b)       (a > b ? a : b)
-#define maxof3(a,b,c)     maxof2(maxof2(a,b),c)
-#define maxof5(a,b,c,d,e) maxof2(maxof2(a,b),maxof3(c,d,e))
+#define maxof2(a, b)       (a > b ? a : b)
+#define maxof3(a, b, c)     maxof2(maxof2(a, b), c)
+#define maxof5(a, b, c, d, e) maxof2(maxof2(a, b), maxof3(c, d, e))
 
 /* Max. paket's payload size for all supported RF protocols */
 //#define MAX_PKT_SIZE  32 /* 48 = UAT LONG_FRAME_DATA_BYTES */
@@ -51,57 +51,66 @@
                              P3I_PAYLOAD_SIZE, FANET_PAYLOAD_SIZE, \
                              UAT978_PAYLOAD_SIZE)
 
-#define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
-#define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
+#define RXADDR {0x31, 0xfa, 0xb6}  // Address of this device (4 bytes)
+#define TXADDR {0x31, 0xfa, 0xb6}  // Address of device to send to (4 bytes)
 
 enum
 {
-  RF_IC_NONE,
-  RF_IC_NRF905,
-  RF_IC_SX1276,
-  RF_IC_UATM,
-  RF_IC_CC13XX,
-  RF_DRV_OGN,
-  RF_IC_SX1262
+    RF_IC_NONE,
+    RF_IC_NRF905,
+    RF_IC_SX1276,
+    RF_IC_UATM,
+    RF_IC_CC13XX,
+    RF_DRV_OGN,
+    RF_IC_SX1262
 };
 
 enum
 {
-  RF_TX_POWER_FULL,
-  RF_TX_POWER_LOW,
-  RF_TX_POWER_OFF
+    RF_TX_POWER_FULL,
+    RF_TX_POWER_LOW,
+    RF_TX_POWER_OFF
 };
 
-typedef struct rfchip_ops_struct {
-  byte type;
-  const char name[8];
-  bool (*probe)();
-  void (*setup)();
-  void (*channel)(uint8_t);
-  bool (*receive)();
-  void (*transmit)();
-  void (*shutdown)();
+typedef struct rfchip_ops_struct
+{
+    byte type;
+    const char name[8];
+    bool (* probe)();
+    void (* setup)();
+    void (* channel)(uint8_t);
+    bool (* receive)();
+    void (* transmit)();
+    void (* shutdown)();
 } rfchip_ops_t;
 
 String Bin2Hex(byte *, size_t);
+
 uint8_t parity(uint32_t);
 
-byte    RF_setup(void);
-void    RF_SetChannel(void);
-void    RF_loop(void);
-size_t  RF_Encode(ufo_t *);
-bool    RF_Transmit(size_t, bool);
-bool    RF_Receive(void);
-void    RF_Shutdown(void);
+byte RF_setup(void);
+
+void RF_SetChannel(void);
+
+void RF_loop(void);
+
+size_t RF_Encode(ufo_t *);
+
+bool RF_Transmit(size_t, bool);
+
+bool RF_Receive(void);
+
+void RF_Shutdown(void);
+
 uint8_t RF_Payload_Size(uint8_t);
 
-extern byte TxBuffer[MAX_PKT_SIZE], RxBuffer[MAX_PKT_SIZE];
+extern byte          TxBuffer[MAX_PKT_SIZE], RxBuffer[MAX_PKT_SIZE];
 extern unsigned long TxTimeMarker;
 
-extern const rfchip_ops_t *rf_chip;
-extern bool RF_SX12XX_RST_is_connected;
-extern size_t (*protocol_encode)(void *, ufo_t *);
-extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
+extern const rfchip_ops_t* rf_chip;
+extern bool                RF_SX12XX_RST_is_connected;
+extern size_t              (* protocol_encode)(void *, ufo_t *);
+extern bool                (* protocol_decode)(void *, ufo_t *, ufo_t *);
 
 extern int8_t RF_last_rssi;
 

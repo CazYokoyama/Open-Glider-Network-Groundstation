@@ -25,65 +25,66 @@
 #include "Platform_ESP32.h"
 #include "Bluetooth.h"
 
-typedef struct SoC_ops_struct {
-  uint8_t id;
-  const char name[16];
-  void (*setup)();
-  void (*loop)();
-  void (*fini)();
-  void (*reset)();
-  uint32_t (*getChipId)();
-  void* (*getResetInfoPtr)();
-  String (*getResetInfo)();
-  String (*getResetReason)();
-  uint32_t (*getFreeHeap)();
-  long (*random)(long, long);
-  uint32_t (*maxSketchSpace)();
-  void (*WiFi_setOutputPower)(int);
-  void (*WiFi_transmit_UDP)(int, byte *, size_t);
-  void (*WiFi_transmit_UDP_debug)(int, byte *, size_t);
-  int (*WiFi_connect_TCP)(const char *, int);
-  int (*WiFi_disconnect_TCP)();
-  int (*WiFi_transmit_TCP)(String);
-  unsigned char (*WiFi_receive_TCP)();
-  int (*WiFi_isconnected_TCP)();
-  void (*WiFiUDP_stopAll)();
-  bool (*WiFi_hostname)(String);
-  int  (*WiFi_clients_count)();
-  bool (*EEPROM_begin)(size_t);
-  void (*SPI_begin)();
-  void (*swSer_begin)(unsigned long);
-  void (*swSer_enableRx)(boolean);
-  Bluetooth_ops_t *Bluetooth;
-  //byte (*Display_setup)();
-  //void (*Display_loop)();
-  //void (*Display_fini)(const char *);
-  void (*Battery_setup)();
-  float (*Battery_voltage)();
-  void (*GNSS_PPS_handler)();
-  unsigned long (*get_PPS_TimeMarker)();
-  //bool (*Baro_setup)();
-  void (*UATSerial_begin)(unsigned long);
-  void (*UATModule_restart)();
-  void (*WDT_setup)();
-  void (*WDT_fini)();
-  void (*Button_setup)();
-  void (*Button_loop)();
-  void (*Button_fini)();
+typedef struct SoC_ops_struct
+{
+    uint8_t id;
+    const char name[16];
+    void (* setup)();
+    void (* loop)();
+    void (* fini)();
+    void (* reset)();
+    uint32_t (* getChipId)();
+    void * (*getResetInfoPtr)();
+    String (* getResetInfo)();
+    String (* getResetReason)();
+    uint32_t (* getFreeHeap)();
+    long (* random)(long, long);
+    uint32_t (* maxSketchSpace)();
+    void (* WiFi_setOutputPower)(int);
+    void (* WiFi_transmit_UDP)(int, byte *, size_t);
+    void (* WiFi_transmit_UDP_debug)(int, byte *, size_t);
+    int (* WiFi_connect_TCP)(const char *, int);
+    int (* WiFi_disconnect_TCP)();
+    int (* WiFi_transmit_TCP)(String);
+    unsigned char (* WiFi_receive_TCP)();
+    int (* WiFi_isconnected_TCP)();
+    void (* WiFiUDP_stopAll)();
+    bool (* WiFi_hostname)(String);
+    int (* WiFi_clients_count)();
+    bool (* EEPROM_begin)(size_t);
+    void (* SPI_begin)();
+    void (* swSer_begin)(unsigned long);
+    void (* swSer_enableRx)(boolean);
+    Bluetooth_ops_t* Bluetooth;
+    //byte (*Display_setup)();
+    //void (*Display_loop)();
+    //void (*Display_fini)(const char *);
+    void (* Battery_setup)();
+    float (* Battery_voltage)();
+    void (* GNSS_PPS_handler)();
+    unsigned long (* get_PPS_TimeMarker)();
+    //bool (*Baro_setup)();
+    void (* UATSerial_begin)(unsigned long);
+    void (* UATModule_restart)();
+    void (* WDT_setup)();
+    void (* WDT_fini)();
+    void (* Button_setup)();
+    void (* Button_loop)();
+    void (* Button_fini)();
 } SoC_ops_t;
 
 enum
 {
-	SOC_NONE,
-	SOC_ESP8266,
-	SOC_ESP32,
-	SOC_RPi,
-	SOC_CC13XX,
-	SOC_STM32,
-	SOC_PSOC4
+    SOC_NONE,
+    SOC_ESP8266,
+    SOC_ESP32,
+    SOC_RPi,
+    SOC_CC13XX,
+    SOC_STM32,
+    SOC_PSOC4
 };
 
-extern const SoC_ops_t *SoC;
+extern const SoC_ops_t* SoC;
 #if defined(ESP8266)
 extern const SoC_ops_t ESP8266_ops;
 #endif
@@ -104,6 +105,7 @@ extern const SoC_ops_t PSoC4_ops;
 #endif
 
 byte SoC_setup(void);
+
 void SoC_fini(void);
 
 #endif /* SOCHELPER_H */

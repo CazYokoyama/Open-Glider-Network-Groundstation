@@ -40,12 +40,20 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 
 ## Easy Installation
 
-* Download binary image and install ist with web-updater
+* Download binary image and install it with web-updater
 * Connect to Wifi OGN-XXXXXX with password 987654321
 * Type 192.168.1.1 in you browser and you will see a file-upload page
 * Upload index.html, update.html and style.css
 * You can alos upload a file called <ogn_conf.txt> with Wifi and Callsign configuration
 * Reset and connect again
+
+## Update / File Uploader
+
+Firmware updater can be reached at http://<ip>/update  
+File uploader can be reached at http://<ip>/upload
+
+During the first start-up you will be automatically directed to the file upload page.  
+After the html and css files have been uploaded, the T-Beam can be restarted. After that, the surface should be visible like the picture.  
 
 ### ogn_conf.txt example
 
@@ -63,7 +71,7 @@ myPassword
 LSZG  
 46.12345  
 7.876544  
-550  
+550    
 45  
 
 
@@ -78,7 +86,10 @@ LSZG
 * Wake up Timer - ESP will wake up after 3600 sec even if no package was received - to disable enter zero
 
 
-**Feel free to contact me - manuel.roesel@ros-it.ch**
 
 
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/10/OGN_Base-1.png)
+
+I am always open to wishes and suggestions, but would also like to emphasize that I do this project in my spare time. I am not responsible for any damage caused by this software.  
+
+**Feel free to contact me - manuel.roesel@ros-it.ch**

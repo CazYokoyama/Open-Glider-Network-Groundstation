@@ -35,8 +35,8 @@
 #define SOFTRF_IDENT            "OGNB-"
 
 #define ENTRY_EXPIRATION_TIME   10 /* seconds */
-#define LED_EXPIRATION_TIME     5 /* seconds */
-#define EXPORT_EXPIRATION_TIME  5 /* seconds */
+#define LED_EXPIRATION_TIME     5  /* seconds */
+#define EXPORT_EXPIRATION_TIME  5  /* seconds */
 
 /*
  * If you need for SoftRF to operate in wireless
@@ -109,88 +109,90 @@
 #define ENABLE_AHRS
 #endif /* PREMIUM_PACKAGE */
 
-typedef struct UFO {
-    uint8_t   raw[34];
-    time_t    timestamp;
+typedef struct UFO
+{
+    uint8_t raw[34];
+    time_t timestamp;
 
-    uint8_t   protocol;
+    uint8_t protocol;
 
-    uint32_t  addr;
-    uint8_t   addr_type;
-    float     latitude;
-    float     longitude;
-    float     altitude;
-    float     pressure_altitude;
-    float     course;     /* CoG */
-    float     speed;      /* ground speed in knots */
-    uint8_t   aircraft_type;
+    uint32_t addr;
+    uint8_t addr_type;
+    float latitude;
+    float longitude;
+    float altitude;
+    float pressure_altitude;
+    float course;         /* CoG */
+    float speed;          /* ground speed in knots */
+    uint8_t aircraft_type;
 
-    float     vs; /* feet per minute */
+    float vs;     /* feet per minute */
 
-    bool      stealth;
-    bool      no_track;
+    bool stealth;
+    bool no_track;
 
-    int8_t    ns[4];
-    int8_t    ew[4];
+    int8_t ns[4];
+    int8_t ew[4];
 
-    float     geoid_separation; /* metres */
-    uint16_t  hdop; /* cm */
-    int8_t    rssi; /* SX1276 only */
+    float geoid_separation; /* metres */
+    uint16_t hdop;          /* cm */
+    int8_t rssi;            /* SX1276 only */
 
     /* 'legacy' specific data */
-    float     distance;
-    float     bearing;
-    int8_t    alarm_level;
+    float distance;
+    float bearing;
+    int8_t alarm_level;
 
     /* ADS-B (ES, UAT, GDL90) specific data */
-    uint8_t   callsign[8];
+    uint8_t callsign[8];
 } ufo_t;
 
-typedef struct hardware_info {
-    byte  model;
-    byte  revision;
-    byte  soc;
-    byte  rf;
-    byte  gnss;
-    byte  baro;
-    byte  display;
+typedef struct hardware_info
+{
+    byte model;
+    byte revision;
+    byte soc;
+    byte rf;
+    byte gnss;
+    byte baro;
+    byte display;
 #if defined(ENABLE_AHRS)
-    byte  ahrs;
+    byte ahrs;
 #endif /* ENABLE_AHRS */
 } hardware_info_t;
 
 enum
 {
-	SOFTRF_MODE_NORMAL,
-  SOFTRF_MODE_GROUND,
-	SOFTRF_MODE_WATCHOUT,
-	SOFTRF_MODE_BRIDGE,
-	SOFTRF_MODE_RELAY,
-	SOFTRF_MODE_TXRX_TEST,
-	SOFTRF_MODE_LOOPBACK,
-	SOFTRF_MODE_UAV,
-	SOFTRF_MODE_RECEIVER
+    SOFTRF_MODE_NORMAL,
+    SOFTRF_MODE_GROUND,
+    SOFTRF_MODE_WATCHOUT,
+    SOFTRF_MODE_BRIDGE,
+    SOFTRF_MODE_RELAY,
+    SOFTRF_MODE_TXRX_TEST,
+    SOFTRF_MODE_LOOPBACK,
+    SOFTRF_MODE_UAV,
+    SOFTRF_MODE_RECEIVER
 };
 
 enum
 {
-	SOFTRF_MODEL_STANDALONE,
-	SOFTRF_MODEL_PRIME,
-	SOFTRF_MODEL_UAV,
-	SOFTRF_MODEL_PRIME_MK2,
-	SOFTRF_MODEL_RASPBERRY,
-	SOFTRF_MODEL_UAT,
-	SOFTRF_MODEL_SKYVIEW,
-	SOFTRF_MODEL_RETRO,
-	SOFTRF_MODEL_SKYWATCH,
-	SOFTRF_MODEL_DONGLE,
-	SOFTRF_MODEL_MULTI,
-	SOFTRF_MODEL_UNI
+    SOFTRF_MODEL_STANDALONE,
+    SOFTRF_MODEL_PRIME,
+    SOFTRF_MODEL_UAV,
+    SOFTRF_MODEL_PRIME_MK2,
+    SOFTRF_MODEL_RASPBERRY,
+    SOFTRF_MODEL_UAT,
+    SOFTRF_MODEL_SKYVIEW,
+    SOFTRF_MODEL_RETRO,
+    SOFTRF_MODEL_SKYWATCH,
+    SOFTRF_MODEL_DONGLE,
+    SOFTRF_MODEL_MULTI,
+    SOFTRF_MODEL_UNI
 };
 
-extern ufo_t ThisAircraft;
+extern ufo_t           ThisAircraft;
 extern hardware_info_t hw_info;
-extern const float txrx_test_positions[90][2] PROGMEM;
+extern const float     txrx_test_positions[90][2] PROGMEM;
 
 extern void shutdown(const char *);
 

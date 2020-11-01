@@ -23,6 +23,7 @@
 #if defined(ENABLE_TTN)
 
 void TTN_setup(void);
+
 void TTN_loop(void);
 
 #endif /* ENABLE_TTN */

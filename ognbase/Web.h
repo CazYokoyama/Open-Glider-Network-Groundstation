@@ -34,7 +34,9 @@
 #define JS_MAX_CHUNK_SIZE 4096
 
 void Web_setup(void);
+
 void Web_loop(void);
+
 void Web_fini(void);
 
 #if DEBUG

@@ -56,7 +56,7 @@
 #define uni_show()              strip.Show()
 #define uni_setPixelColor(i, c) strip.SetPixelColor(i, c)
 #define uni_numPixels()         strip.PixelCount()
-#define uni_Color(r,g,b)        RgbColor(r,g,b)
+#define uni_Color(r, g, b)        RgbColor(r, g, b)
 #define color_t                 RgbColor
 
 extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip;
@@ -67,7 +67,7 @@ extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip;
 #define uni_show()              strip.show()
 #define uni_setPixelColor(i, c) strip.setPixelColor(i, c)
 #define uni_numPixels()         strip.numPixels()
-#define uni_Color(r,g,b)        strip.Color(r,g,b)
+#define uni_Color(r, g, b)        strip.Color(r, g, b)
 #define color_t                 uint32_t
 
 extern Adafruit_NeoPixel strip;
@@ -86,21 +86,21 @@ extern Adafruit_NeoPixel strip;
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
-#define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
-                                SOC_UNUSED_PIN :                        \
-                                (hw_info.revision == 2 ?                \
-                                  SOC_GPIO_PIN_TBEAM_LED_V02 :          \
-                                  (hw_info.revision == 5 ?              \
-                                    SOC_GPIO_PIN_TBEAM_LED_V05 :        \
-                                    (hw_info.revision == 11 ?           \
-                                      SOC_GPIO_PIN_TBEAM_LED_V11 :      \
-                                      SOC_UNUSED_PIN))))
+#define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ? \
+                               SOC_UNUSED_PIN :                        \
+                               (hw_info.revision == 2 ?                \
+                                SOC_GPIO_PIN_TBEAM_LED_V02 :          \
+                                (hw_info.revision == 5 ?              \
+                                 SOC_GPIO_PIN_TBEAM_LED_V05 :        \
+                                 (hw_info.revision == 11 ?           \
+                                  SOC_GPIO_PIN_TBEAM_LED_V11 :      \
+                                  SOC_UNUSED_PIN))))
 
-#define SOC_GPIO_PIN_GNSS_PPS (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
-                                SOC_UNUSED_PIN :                        \
-                                (hw_info.revision == 8 ?                \
-                                  SOC_GPIO_PIN_TBEAM_V08_PPS :          \
-                                  SOC_UNUSED_PIN))
+#define SOC_GPIO_PIN_GNSS_PPS (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ? \
+                               SOC_UNUSED_PIN :                        \
+                               (hw_info.revision == 8 ?                \
+                                SOC_GPIO_PIN_TBEAM_V08_PPS :          \
+                                SOC_UNUSED_PIN))
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI       27
@@ -189,39 +189,42 @@ extern Adafruit_NeoPixel strip;
 
 extern WebServer server;
 
-enum rst_reason {
-  REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
-  REASON_WDT_RST          = 1,  /* hardware watch dog reset */
-  REASON_EXCEPTION_RST    = 2,  /* exception reset, GPIO status won't change */
-  REASON_SOFT_WDT_RST     = 3,  /* software watch dog reset, GPIO status won't change */
-  REASON_SOFT_RESTART     = 4,  /* software restart ,system_restart , GPIO status won't change */
-  REASON_DEEP_SLEEP_AWAKE = 5,  /* wake up from deep-sleep */
-  REASON_EXT_SYS_RST      = 6   /* external system reset */
+enum rst_reason
+{
+    REASON_DEFAULT_RST = 0,      /* normal startup by power on */
+    REASON_WDT_RST = 1,          /* hardware watch dog reset */
+    REASON_EXCEPTION_RST = 2,    /* exception reset, GPIO status won't change */
+    REASON_SOFT_WDT_RST = 3,     /* software watch dog reset, GPIO status won't change */
+    REASON_SOFT_RESTART = 4,     /* software restart ,system_restart , GPIO status won't change */
+    REASON_DEEP_SLEEP_AWAKE = 5, /* wake up from deep-sleep */
+    REASON_EXT_SYS_RST = 6       /* external system reset */
 };
 
-enum esp32_board_id {
-  ESP32_DEVKIT,
-  ESP32_TTGO_V2_OLED,
-  ESP32_HELTEC_OLED,
-  ESP32_TTGO_T_BEAM,
-  ESP32_TTGO_T_WATCH
+enum esp32_board_id
+{
+    ESP32_DEVKIT,
+    ESP32_TTGO_V2_OLED,
+    ESP32_HELTEC_OLED,
+    ESP32_TTGO_T_BEAM,
+    ESP32_TTGO_T_WATCH
 };
 
-struct rst_info {
-  uint32_t reason;
-  uint32_t exccause;
-  uint32_t epc1;
-  uint32_t epc2;
-  uint32_t epc3;
-  uint32_t excvaddr;
-  uint32_t depc;
+struct rst_info
+{
+    uint32_t reason;
+    uint32_t exccause;
+    uint32_t epc1;
+    uint32_t epc2;
+    uint32_t epc3;
+    uint32_t excvaddr;
+    uint32_t depc;
 };
 
 /* Boya Microelectronics Inc. */
 #define BOYA_ID                 0x68
 #define BOYA_BY25Q32AL          0x4016
 
-#define MakeFlashId(v,d)        ((v << 16) | d)
+#define MakeFlashId(v, d)        ((v << 16) | d)
 
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
