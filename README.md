@@ -56,8 +56,15 @@ callsign / origin
 latitude  
 longitude  
 altitude  
-geoid sep  
+geoid sep 
 
+myNetwork  
+myPassword  
+LSZG  
+46.12345  
+7.876544  
+550  
+45  
 
 
 ## Configuration example
@@ -72,5 +79,6 @@ geoid sep
 
 
 **Feel free to contact me - manuel.roesel@ros-it.ch**
-^^
+
+
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/10/OGN_Base-1.png)
