@@ -37,7 +37,8 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * SNR calculation not correct
 * No RAM and CPU data in APRS status messages
 * no GPS signal quality data in APRS messages
-* no  turn rate in APRS messages (always zero)
+* no turn rate in APRS messages (always zero)
+* disable sleep mode if everyone is connected to webserver
 * and a lot more...
 
 ## Installation
