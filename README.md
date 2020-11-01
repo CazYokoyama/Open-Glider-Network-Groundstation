@@ -52,7 +52,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 
 ## Easy Installation
 
-* Download binary image and install it with web-updater
+* Download [binary image](https://github.com/roema/Open-Glider-Network-Groundstation/releases) and install it with web-updater
 * Connect to Wifi OGN-XXXXXX with password 987654321
 * Type 192.168.1.1 in you browser and you will see a file-upload page (only on first startup)
 * Upload index.html, update.html and style.css
@@ -154,3 +154,40 @@ while True:
 I am always open to wishes and suggestions, but would also like to emphasize that I do this project in my spare time. I am not responsible for any damage caused by this software.  
 
 **Feel free to contact me - manuel.roesel@ros-it.ch**
+
+## Thanks to..
+
+Ivan Grokhotkov - Arduino core for ESP8266  
+Zak Kemble - nRF905 library  
+Stanislaw Pusep - flarm_decode  
+Paul Stoffregen - Arduino Time Library  
+Mikal Hart - TinyGPS++ and PString Libraries  
+Phil Burgess - Adafruit NeoPixel Library  
+Andy Little - Aircraft and MAVLink Libraries  
+Peter Knight - TrueRandom Library  
+Matthijs Kooijman - IBM LMIC and Semtech Basic MAC frameworks for Arduino  
+David Paiva - ESP8266FtpServer  
+Lammert Bies - Lib_crc  
+Pawel Jalocha - OGN library  
+Timur Sinitsyn, Tobias Simon, Ferry Huberts - NMEA library  
+yangbinbin (yangbinbin_ytu@163.com) - ADS-B encoder C++ library  
+Hristo Gochkov - Arduino core for ESP32  
+Evandro Copercini - ESP32 BT SPP library  
+Limor Fried and Ladyada - Adafruit BMP085 library  
+Kevin Townsend - Adafruit BMP280 library  
+Limor Fried and Kevin Townsend - Adafruit MPL3115A2 library  
+Oliver Kraus - U8g2 LCD, OLED and eInk library  
+Michael Miller - NeoPixelBus library  
+Shenzhen Xin Yuan (LilyGO) ET company - TTGO T-Beam and T-Watch  
+JS Foundation - jQuery library  
+XCSoar team - EGM96 data  
+Mike McCauley - BCM2835 C library  
+Dario Longobardi - SimpleNetwork library  
+Benoit Blanchon - ArduinoJson library  
+flashrom.org project - Flashrom library  
+Robert Wessels and Tony Cave - EasyLink library  
+Oliver Jowett - Dump978 library  
+Phil Karn - FEC library  
+Lewis He - AXP20X library  
+Bodmer - TFT library  
+Michael Kuyper - Basic MAC library  
