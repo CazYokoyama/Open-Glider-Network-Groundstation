@@ -31,7 +31,8 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 	- there should be enough time to decode a second protocol
 * ADS-B decoder
 	- we still need some hardware
-* Send APRS messages over LoraWan
+* send APRS messages over LoraWan
+* send Fanet weather data
 
 ## Known bugs / Missing features
 * SNR calculation not correct
@@ -58,6 +59,12 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * Upload index.html, update.html and style.css
 * You can also upload a file called <ogn_conf.txt> with Wifi and Callsign configuration
 * Reset and connect again
+
+### Installation Problems
+* Bootloop - erase flash with
+	- **esptool.py  erase_flash**
+	- **ESP32 Download Tool - ERASE**
+	- use always actual .html .css files
 
 ## Update / File Uploader
 
@@ -149,7 +156,7 @@ while True:
 
 
 
-![alt text](https://ros-it.ch/wp-content/uploads/2020/10/OGN_Base-1.png)
+![alt text](https://ros-it.ch/wp-content/uploads/2020/11/OGN_Base.png.png)
 
 I am always open to wishes and suggestions, but would also like to emphasize that I do this project in my spare time. I am not responsible for any damage caused by this software.  
 
