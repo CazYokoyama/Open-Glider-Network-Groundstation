@@ -1,6 +1,6 @@
 /*
  * SoftRF.h
- * Copyright (C) 2020 Manuel Roesel
+ * Copyright (C) 2019-2020 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 
-#define SOFTRF_FIRMWARE_VERSION "1.0-rc8-OGN"
+#define SOFTRF_FIRMWARE_VERSION "0.0.2"
 #define SOFTRF_IDENT            "OGNB-"
 
 #define ENTRY_EXPIRATION_TIME   10 /* seconds */

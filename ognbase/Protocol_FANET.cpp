@@ -7,7 +7,7 @@
  *    Development -  https://github.com/3s1d/fanet-stm32
  *    Deprecated  -  https://github.com/3s1d/fanet
  *
- * Copyright (C) 2017-2020 Manuel Roesel
+ * Copyright (C) 2017-2020 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,7 +117,7 @@ static uint16_t coord2payload_compressed(float deg)
 /* ------------------------------------------------------------------------- */
 /*
  *  Created on: 06 Dec 2017
- *      Author: Manuel Roesel
+ *      Author: Linar Yusupov
  */
 static float payload_compressed2coord(uint16_t payload, float ref_deg)
 {
@@ -178,7 +178,7 @@ static void coord2payload_absolut(float lat, float lon, uint8_t* buf)
 /* ------------------------------------------------------------------------- */
 /*
  *  Created on: 06 Dec 2017
- *      Author: Manuel Roesel
+ *      Author: Linar Yusupov
  */
 static void payload_absolut2coord(float* lat, float* lon, uint8_t* buf)
 {

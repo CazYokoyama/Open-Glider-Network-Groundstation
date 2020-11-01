@@ -1,10 +1,10 @@
-
+ 
 
 /*
    SoftRF(.ino) firmware
    Copyright (C) 2020 Manuel Roesel
 
-   Author: Manuel Roesel, linar.r.yusupov@gmail.com
+   Author: Manuel Roesel, lmanuel.roesel@ros-it.ch
 
    Web: http://github.com/lyusupov/SoftRF
 
@@ -185,7 +185,7 @@ void setup()
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2015-2020 Manuel Roesel. All rights reserved."));
+  Serial.println(F("Copyright (C) 2020 Manuel Roesel. All rights reserved."));
   Serial.flush();
 
   if (resetInfo) {

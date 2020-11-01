@@ -1,6 +1,6 @@
 /*
- * BluetoothHelper.cpp
- * Copyright (C) 2018-2020 Manuel Roesel
+ * Bluetooth.cpp
+ * Copyright (C) 2018-2020 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
     BLE code is based on Neil Kolban example for IDF:
       https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
     Ported to Arduino ESP32 by Evandro Copercini
-    HM-10 emulation and adaptation for SoftRF is done by Manuel Roesel.
+    HM-10 emulation and adaptation for SoftRF is done by Linar Yusupov.
  */
 #include <BLEDevice.h>
 #include <BLEServer.h>
