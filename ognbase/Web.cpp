@@ -240,6 +240,8 @@ void Web_setup(void)
         return;
     }
 
+    loadConfig();
+
     File file = SPIFFS.open("/index.html", "r");
     if (!file)
     {
