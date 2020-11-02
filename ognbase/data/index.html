@@ -6,7 +6,7 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" type="text/css" href="style.css">
   <script type = "text/javascript">
-  var ws = new WebSocket("ws://%s/ws");
+  var ws = new WebSocket('ws://' + location.hostname + '/ws', ['arduino']);
 
   ws.onopen = function() {
    };
@@ -193,3 +193,4 @@
 </table>
 </body>
 </html>
+

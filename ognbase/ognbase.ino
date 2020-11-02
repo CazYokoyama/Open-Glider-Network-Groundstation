@@ -243,15 +243,15 @@ void setup()
   }
 
   OTA_setup();
-  Web_setup();
   NMEA_setup();
 
 #if defined(ENABLE_TTN)
   TTN_setup();
 #endif
 
-  delay(1000);
+  delay(2000);
 
+  Web_setup();
   Time_setup();
 
   SoC->WDT_setup();

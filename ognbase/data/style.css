@@ -8,6 +8,10 @@ h1{
   color: #0F3376;
   padding: 1vh;
 }
+h2{
+  color: #0F3376;
+  padding: 1vh;
+}
 p{
   font-size: 1.2rem;
 }
@@ -82,7 +86,7 @@ select {
 }
 
 .satfix {
-    border: 5px solid yellow;
+    border: 5px solid #0074D9;
     border-radius: 500%;
     display: table-cell;
     height: 100px;
@@ -91,7 +95,7 @@ select {
 }
 
 .largest_range {
-    border: 5px solid yellow;
+    border: 5px solid #0074D9;
     border-radius: 500%;
     display: table-cell;
     height: 100px;
@@ -100,7 +104,7 @@ select {
 }
 
 .timestamp {
-    border: 5px solid magenta;
+    border: 5px solid #0074D9;
     border-radius: 500%;
     display: table-cell;
     height: 100px;

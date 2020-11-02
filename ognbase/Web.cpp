@@ -246,19 +246,6 @@ void Web_setup(void)
         return;
     }
 
-    IPAddress own_ip;
-    bool      shouldReboot = false;
-
-    own_ip = WiFi.localIP();
-
-    String IP = String(own_ip[0]);
-    IP += ".";
-    IP += String(own_ip[1]);
-    IP += ".";
-    IP += String(own_ip[2]);
-    IP += ".";
-    IP += String(own_ip[3]);
-
     ws.onEvent(onWsEvent);
     wserver.addHandler(&ws);
 
@@ -279,7 +266,6 @@ void Web_setup(void)
     offset = Settings_temp;
 
     snprintf(offset, size, index_html, 
-             IP,
              SOFTRF_FIRMWARE_VERSION,
              ogn_callsign,
              String(ogn_lat, 6),
