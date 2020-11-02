@@ -304,9 +304,17 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
         RegisterPacket += ":/";
         RegisterPacket += APRS_REG.timestamp;
         RegisterPacket += APRS_REG.lat_deg + APRS_REG.lat_min;
-        RegisterPacket += "NI";
+        if (this_aircraft->latitude < 0)
+          RegisterPacket += "S";
+        else
+          RegisterPacket += "N";
+        RegisterPacket += "I";
         RegisterPacket += APRS_REG.lon_deg + APRS_REG.lon_min;
-        RegisterPacket += "E&/A=";
+        if (this_aircraft->longitude < 0)
+          RegisterPacket += "W";
+        else
+          RegisterPacket += "E";
+        RegisterPacket += "&/A=";
         RegisterPacket += APRS_REG.alt;
         RegisterPacket += "\r\n";
         SoC->WiFi_transmit_TCP(RegisterPacket);
