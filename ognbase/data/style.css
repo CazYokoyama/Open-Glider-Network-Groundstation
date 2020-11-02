@@ -28,6 +28,32 @@ p{
   cursor: pointer;
 }
 
+.update {
+  display: inline-block;
+  background-color:green;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-size: 15px;
+  margin: 2px;
+  cursor: pointer;
+}
+
+.upload {
+  display: inline-block;
+  background-color:green;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-size: 15px;
+  margin: 2px;
+  cursor: pointer;
+}
+
 .button_reset {
   display: inline-block;
   background-color:red;

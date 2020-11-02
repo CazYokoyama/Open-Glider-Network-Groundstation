@@ -1,7 +1,7 @@
  
 
 /*
-   SoftRF(.ino) firmware
+   ognbase(.ino) firmware
    Copyright (C) 2020 Manuel Roesel
 
    Author: Manuel Roesel, lmanuel.roesel@ros-it.ch
@@ -81,7 +81,7 @@
 #include "TTN.h"
 #include "Traffic.h"
 
-#include "OGN.h"
+#include "APRS.h"
 #include "global.h"
 
 #include <TimeLib.h>

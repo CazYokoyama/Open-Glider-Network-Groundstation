@@ -22,7 +22,8 @@
   </script>
 </head>
 <body>
-  <h1>OGN Ground Station %s</h1>
+  <h1>OGN Ground Station</h1>
+  <h3>Version %s</h3>
   <table cellspacing="4" align="center" cellpadding="5">
   <class="circle-container">
     <td>
@@ -99,19 +100,19 @@
     <td><input id=lat type="number" name="ogn_lat" step="0.000001" value="%s" size="8"></td>
   </tr>
   <tr>
-    <td>Lon:</td>
+    <td>Lon</td>
     <td><input id=lon type="number" name="ogn_lon" step="0.000001" value="%s" size="8"></td>
-    <td>Alt:</td>
+    <td>Alt [m]</td>
     <td><input id=alt type="number" name="ogn_alt" value="%s" size="8"></td>
    </tr>
    <tr>
-     <td>GeoID:</td>
+     <td>GeoID</td>
      <td><input id=geoid type="number" name="ogn_geoid" value="%s" size="8"></td>
-     <td>Range:</td>
+     <td>Range [km]</td>
      <td><input id=range type="number" name="ogn_range" value="%s" size="8"></td>
    </tr>
    <tr>
-  <td>Band:</td>
+  <td>Band</td>
   <td><select id="band" name="ogn_freq">
     <option %s value='%d'>AUTO</option>
     <option %s value='%d'>EU (868.2 MHz)</option>
@@ -125,14 +126,14 @@
   </select>
  </td>
  </tr>
- <td>Protocol 1:</td>
+ <td>Protocol 1</td>
  <td><select id="protocol" name="ogn_proto">
    <option %s value='%d'>%s</option>
    <option %s value='%d'>%s</option>
    <option %s value='%d'>%s</option>
    <option %s value='%d'>%s</option>
  </select>
- <td>Protocol 2:</td>
+ <td>Protocol 2</td>
  <td><select id="protocol2" name="ogn_proto2">
    <option %s value='%d'>%s</option>
    <option %s value='%d'>%s</option>
@@ -141,24 +142,24 @@
  </select>
 </td>
 <tr>
-<td>APRS Debug:</td>
+<td>APRS Debug</td>
 <td><select id="apr_debug" name="ogn_aprs_debug">
  <option %s value="1">UDP</option>
  <option %s value="0">off</option>
 </select>
 </td>
-<td>APRS D-Port:</td>
+<td>APRS D-Port</td>
 <td><INPUT type='number' name='aprs_debug_port' value='%s' size="8" ></td>
 </td>
 </tr>
 <tr>
-<td>ignore Track bit:</td>
+<td>ignore Track bit</td>
 <td><select id="ogn_no_track" name="ogn_ignore_track">
  <option %s value="1">%s</option>
  <option %s value="0">%s</option>
 </select>
 </td>
-<td>ignore Stealth bit:</td>
+<td>ignore Stealth bit</td>
 <td><select id="ogn_stealth" name="ogn_ignore_stealth">
   <option %s value="1">%s</option>
   <option %s value="0">%s</option>
@@ -179,18 +180,20 @@
     <option %s value="2">%s</option>
   </select>
   </td>
-  <td>RX idle Seconds:</td>
+  <td>RX idle [sec]</td>
   <td><INPUT type='number' name='ogn_sleep_time' placeholder="3600" value='%s' size="8" ></td>
 </tr>
 <tr>
-  <td>Wake up Timer:</td>
+  <td>Wake up Timer [sec]</td>
   <td><INPUT type='number' name='ogn_wakeup_time' placeholder="3600" value='%s' size="8" ></td>
   <td>RESET:</td>
   <td><INPUT type="checkbox" name="ogn_reset_all"></td>
 </tr>
 <td><p><button class="button_save">SAVE</button></a></p></td>
+<td><a href="upload" class="upload" >Upload Files</a></td>
+<td><a href="update" class="update" >Update Firmware</a></td>
+</td>
 </form>
 </table>
 </body>
 </html>
-

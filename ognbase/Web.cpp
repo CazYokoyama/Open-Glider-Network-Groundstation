@@ -268,8 +268,8 @@ void Web_setup(void)
     snprintf(offset, size, index_html, 
              SOFTRF_FIRMWARE_VERSION,
              ogn_callsign,
-             String(ogn_lat, 6),
-             String(ogn_lon, 6),
+             String(ogn_lat, 5),
+             String(ogn_lon, 5),
              String(ogn_alt),
              String(ogn_geoid_separation),
              String(settings->range),
@@ -322,10 +322,7 @@ void Web_setup(void)
              );
 
     size_t len = strlen(offset);
-    offset[len + 1] = '\0';
-
     String html = String(offset);
-    html.trim();
 
     wserver.on("/", HTTP_GET, [html](AsyncWebServerRequest* request){
         request->send(200, "text/html", html);
@@ -339,6 +336,7 @@ void Web_setup(void)
 
     wserver.on("/update", HTTP_GET, [](AsyncWebServerRequest* request){
         handleUpdate(request);
+        request->redirect("/");
     });
 
     wserver.on("/doUpdate", HTTP_POST,
@@ -492,7 +490,7 @@ void Web_setup(void)
             settings->wake_up_timer = request->getParam("ogn_wakeup_time")->value().toInt();
 
 
-        request->send(200, "text/html", "Updating...reboot");
+        request->redirect("/");
 
         // ogn_reset_all
         if (request->hasParam("ogn_reset_all"))

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "OGN.h"
+#include "APRS.h"
 #include "SoftRF.h"
 #include "Battery.h"
 #include "Traffic.h"
@@ -154,18 +154,26 @@ void OGN_APRS_Export()
             if (Container[i].distance / 1000 > largest_range)
                 largest_range = Container[i].distance / 1000;
 
+            float LAT = fabs(Container[i].latitude);
+            float LON = fabs(Container[i].longitude);
+            
+
             APRS_AIRC.callsign = String(Container[i].addr, HEX);
             APRS_AIRC.callsign.toUpperCase();
             APRS_AIRC.rec_callsign = ogn_callsign;
-            ;
             APRS_AIRC.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
-            APRS_AIRC.lat_deg   = String(int(Container[i].latitude));
-            APRS_AIRC.lat_min   = zeroPadding(String((Container[i].latitude - int(Container[i].latitude)) * 60), 5);
 
-            APRS_AIRC.lon_deg = zeroPadding(String(int(Container[i].longitude)), 3);
-            APRS_AIRC.lon_min = zeroPadding(String((Container[i].longitude - int(Container[i].longitude)) * 60), 5);
+            /*Latitude*/
+            APRS_AIRC.lat_deg   = String(int(LAT));
+            APRS_AIRC.lat_min   = zeroPadding(String((LAT - int(LAT)) * 60), 5);
 
+            /*Longitude*/
+            APRS_AIRC.lon_deg = zeroPadding(String(int(LON)), 3);
+            APRS_AIRC.lon_min = zeroPadding(String((LON - int(LON)) * 60), 5);
+
+            /*Altitude*/
             APRS_AIRC.alt          = zeroPadding(String(int(Container[i].altitude * 3.28084)), 6);
+            
             APRS_AIRC.heading      = zeroPadding(String(int(Container[i].course)), 3);
             APRS_AIRC.ground_speed = zeroPadding(String(int(Container[i].speed)), 3);
 
@@ -178,8 +186,8 @@ void OGN_APRS_Export()
             APRS_AIRC.snr = zeroPadding(String(SnrCalc(RF_last_rssi)), 2);
 
 
-            String W_lat = String((Container[i].latitude - int(Container[i].latitude)) * 60, 3);
-            String W_lon = String((Container[i].longitude - int(Container[i].longitude)) * 60, 3);
+            String W_lat = String((LAT - int(LAT)) * 60, 3);
+            String W_lon = String((LON - int(LON)) * 60, 3);
 
 
             APRS_AIRC.pos_precision = getWW(W_lat) + getWW(W_lon);
@@ -260,7 +268,7 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
         APRS_LOGIN.user    = user;
         APRS_LOGIN.pass    = String(AprsPasscode(user));
         APRS_LOGIN.appname = "ESP32";
-        APRS_LOGIN.version = "0.0.1";
+        APRS_LOGIN.version = SOFTRF_FIRMWARE_VERSION;
 
         String LoginPacket = "user ";
         LoginPacket += APRS_LOGIN.user;
@@ -284,18 +292,21 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
 
     if (aprs_registred)
     {
+        /* RUSSIA>APRS,TCPIP*,qAC,248280:/220757h626.56NI09353.92E&/A=000446 */
+        
         struct  aprs_reg_packet APRS_REG;
+        float LAT = fabs(this_aircraft->latitude);
+        float LON = fabs(this_aircraft->longitude);
 
         APRS_REG.origin = ogn_callsign;
-        ;
         APRS_REG.callsign = String(this_aircraft->addr, HEX);
         APRS_REG.callsign.toUpperCase();
         APRS_REG.alt       = zeroPadding(String(int(this_aircraft->altitude * 3.28084)), 6);
-        APRS_REG.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h"; // KKLtest>APRS,TCPIP*,qAC,24E1C0:/174903h 47 35.33 NI 008 08.86E&/A=001017
-        APRS_REG.lat_deg   = zeroPadding(String(int(this_aircraft->latitude)), 2);                                                       // HLBtest>APRS,TCPIP*,qAC,2486a0:/172706h 46 57.38 NI 007 15.50E&/A=001832
-        APRS_REG.lat_min   = zeroPadding(String((this_aircraft->latitude - int(this_aircraft->latitude)) * 60), 4);
-        APRS_REG.lon_deg   = zeroPadding(String(int(this_aircraft->longitude)), 3);
-        APRS_REG.lon_min   = zeroPadding(String((this_aircraft->longitude - int(this_aircraft->longitude)) * 60), 5);
+        APRS_REG.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h"; 
+        APRS_REG.lat_deg   = zeroPadding(String(int(LAT)), 2); 
+        APRS_REG.lat_min   = zeroPadding(String((LAT - int(LAT)) * 60), 5);
+        APRS_REG.lon_deg   = zeroPadding(String(int(LON)), 3);
+        APRS_REG.lon_min   = zeroPadding(String((LON - int(LON)) * 60), 5);
 
         String RegisterPacket = "";
         RegisterPacket += APRS_REG.origin;
@@ -338,7 +349,8 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     APRS_STAT.callsign = String(this_aircraft->addr, HEX);
     APRS_STAT.callsign.toUpperCase();
     APRS_STAT.timestamp      = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
-    APRS_STAT.platform       = "v0.0.1.ESP32";
+    APRS_STAT.platform = SOFTRF_FIRMWARE_VERSION;
+    APRS_STAT.platform += "_ESP32";
     APRS_STAT.realtime_clock = String(0.0);
     APRS_STAT.board_voltage  = String(Battery_voltage()) + "V";
 

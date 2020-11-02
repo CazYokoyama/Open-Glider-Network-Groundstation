@@ -162,6 +162,10 @@ I am always open to wishes and suggestions, but would also like to emphasize tha
 
 **Feel free to contact me - manuel.roesel@ros-it.ch**
 
+## Thanks to my testers
+* Peter A.
+* Nick B.
+
 ## Thanks to..
 
 Ivan Grokhotkov - Arduino core for ESP8266  
