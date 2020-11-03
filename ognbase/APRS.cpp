@@ -161,7 +161,14 @@ void OGN_APRS_Export()
             APRS_AIRC.callsign = String(Container[i].addr, HEX);
             APRS_AIRC.callsign.toUpperCase();
             APRS_AIRC.rec_callsign = ogn_callsign;
-            APRS_AIRC.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
+
+            //APRS_AIRC.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
+
+			// TBD need to use Container[i].timestamp instead of hour(), minute(), second()
+			// actually, need to make sure Container[i].timestamp is based on SlotTime not current time due slot-2 time extension
+			//converting Container[i].timestamp to hour minutes seconds
+			time_t receive_time = Container[i].timestamp;
+			APRS_AIRC.timestamp = zeroPadding(String(hour(receive_time)), 2) + zeroPadding(String(minute(receive_time)), 2) + zeroPadding(String(second(receive_time)), 2) + "h";
 
             /*Latitude*/
             APRS_AIRC.lat_deg   = String(int(LAT));

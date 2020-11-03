@@ -51,10 +51,15 @@ AsyncWebSocketClient* globalClient = NULL;
 
 size_t content_len;
 
-static const char upload_html[] PROGMEM = "<div class = 'upload'>\
+static const char upload_html[] PROGMEM = "<html>\
+                                            <head>\
+                                            <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>\
+                                            </head>\
+                                            <div class = 'upload'>\
                                             <form method = 'POST' action = '/doUpload' enctype='multipart/form-data'>\
                                             <input type='file' name='data'/><input type='submit' name='upload' value='Upload' title = 'Upload Files'>\
-                                            </form></div>";
+                                            </form></div>\
+                                            </html>";
 
 
 void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)
@@ -533,6 +538,5 @@ void Web_loop(void)
         values += "_";
         values += largest_range;
         globalClient->text(values);
-        delay(1000);
     }
 }

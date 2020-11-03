@@ -98,13 +98,15 @@
 #define DEBUG_TIMING 0
 
 #define APRS_KEEPALIVE_TIME 240
-#define APRS_REGISTER_REC 300
-#define APRS_STATUS_REC 100
+#define APRS_REGISTER_REC 600
+#define APRS_STATUS_REC 300
+
 #define APRS_EXPORT_AIRCRAFT 5
 #define APRS_PROTO_SWITCH 2
 
 #define RESET_TIMER 60
 #define TIME_TO_SLEEP  60
+#define TIME_TO_REFRESH_WEB 10
 
 #define seconds() (millis()/1000)
 
@@ -116,6 +118,7 @@
 #define TimeToStatusOGN() (seconds() - ExportTimeStatusOGN > APRS_KEEPALIVE_TIME)
 #define TimeToCheckWifi() (seconds() - ExportTimeReset > RESET_TIMER)
 #define TimeToswitchProto() (seconds() - ExportTimeSwitch > APRS_PROTO_SWITCH)
+#define TimeToRefreshWeb() (seconds() - ExportTimeWebRefresh > TIME_TO_REFRESH_WEB)
 
 //testing
 #define TimeToSleep() (seconds() - ExportTimeSleep > settings->sleep_after_rx_idle)
@@ -145,6 +148,7 @@ unsigned long ExportTimeStatusOGN = 0;
 unsigned long ExportTimeReset = 0;
 unsigned long ExportTimeSwitch = 0;
 unsigned long ExportTimeSleep = 0;
+unsigned long ExportTimeWebRefresh = 0;
 
 void print_wakeup_reason(){
   esp_sleep_wakeup_cause_t wakeup_reason;
@@ -268,7 +272,11 @@ void loop()
   WiFi_loop();
 
   // Handle Web
-  Web_loop();
+  /*MANU add timer to refresh values*/
+  if(TimeToRefreshWeb()){
+    Web_loop();
+    ExportTimeWebRefresh = seconds();
+  }
 
   // Handle OTA update.
   OTA_loop();
