@@ -29,6 +29,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 ## Planed Features
 * Protocol hopping - aprs messages are sent every 5 seconds
 	- there should be enough time to decode a second protocol
+* ~~Frequency hopping in legacy mode (868.2 / 868.4)~~ works (Thanks Nick)
 * ADS-B decoder
 	- we still need some hardware
 * send APRS messages over LoraWan
@@ -41,6 +42,13 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * no turn rate in APRS messages (always zero)
 * disable sleep mode if everyone is connected to webserver
 * and a lot more...
+
+
+## If you find a bug...
+* create an issue or send me an email.
+* describe your problem in a few sentences
+* I will try to deal with all issues, maybe it will take a little longer sometimes, just be patient
+
 
 ## Installation
 
