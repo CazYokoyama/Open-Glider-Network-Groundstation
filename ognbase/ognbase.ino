@@ -4,7 +4,7 @@
    ognbase(.ino) firmware
    Copyright (C) 2020 Manuel Roesel
 
-   Author: Manuel Roesel, lmanuel.roesel@ros-it.ch
+   Author: Manuel Roesel, manuel.roesel@ros-it.ch
 
    Web: http://github.com/lyusupov/SoftRF
 
@@ -112,7 +112,7 @@
 
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)
 
-#define TimeToExportOGN() (seconds() - ExportTimeOGN > APRS_EXPORT_AIRCRAFT)
+#define TimeToExportOGN() (seconds() - ExportTimeOGN >= APRS_EXPORT_AIRCRAFT)
 #define TimeToRegisterOGN() (seconds() - ExportTimeRegisterOGN > APRS_REGISTER_REC)
 #define TimeToKeepAliveOGN() (seconds() - ExportTimeKeepAliveOGN > APRS_KEEPALIVE_TIME)
 #define TimeToStatusOGN() (seconds() - ExportTimeStatusOGN > APRS_KEEPALIVE_TIME)

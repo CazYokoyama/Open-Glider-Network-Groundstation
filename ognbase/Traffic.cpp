@@ -229,5 +229,5 @@ void ClearExpired()
 {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++)
         if (Container[i].addr && (ThisAircraft.timestamp - Container[i].timestamp) > ENTRY_EXPIRATION_TIME)
-            Container[i] = EmptyFO;
+          Container[i] = EmptyFO;
 }

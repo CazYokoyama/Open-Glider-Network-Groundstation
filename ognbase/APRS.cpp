@@ -262,6 +262,9 @@ void OGN_APRS_Export()
             if (!Container[i].stealth && !Container[i].no_track || settings->ignore_no_track && settings->ignore_stealth)
                 SoC->WiFi_transmit_TCP(AircraftPacket);
         }
+        
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) // cleaning up containers
+      Container[i] = EmptyFO;
 }
 
 bool OGN_APRS_Register(ufo_t* this_aircraft)

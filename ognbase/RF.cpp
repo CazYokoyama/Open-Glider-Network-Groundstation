@@ -35,7 +35,7 @@
 #include "Log.h"
 #endif /* LOGGER_IS_ENABLED */
 
-#define DEBUG 1           // Nick to see messages
+#define DEBUG 0
 
 byte RxBuffer[MAX_PKT_SIZE];
 
@@ -594,8 +594,13 @@ bool RF_Receive(void)
 {
     bool rval = false;
 
-    if (RF_ready && rf_chip)
+    if (RF_ready && rf_chip) {
         rval = rf_chip->receive();
+	}
+	if (rval) {
+		// make sure the correct timestamp is used for decoding
+		ThisAircraft.timestamp = slotTime;
+	}
 
     return rval;
 }
