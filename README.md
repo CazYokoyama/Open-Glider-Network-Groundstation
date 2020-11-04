@@ -154,7 +154,7 @@ while True:
 	- to disable enter zero
 
 
-
+Please note that pictures are not necessarily up to date!
 
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/11/OGN_Base.png.png)
 
@@ -162,9 +162,9 @@ I am always open to wishes and suggestions, but would also like to emphasize tha
 
 **Feel free to contact me - manuel.roesel@ros-it.ch**
 
-## Thanks to my testers
+## Thanks to my testers and fermentum
 * Peter A.
-* Nick B.
+* Nick
 
 ## Thanks to..
 

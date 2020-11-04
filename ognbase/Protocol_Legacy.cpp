@@ -5,6 +5,9 @@
  * Protocol_Legacy, encoder for legacy radio protocol
  * Copyright (C) 2019-2020 Linar Yusupov
  *
+ * Bug fixes and improvements
+ * Copyright (C) 2020 Nick / Manuel Roesel
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -129,6 +132,8 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
     float    geo_separ = this_aircraft->geoid_separation;
     uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
 
+// Serial.printf("decode: %d, %d ", timestamp, (timestamp % 64));
+
     uint32_t key[4];
     int      ndx;
     uint8_t  pkt_parity=0;
@@ -154,6 +159,8 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
         lat -= 0x080000;
     lat = ((lat + round_lat) << 7) /* + 0x40 */;
 
+// Serial.printf("lat: %d ", lat);
+
     int32_t round_lon = (int32_t) (ref_lon * 1e7) >> 7;
     int32_t lon       = (pkt->lon - round_lon) % (uint32_t) 0x100000;
     if (lon >= 0x080000)
@@ -165,12 +172,9 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
     float   speed4 = sqrtf(ew * ew + ns * ns) * (1 << pkt->smult);
 
     float direction = 0;
-    if (speed4 > 0)
-    {
-        direction = atan2f(ns, ew) * 180.0 / PI; /* -180 ... 180 */
-        /* convert from math angle into course relative to north */
-        direction = (direction <= 90.0 ? 90.0 - direction :
-                     450.0 - direction);
+    if (speed4 > 0) {
+      direction = atan2f(ew,ns) * 180.0 / PI;  /* -180 ... 180 */
+      direction = (direction >= 0.0 ? direction : direction + 360);
     }
 
     uint16_t vs_u16 = pkt->vs;
@@ -223,26 +227,40 @@ size_t legacy_encode(void* legacy_pkt, ufo_t* this_aircraft)
     float speedf = this_aircraft->speed * _GPS_MPS_PER_KNOT;         /* m/s */
     float vsf    = this_aircraft->vs / (_GPS_FEET_PER_METER * 60.0); /* m/s */
 
+	// scale by 4, clamp to max
     uint16_t speed4 = (uint16_t) roundf(speedf * 4.0f);
-    if (speed4 > 0x3FF)
-        speed4 = 0x3FF;
+    if (speed4 > 8*128-1) {
+      speed4 = 8*128-1;
+    }
 
-    if (speed4 & 0x200)
-        pkt->smult = 3;
-    else if (speed4 & 0x100)
-        pkt->smult = 2;
-    else if (speed4 & 0x080)
-        pkt->smult = 1;
-    else
-        pkt->smult = 0;
+	// scale by 10, clamp to max
+    int16_t vs10 = (int16_t) roundf(vsf * 10.0f);
+    if (vs10 > 8*512-1) {
+      vs10 = 8*512-1;
+    } else {
+      if (vs10 < -8*512) {
+        vs10 = -8*512;
+      }
+    }
 
-    uint8_t speed = speed4 >> pkt->smult;
+    pkt->smult = 0;
+    // first check horizontal speed
+    while ( (pkt->smult < 3) && (speed4 >  128-1)) {
+	  speed4 >>= 1; pkt->smult++;
+	  vs10 >>= 1;
+	}
+	// now check vertical speed
+    while ( (pkt->smult < 3) && ((vs10 > 512-1) || (vs10 < -512))) {
+	  vs10 >>= 1; pkt->smult++;
+	  speed4 >>= 1;
+	}
+
+    uint8_t speed = speed4;
 
     int8_t ns = (int8_t) (speed * cosf(radians(course)));
     int8_t ew = (int8_t) (speed * sinf(radians(course)));
 
-    int16_t vs10 = (int16_t) roundf(vsf * 10.0f);
-    pkt->vs = vs10 >> pkt->smult;
+    pkt->vs = vs10;
 
     pkt->addr = id & 0x00FFFFFF;
 
@@ -264,7 +282,16 @@ size_t legacy_encode(void* legacy_pkt, ufo_t* this_aircraft)
 
     pkt->lat = (uint32_t(lat * 1e7) >> 7) & 0x7FFFF;
     pkt->lon = (uint32_t(lon * 1e7) >> 7) & 0xFFFFF;
-    pkt->alt = alt;
+	
+	if (alt < 0) {
+	  pkt->alt = 0; // cannot be negative
+    } else {
+      if (alt >= (1<<13)) {
+        pkt->alt = (1<<13)-1; // clamp to Max
+      } else {
+	    pkt->alt = alt;
+      }
+	}
 
     pkt->airborne = speed > 0 ? 1 : 0;
     pkt->ns[0]    = ns;
