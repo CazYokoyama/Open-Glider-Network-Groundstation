@@ -34,6 +34,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 	- we still need some hardware
 * send APRS messages over LoraWan
 * send Fanet weather data
+* Plutonium battery for a life of 100 years
 
 ## Known bugs / Missing features
 * SNR calculation not correct
