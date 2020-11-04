@@ -5,7 +5,9 @@ Groundstation for Open Glider Network with ESP32
 **I want to highlight that I am a non-professional programmer.**
 **This software is at alpha status.**
 
-The aim of this project is to create a simple base station for the OGN network. The SoftRF project was used as the base. Thanks to Linar Yusupov for this great work!
+The aim of this project is to create a simple base station for the OGN network. The SoftRF project was used as the base. Thanks to Linar Yusupov for this work!
+
+**Compared to the [ogn receiver software](http://download.glidernet.org/), this project is 100% open source!!**
 
 A TTGO T-Beam (SoftRF Prime Edition MkII) is used as hardware, which has Wifi, Bluetooth, U-Blox GPS and a LoraWan chip.
 
@@ -48,7 +50,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 ## If you find a bug...
 * create an issue or send me an email.
 * describe your problem in a few sentences
-* I will try to deal with all issues, maybe it will take a little longer sometimes, just be patient
+* I will try to deal with **all issues**, maybe it will take a little longer sometimes, just be patient
 
 
 ## Installation
