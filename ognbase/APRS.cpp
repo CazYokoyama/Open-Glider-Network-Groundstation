@@ -376,9 +376,9 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     StatusPacket += APRS_STAT.platform;
     StatusPacket += " ";
     StatusPacket += APRS_STAT.board_voltage;
-    StatusPacket += " ";
+    //StatusPacket += " ";
     //StatusPacket += ThisAircraft.timestamp;
-    //StatusPacket += "\r\n";
+    StatusPacket += "\r\n";
     SoC->WiFi_transmit_TCP(StatusPacket);
     return;
 }
