@@ -77,15 +77,15 @@ class FreqPlan
      if(Plan>RF_BAND_IN) return 0;
      return Name[Plan]; }
 
-   uint8_t getChannel  (uint32_t Time, uint8_t Slot=0, uint8_t OGN=1) const // OGN-tracker or FLARM, UTC time, slot: 0 or 1
+   uint8_t getChannel  (uint32_t Time, uint8_t Slot=0, uint8_t OGN=1) const // OGN-tracker or legacy, UTC time, slot: 0 or 1
    { if(Channels<=1) return 0;                                         // if single channel (New Zealand) return channel #0
      if(Plan>=2)                                                       // if USA/Canada or Australia/South America
-     { uint8_t Channel = FreqHopHash((Time<<1)+Slot) % Channels;       // Flarm hopping channel
+     { uint8_t Channel = FreqHopHash((Time<<1)+Slot) % Channels;       // legacy hopping channel
        if(OGN)                                                         // for OGN tracker
        { if(Slot) { uint8_t Channel1=FreqHopHash((Time<<1)) % Channels; // for 2nd slot choose a channel close to the 1st slot
                             Channel1++; if(Channel1>=Channels) Channel1-=2; // 
                     uint8_t Channel2=Channel1+1; if(Channel2>=Channels) Channel2-=2;
-                    if(Channel2==Channel) Channel=Channel1;            // avoid being on same chanel as Flarm
+                    if(Channel2==Channel) Channel=Channel1;            // avoid being on same chanel as legacy
                                     else  Channel=Channel2; }
              else { Channel++; if(Channel>=Channels) Channel-=2; }     // for 1st slot choose a higher channel (unless already highest, then choose a lower one)
        }
