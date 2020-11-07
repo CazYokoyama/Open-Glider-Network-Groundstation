@@ -142,6 +142,44 @@ while True:
 	now = datetime.datetime.now()
 	print("%s Received Messages: %s"%(now,data))
 ```
+## OGN Debugging
+
+If you want to debug the aprs messages in the OG network, the python aprs client is ideal.
+
+Under Linux, the callsign can still be filtered with grep
+
+```
+python3 client.py | grep "callsign"
+```
+
+```python
+from ogn.client import AprsClient
+from ogn.parser import parse, ParseError
+import re
+
+
+pattern_table = re.compile(r'[N][ ]{1}')
+
+def process_beacon(raw_message):
+    try:
+        beacon = parse(raw_message)
+        messages = re.findall(pattern_table, beacon['raw_message'])
+        if messages:
+            print(messages)
+        print(beacon['raw_message'])
+
+    except ParseError as e:
+        print('Error, {}'.format(e.message))
+
+client = AprsClient(aprs_user='N0CALL')
+client.connect()
+
+try:
+    client.run(callback=process_beacon, autoreconnect=True)
+except KeyboardInterrupt:
+    print('\nStop ogn gateway')
+    client.disconnect()
+```
 
 ## Configuration example
 

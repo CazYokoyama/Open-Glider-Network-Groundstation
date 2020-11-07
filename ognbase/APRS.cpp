@@ -144,7 +144,7 @@ void OGN_APRS_Export()
     struct aprs_airc_packet APRS_AIRC;
     time_t                  this_moment = now();
 
-    String symbol_table[16] = {"/", "/", "\\", "/", "\\", "", "/", "/", "\\", "J", "/", "/", "M", "/", "\\"};
+    String symbol_table[16] = {"/", "/", "\\", "/", "\\", "\\", "/", "/", "\\", "J", "/", "/", "M", "/", "\\", "\\"};
     String symbol[16]       = {"z", "^", "^", "X", "", "^", "g", "g", "^", "^", "^", "O", "^", "\'", "", "n", };
 
 
@@ -377,8 +377,8 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     StatusPacket += " ";
     StatusPacket += APRS_STAT.board_voltage;
     StatusPacket += " ";
-    StatusPacket += ThisAircraft.timestamp;
-    StatusPacket += "\r\n";
+    //StatusPacket += ThisAircraft.timestamp;
+    //StatusPacket += "\r\n";
     SoC->WiFi_transmit_TCP(StatusPacket);
     return;
 }
