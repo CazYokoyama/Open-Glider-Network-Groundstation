@@ -139,6 +139,36 @@ static void OGN_APRS_DEBUG(String* buf)
     }
 }
 
+static bool OGN_APRS_check_reg(){ // check return message logresp OGN123456 verified, server GLIDERN4
+
+  String msg;
+  int i;
+  char *part;
+  bool registred = false;
+
+  char* RXbuffer = (char *) malloc(128);
+  char* TMPbuffer = (char *) malloc(128);
+
+  delay(1000);
+  int recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
+
+  for(i=0;i<recStatus;i++){
+    msg += RXbuffer[i];
+    }
+  if(recStatus && registred){
+    OGN_APRS_DEBUG(&msg);  
+   }
+
+  char* token = strtok(RXbuffer, " "); 
+  while (token != NULL) { 
+    if(!strcmp("verified,", token)){
+      registred = true;
+    }
+    token = strtok(NULL, " "); 
+  } 
+   return registred;
+}
+
 void OGN_APRS_Export()
 {
     struct aprs_airc_packet APRS_AIRC;
@@ -292,12 +322,12 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
 
         SoC->WiFi_transmit_TCP(LoginPacket);
         OGN_APRS_DEBUG(&LoginPacket);
-        aprs_registred = true; // check return message logresp OGN123456 verified, server GLIDERN4
+        //aprs_registred = OGN_APRS_check_reg(); //not quite finished yet
+        aprs_registred = true;
     }
     else
     {
-        aprs_registred = false;
-        return false;
+        return aprs_registred;
     }
 
     if (aprs_registred)
@@ -380,5 +410,6 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     //StatusPacket += ThisAircraft.timestamp;
     StatusPacket += "\r\n";
     SoC->WiFi_transmit_TCP(StatusPacket);
+    OGN_APRS_DEBUG(&StatusPacket);
     return;
 }

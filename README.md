@@ -70,11 +70,15 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * You can also upload a file called <ogn_conf.txt> with Wifi and Callsign configuration
 * Reset and connect again
 
-### Installation Problems
+### Installation problems
 * Bootloop - erase flash with
 	- **esptool.py  erase_flash**
 	- **ESP32 Download Tool - ERASE**
 	- use always actual .html .css files
+
+### Build erros
+* like - *TinyGPS++ is not found*
+	- Arduino ide ignores the ogn libraries. Rename the original lib folder and move the ogn basesation librarys folder to the same location.
 
 ## Update / File Uploader
 

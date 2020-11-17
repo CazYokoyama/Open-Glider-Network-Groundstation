@@ -46,7 +46,7 @@ typedef struct SoC_ops_struct
     int (* WiFi_connect_TCP)(const char *, int);
     int (* WiFi_disconnect_TCP)();
     int (* WiFi_transmit_TCP)(String);
-    unsigned char (* WiFi_receive_TCP)();
+    int (* WiFi_receive_TCP)(char* , int);
     int (* WiFi_isconnected_TCP)();
     void (* WiFiUDP_stopAll)();
     bool (* WiFi_hostname)(String);
