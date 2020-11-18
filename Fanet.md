@@ -50,11 +50,16 @@ Position	(Little Endian, 2-Complement)
 
 * bit 0-23	Latitude 	(Absolute, see below)
 
-#### [Byte 3-5]	Position	(Little Endian, 2-Complement)
+#### [Byte 3-5]
+
+Position	(Little Endian, 2-Complement)
 
 * bit 0-23	Longitude 	(Absolute, see below)
 
-#### [Byte 6-7]	Type		(Little Endian)
+#### [Byte 6-7]
+
+Type		(Little Endian)
+
 * bit 15 		Online Tracking
 * bit 12-14	Aircraft Type
  - 0: Other
@@ -82,9 +87,7 @@ Climb		(max +/- 31.5m/s, 2-Complement)
 #### [Byte 10]	Heading
 * bit 0-7 Value in 360/256 deg
 
-### [optional]
-
-#### [Byte 11]
+#### [Byte 11] - [optional]
 
 Turn rate 	(max +/- 64deg/s, positive is clock wise, 2-Complement)
 
