@@ -137,7 +137,9 @@ The following is only mandatory if no additional data will be added. Broadcastin
 #### [Byte 4-6 or Byte 5-7]	Position	(Little Endian, 2-Complement)
 
 * bit 0-23	Longitude   (Absolute, see below)
-+ additional data according to the sub header order (bit 6 down to 1)
+
+#### [xxx Bytes]
+additional data according to the sub header order (bit 6 down to 1)
 
 ## Landmarks (Type = 5)
 

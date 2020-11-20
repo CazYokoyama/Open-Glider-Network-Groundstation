@@ -95,6 +95,7 @@ void RF_SetChannel(void);
 void RF_loop(void);
 
 size_t RF_Encode(ufo_t *);
+size_t RF_Encode_Fanet_s(ufo_t *);
 
 bool RF_Transmit(size_t, bool);
 

@@ -27,13 +27,13 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * low cost hardware
 
 ## Planed Features
-* Protocol hopping - aprs messages are sent every 5 seconds
+* Protocol hopping - aprs messages are sent every 5 seconds - **in progress**
 	- there should be enough time to decode a second protocol
 * ~~Frequency hopping in legacy mode (868.2 / 868.4)~~ works (Thanks Nick)
 * ADS-B decoder
 	- we still need some hardware
 * send APRS messages over LoraWan
-* send Fanet weather data
+* send Fanet service data (weather) - **in progress**
 * Plutonium battery for a life of 100 years
 
 ## Known bugs / Missing features

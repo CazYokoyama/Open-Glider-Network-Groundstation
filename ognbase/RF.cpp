@@ -534,6 +534,19 @@ size_t RF_Encode(ufo_t* fop)
     return size;
 }
 
+size_t RF_Encode_Fanet_s(ufo_t* fop)
+{
+    size_t size = 0;
+    if (RF_ready && fanet_encode_sp) {
+    
+        if (settings->txpower == RF_TX_POWER_OFF) {
+            return size;
+        } 
+        size = (*fanet_encode_sp)((void *) &TxBuffer[0], fop);
+    }
+    return size;
+}
+
 bool RF_Transmit(size_t size, bool wait)
 {
     if (RF_ready && rf_chip && (size > 0)){

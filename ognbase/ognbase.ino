@@ -107,6 +107,7 @@
 #define RESET_TIMER 60
 #define TIME_TO_SLEEP  60
 #define TIME_TO_REFRESH_WEB 10
+#define TIME_TO_EXPORT_FANET_SERVICE 10 /*every 40 sec 10 for testing*/
 
 #define seconds() (millis()/1000)
 
@@ -122,6 +123,8 @@
 
 //testing
 #define TimeToSleep() (seconds() - ExportTimeSleep > settings->sleep_after_rx_idle)
+/*Testing FANET service messages*/
+#define TimeToExportFanetService() (seconds() - ExportTimeFanetService > TIME_TO_EXPORT_FANET_SERVICE)
 
 
 ufo_t ThisAircraft;
@@ -149,6 +152,7 @@ unsigned long ExportTimeReset = 0;
 unsigned long ExportTimeSwitch = 0;
 unsigned long ExportTimeSleep = 0;
 unsigned long ExportTimeWebRefresh = 0;
+unsigned long ExportTimeFanetService = 0;
 
 void print_wakeup_reason(){
   esp_sleep_wakeup_cause_t wakeup_reason;
@@ -383,8 +387,6 @@ void ground()
     ExportTimeStatusOGN = seconds();
   }
 
-  //sleep mode #define TimeToSleep() (seconds() - ExportTimeSleep > APRS_SLEPP_AFTER_TIME)
-
   
   if ( TimeToSleep() && settings->sleep_mode )
   {
@@ -397,6 +399,20 @@ void ground()
     }
     esp_deep_sleep_start();
   }
+
+/* 
+  if(TimeToExportFanetService()){
+    Serial.println("switching RF protocol -> FANET");
+    int base_proto = settings->rf_protocol;               // save state
+    settings->rf_protocol = RF_PROTOCOL_FANET;            // set FANET protocol
+    RF_setup();                                           // setup RF chip
+    RF_Transmit(RF_Encode_Fanet_s(&ThisAircraft), false); // trasmit packet
+    settings->rf_protocol = base_proto;                   // restore old state
+    RF_setup();                                          // setup RF chip
+    Serial.println("restoring RF protocol ");
+    ExportTimeFanetService = seconds();
+  }
+  */
 
   /*if(TimeToCheckWifi()){
     if (!Wifi_connected()){

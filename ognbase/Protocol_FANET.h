@@ -96,6 +96,27 @@ typedef struct
 #endif
 } __attribute__((packed)) fanet_packet_t;
 
+typedef struct
+{
+    /*HEADER*/
+    unsigned int type           : 6;
+    unsigned int forward        : 1;
+    unsigned int ext_header     : 1;
+
+    unsigned int vendor         : 8;
+    unsigned int address        : 16;
+
+    /*TYPE 4 Service*/
+    unsigned int header       : 8; /*bit 6 Temperature [+1 byte] bit 5 Wind [+3 byte] */
+    unsigned int latitude     : 24;
+    unsigned int longitude    : 24;
+    /*Data Bytes Depending on byte 1, 1-3 bytes are required for the data*/
+    unsigned int addData1     : 8;
+    unsigned int addData2     : 8;
+    unsigned int addData3     : 8;
+
+} __attribute__((packed)) fanet_packet_s;
+
 #define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)
 #define FANET_HEADER_SIZE     4
 
@@ -108,5 +129,6 @@ extern const rf_proto_desc_t fanet_proto_desc;
 bool fanet_decode(void *, ufo_t *, ufo_t *);
 
 size_t fanet_encode(void *, ufo_t *);
+size_t fanet_encode_sp(void *, ufo_t *);
 
 #endif /* PROTOCOL_FANET_H */
