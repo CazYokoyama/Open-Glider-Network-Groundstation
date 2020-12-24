@@ -125,7 +125,7 @@ As an an example
 
 The destination port can be freely selected in the web interface. 12000 is used as the default port. Change IP and run
 
-		python3 udp_server.py 12000
+	python3 udp_server.py 12000
 
 
 ```python
