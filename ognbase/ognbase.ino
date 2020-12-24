@@ -83,6 +83,7 @@
 
 #include "APRS.h"
 #include "RSM.h"
+#include "MONIT.h"
 #include "global.h"
 
 #include <TimeLib.h>
@@ -427,6 +428,8 @@ void ground()
   if(TimeToCheckKeepAliveOGN()){
     OGN_APRS_check_keepalive();
     ExportTimeCheckKeepAliveOGN = seconds();
+
+    MONIT_send_trap();
   }
 
   /*if(TimeToCheckWifi()){

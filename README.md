@@ -236,7 +236,13 @@ should look something like this..
 
 Please note that pictures are not necessarily up to date!
 
-![alt text](https://ros-it.ch/wp-content/uploads/2020/11/OGN_Base.png.png)
+![alt text](https://ros-it.ch/wp-content/uploads/2020/12/ogn-768x696.png)
+
+## Simple monitoring with zabbix trapper
+
+![alt text](https://ros-it.ch/wp-content/uploads/2020/12/zabbix_1-1024x535.png)
+
+![alt text](https://ros-it.ch/wp-content/uploads/2020/12/zabbix_2-1024x205.png)
 
 I am always open to wishes and suggestions, but would also like to emphasize that I do this project in my spare time. I am not responsible for any damage caused by this software.  
 
