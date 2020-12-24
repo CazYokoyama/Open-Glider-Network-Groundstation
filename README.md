@@ -123,25 +123,35 @@ As an an example
 * 192.168.1.200
 * 172.21.1.200
 
-The destination port can be freely selected in the web interface. 12000 is used as the default port.
+The destination port can be freely selected in the web interface. 12000 is used as the default port. Change IP and run
+
+		python3 udp_server.py 12000
+
 
 ```python
 #!usr/bin/python3
 
 import socket
-import datetime
+import sys
+from datetime import datetime
 
-sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+if len(sys.argv) > 1:
+    UDP_PORT_NO = int(sys.argv[1])
+else:
+    print("usage: python3 udp_server.py <port>")
+    sys.exit(1)
 
-udp_host = "xxx.xxx.xxx.xxx"		# Host IP
-udp_port = 12000		    # specified port to connect
 
-sock.bind((udp_host,udp_port))
+UDP_IP_ADDRESS = "10.0.0.200"
+
+serverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+serverSock.bind((UDP_IP_ADDRESS, UDP_PORT_NO))
 
 while True:
-	data,addr = sock.recvfrom(1024)
-	now = datetime.datetime.now()
-	print("%s Received Messages: %s"%(now,data))
+    data, addr = serverSock.recvfrom(512)
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("%s Message: %s from %s"%(current_time, data.decode("utf-8"), addr))
 ```
 ## OGN Debugging
 
@@ -181,6 +191,24 @@ except KeyboardInterrupt:
     print('\nStop ogn gateway')
     client.disconnect()
 ```
+should look something like this..
+
+	12:08:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:08:45 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:09:15 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:05 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:09:35 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:25 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:09:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:45 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:10:15 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:05 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:10:35 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:25 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:10:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:45 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:11:04 Message: MUHLBtest>APRS,TCPIP*,qAC,248280:/111104h4657.38NI00715.50E&/A=001811
+
 
 ## Configuration example
 

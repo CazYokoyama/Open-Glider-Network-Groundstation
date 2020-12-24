@@ -6,7 +6,7 @@
 
    Author: Manuel Roesel, manuel.roesel@ros-it.ch
 
-   Web: http://github.com/lyusupov/SoftRF
+   Web: https://github.com/roema/Open-Glider-Network-Groundstation
 
    Credits:
      Arduino core for ESP8266 is developed/supported by ESP8266 Community (support-esp8266@esp8266.com)
@@ -82,6 +82,7 @@
 #include "Traffic.h"
 
 #include "APRS.h"
+#include "RSM.h"
 #include "global.h"
 
 #include <TimeLib.h>
@@ -97,39 +98,47 @@
 #define DEBUG 0
 #define DEBUG_TIMING 0
 
-#define APRS_KEEPALIVE_TIME 240
-#define APRS_REGISTER_REC 600
-#define APRS_STATUS_REC 300
-
-#define APRS_EXPORT_AIRCRAFT 5
-#define APRS_PROTO_SWITCH 2
-
-#define RESET_TIMER 60
-#define TIME_TO_SLEEP  60
-#define TIME_TO_REFRESH_WEB 10
-#define TIME_TO_EXPORT_FANET_SERVICE 10 /*every 40 sec 10 for testing*/
-
 #define seconds() (millis()/1000)
 
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)
 
+#define APRS_EXPORT_AIRCRAFT 5
 #define TimeToExportOGN() (seconds() - ExportTimeOGN >= APRS_EXPORT_AIRCRAFT)
-#define TimeToRegisterOGN() (seconds() - ExportTimeRegisterOGN > APRS_REGISTER_REC)
-#define TimeToKeepAliveOGN() (seconds() - ExportTimeKeepAliveOGN > APRS_KEEPALIVE_TIME)
-#define TimeToStatusOGN() (seconds() - ExportTimeStatusOGN > APRS_KEEPALIVE_TIME)
+
+#define APRS_REGISTER_REC 300
+#define TimeToRegisterOGN() (seconds() - ExportTimeRegisterOGN >= APRS_REGISTER_REC)
+
+#define APRS_KEEPALIVE_TIME 240
+#define TimeToKeepAliveOGN() (seconds() - ExportTimeKeepAliveOGN >= APRS_KEEPALIVE_TIME)
+
+#define APRS_CHECK_KEEPALIVE_TIME 20
+#define TimeToCheckKeepAliveOGN() (seconds() - ExportTimeCheckKeepAliveOGN >= APRS_CHECK_KEEPALIVE_TIME)
+
+#define APRS_STATUS_REC 1800
+#define TimeToStatusOGN() (seconds() - ExportTimeStatusOGN >= APRS_STATUS_REC)
+
+#define RESET_TIMER 60
 #define TimeToCheckWifi() (seconds() - ExportTimeReset > RESET_TIMER)
-#define TimeToswitchProto() (seconds() - ExportTimeSwitch > APRS_PROTO_SWITCH)
-#define TimeToRefreshWeb() (seconds() - ExportTimeWebRefresh > TIME_TO_REFRESH_WEB)
+
+#define APRS_PROTO_SWITCH 2
+#define TimeToswitchProto() (seconds() - ExportTimeSwitch >= APRS_PROTO_SWITCH)
+
+#define TIME_TO_REFRESH_WEB 10
+#define TimeToRefreshWeb() (seconds() - ExportTimeWebRefresh >= TIME_TO_REFRESH_WEB)
 
 //testing
-#define TimeToSleep() (seconds() - ExportTimeSleep > settings->sleep_after_rx_idle)
+#define TIME_TO_SLEEP  60
+#define TimeToSleep() (seconds() - ExportTimeSleep >= settings->sleep_after_rx_idle)
+
 /*Testing FANET service messages*/
-#define TimeToExportFanetService() (seconds() - ExportTimeFanetService > TIME_TO_EXPORT_FANET_SERVICE)
+#define TIME_TO_EXPORT_FANET_SERVICE 10 /*every 40 sec 10 for testing*/
+#define TimeToExportFanetService() (seconds() - ExportTimeFanetService >= TIME_TO_EXPORT_FANET_SERVICE)
 
 
 ufo_t ThisAircraft;
 bool groundstation = false;
 bool ground_registred = false;
+bool fanet_transmitter = false;
 bool time_synced = false;
 int proto_in_use = 0;
 
@@ -153,6 +162,7 @@ unsigned long ExportTimeSwitch = 0;
 unsigned long ExportTimeSleep = 0;
 unsigned long ExportTimeWebRefresh = 0;
 unsigned long ExportTimeFanetService = 0;
+unsigned long ExportTimeCheckKeepAliveOGN = 0;
 
 void print_wakeup_reason(){
   esp_sleep_wakeup_cause_t wakeup_reason;
@@ -370,6 +380,7 @@ void ground()
 
   if (TimeToExportOGN() && ground_registred)
   {
+
     OGN_APRS_Export();
     ClearExpired();
     ExportTimeOGN = seconds();
@@ -400,19 +411,23 @@ void ground()
     esp_deep_sleep_start();
   }
 
-/* 
+
   if(TimeToExportFanetService()){
-    Serial.println("switching RF protocol -> FANET");
-    int base_proto = settings->rf_protocol;               // save state
-    settings->rf_protocol = RF_PROTOCOL_FANET;            // set FANET protocol
-    RF_setup();                                           // setup RF chip
-    RF_Transmit(RF_Encode_Fanet_s(&ThisAircraft), false); // trasmit packet
-    settings->rf_protocol = base_proto;                   // restore old state
-    RF_setup();                                          // setup RF chip
-    Serial.println("restoring RF protocol ");
+      
+    if( fanet_transmitter ){
+      RSM_receiver();
+    }
+    else{
+      fanet_transmitter = RSM_Setup(12100);
+    }
     ExportTimeFanetService = seconds();
+    
   }
-  */
+
+  if(TimeToCheckKeepAliveOGN()){
+    OGN_APRS_check_keepalive();
+    ExportTimeCheckKeepAliveOGN = seconds();
+  }
 
   /*if(TimeToCheckWifi()){
     if (!Wifi_connected()){

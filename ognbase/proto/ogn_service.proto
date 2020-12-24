@@ -1,0 +1,38 @@
+// This is an example of how to handle 'union' style messages
+// with nanopb, without allocating memory for all the message types.
+//
+// There is no official type in Protocol Buffers for describing unions,
+// but they are commonly implemented by filling out exactly one of
+// several optional fields.
+
+syntax = "proto2";
+
+message type_4 //service message
+{
+    required bytes header = 1;
+	optional bytes value1 = 2;
+	optional bytes value2 = 3;
+	optional bytes value3 = 4;
+}
+
+message type_5 //landmark mesages
+{
+    required bytes header = 1;
+}
+
+
+message FanetService
+{
+	required float latitude = 1;
+	required float longitude = 2;
+    optional type_4 Type_4 = 3;
+	optional type_5 Type_5 = 4;
+}
+
+message ReceiverConfiguration
+{
+
+}
+
+
+

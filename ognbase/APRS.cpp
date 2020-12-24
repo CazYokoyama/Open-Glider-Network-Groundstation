@@ -32,10 +32,10 @@
 int MIN_SPEED = 0;
 
 const char aprsServer[] = "aprs.glidernet.org";
-const char user[]       = "ROEM";
 
 int  aprsPort       = 14580;
 bool aprs_registred = false;
+bool aprs_connected = false;
 
 static String zeroPadding(String data, int len)
 {
@@ -60,7 +60,7 @@ static float SnrCalc(float rssi)
     return rssi - (noise);
 }
 
-short AprsPasscode(const char* theCall)
+static short AprsPasscode(const char* theCall)
 {
     char  rootCall[10];
     char* p1 = rootCall;
@@ -169,12 +169,27 @@ static bool OGN_APRS_check_reg(){ // check return message logresp OGN123456 veri
    return registred;
 }
 
+bool OGN_APRS_check_keepalive(){
+
+  char* RXbuffer = (char *) malloc(128);
+  int recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
+  String msg;
+
+  for(int i=0;i<recStatus;i++){
+    msg += RXbuffer[i];
+    }
+  if(recStatus){
+    OGN_APRS_DEBUG(&msg);  
+   }
+}
+
+
 void OGN_APRS_Export()
 {
     struct aprs_airc_packet APRS_AIRC;
     time_t                  this_moment = now();
 
-    String symbol_table[16] = {"/", "/", "\\", "/", "\\", "\\", "/", "/", "\\", "J", "/", "/", "M", "/", "\\", "\\"};
+    String symbol_table[16] = {"/", "/", "\\", "/", "\\", "\\", "/", "/", "\\", "J", "/", "/", "M", "/", "\\", "\\"}; // 0x79 -> aircraft type 1110 dec 14 & 0x51 -> aircraft type 4
     String symbol[16]       = {"z", "^", "^", "X", "", "^", "g", "g", "^", "^", "^", "O", "^", "\'", "", "n", };
 
 
@@ -192,7 +207,6 @@ void OGN_APRS_Export()
             APRS_AIRC.callsign.toUpperCase();
             APRS_AIRC.rec_callsign = ogn_callsign;
 
-            //APRS_AIRC.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
 
 			// TBD need to use Container[i].timestamp instead of hour(), minute(), second()
 			// actually, need to make sure Container[i].timestamp is based on SlotTime not current time due slot-2 time extension
@@ -299,14 +313,13 @@ void OGN_APRS_Export()
 
 bool OGN_APRS_Register(ufo_t* this_aircraft)
 {
-    bool connected = OGN_APRS_Connect();
 
-    if (connected)
+    if (OGN_APRS_Connect() && !aprs_registred)
     {
         struct aprs_login_packet APRS_LOGIN;
 
-        APRS_LOGIN.user    = user;
-        APRS_LOGIN.pass    = String(AprsPasscode(user));
+        APRS_LOGIN.user    = String(this_aircraft->addr, HEX);
+        APRS_LOGIN.pass    = String(AprsPasscode(APRS_LOGIN.user.c_str()));
         APRS_LOGIN.appname = "ESP32";
         APRS_LOGIN.version = SOFTRF_FIRMWARE_VERSION;
 
@@ -324,10 +337,6 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
         OGN_APRS_DEBUG(&LoginPacket);
         //aprs_registred = OGN_APRS_check_reg(); //not quite finished yet
         aprs_registred = true;
-    }
-    else
-    {
-        return aprs_registred;
     }
 
     if (aprs_registred)
@@ -377,6 +386,7 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
 void OGN_APRS_KeepAlive()
 {
     String KeepAlivePacket = "#keepalive\n\n";
+    OGN_APRS_DEBUG(&KeepAlivePacket);
     SoC->WiFi_transmit_TCP(KeepAlivePacket);
 }
 

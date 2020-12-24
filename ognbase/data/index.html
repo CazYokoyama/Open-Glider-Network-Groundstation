@@ -14,7 +14,7 @@
       var daten = evt.data.split("_")
       document.getElementById("power").innerHTML  = daten[0]  + " V";
       document.getElementById("rssi").innerHTML  = daten[1];
-      document.getElementById("range").innerHTML  = daten[2] + " km";
+      document.getElementById("hours").innerHTML  = daten[2] + " h";
       document.getElementById("satfix").innerHTML  = daten[3];
       document.getElementById("timestamp").innerHTML  = daten[4];
       document.getElementById("largest_range").innerHTML  = daten[5];
@@ -47,12 +47,12 @@
       </div>
     </td>
     <td>
-      <div class="range">
+      <div class="hours">
           <div class="circle__content">
-            <p id = "range">Not connected</p>
+            <p id = "hours">Not connected</p>
           </div>
           <div class="circle__lower-text">
-              Range
+              Uptime
           </div>
       </div>
   </td>

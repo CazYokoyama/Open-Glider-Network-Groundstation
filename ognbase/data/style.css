@@ -102,7 +102,7 @@ select {
     width: 100px;
 }
 
-.range {
+.hours {
     border: 5px solid #0074D9;
     border-radius: 500%;
     display: table-cell;

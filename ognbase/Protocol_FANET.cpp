@@ -395,14 +395,14 @@ size_t fanet_encode(void* fanet_pkt, ufo_t* this_aircraft)
     return sizeof(fanet_packet_t);
 }
 
-size_t fanet_encode_sp(void* fanet_pkt, ufo_t* this_aircraft)
+size_t fanet_encode_sp(void* fanet_pkt_s, ufo_t* this_aircraft)
 {
     uint32_t     id            = this_aircraft->addr;
     float        lat           = this_aircraft->latitude;
     float        lon           = this_aircraft->longitude;
     int16_t      alt           = (int16_t) this_aircraft->altitude;
 
-    fanet_packet_s* pkt = (fanet_packet_s *) fanet_pkt;
+    fanet_packet_s* pkt = (fanet_packet_s *) fanet_pkt_s;
 
     pkt->ext_header = 0;
     pkt->forward    = 1;

@@ -103,5 +103,7 @@ void OGN_APRS_Status(ufo_t* this_aircraft);
 
 static bool OGN_APRS_check_reg();
 
+bool OGN_APRS_check_keepalive();
+
 extern String ogn_callsign;
 #endif /* OGNHELPER_H */

@@ -28,6 +28,8 @@
 
 #define  U_PART U_FLASH
 
+#define hours() (millis()/ 3600000)
+
 
 File fsUploadFile;
 
@@ -530,7 +532,7 @@ void Web_loop(void)
         values += "_";
         values += RF_last_rssi;
         values += "_";
-        values += settings->range;
+        values += int(hours());
         values += "_";
         values += gnss.satellites.value();
         values += "_";
