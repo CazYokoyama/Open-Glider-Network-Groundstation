@@ -33,7 +33,7 @@
 #define  U_PART U_FLASH
 #define INDEX_CRC 1363406144
 
-#define hours() (millis()/ 3600000)
+#define hours() (millis() / 3600000)
 
 
 File fsUploadFile;
@@ -229,12 +229,14 @@ void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size
     }
 }
 
-void Web_start(){
-  wserver.begin();
+void Web_start()
+{
+    wserver.begin();
 }
 
-void Web_stop(){
-  wserver.end();
+void Web_stop()
+{
+    wserver.end();
 }
 
 void Web_setup(ufo_t* this_aircraft)
@@ -278,14 +280,15 @@ void Web_setup(ufo_t* this_aircraft)
 
     //CRC check 1363406144
     uint32_t crc = crc32String(index_html);
-    if(crc != INDEX_CRC){
-      SPIFFS.remove("/index.html");
-      Serial.println("CRC checksum from index.html doesnt match");
-      wserver.on("/", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
-        request->send(200, "text/html", upload_html);
+    if (crc != INDEX_CRC)
+    {
+        SPIFFS.remove("/index.html");
+        Serial.println("CRC checksum from index.html doesnt match");
+        wserver.on("/", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
+            request->send(200, "text/html", upload_html);
         });
-      Web_start();
-      return;
+        Web_start();
+        return;
     }
     //
 
@@ -300,7 +303,7 @@ void Web_setup(ufo_t* this_aircraft)
 
     String station_addr = String(this_aircraft->addr, HEX);
     station_addr.toUpperCase();
-    
+
     snprintf(offset, size, index_html,
              station_addr,
              SOFTRF_FIRMWARE_VERSION,
@@ -361,7 +364,7 @@ void Web_setup(ufo_t* this_aircraft)
              (settings->zabbix_en == 1 ? "selected" : ""), "Enabled"
              );
 
-    size_t len = strlen(offset);
+    size_t len  = strlen(offset);
     String html = String(offset);
 
     wserver.on("/", HTTP_GET, [html](AsyncWebServerRequest* request){
@@ -396,98 +399,60 @@ void Web_setup(ufo_t* this_aircraft)
     // Send a GET request to <ESP_IP>/get?inputString=<inputMessage>
     wserver.on("/get", HTTP_GET, [](AsyncWebServerRequest* request) {
         if (request->hasParam("callsign"))
-        {
             ogn_callsign = request->getParam("callsign")->value();
-        }
         if (request->hasParam("ogn_lat"))
-        {
             ogn_lat = request->getParam("ogn_lat")->value().toFloat();
-        }
 
         if (request->hasParam("ogn_lon"))
-        {
             ogn_lon = request->getParam("ogn_lon")->value().toFloat();
-        }
 
         if (request->hasParam("ogn_alt"))
-        {
             ogn_alt = request->getParam("ogn_alt")->value().toInt();
-        }
 
         if (request->hasParam("ogn_freq"))
-        {
             settings->band = request->getParam("ogn_freq")->value().toInt();
-        }
 
         if (request->hasParam("ogn_proto"))
-        {
             settings->rf_protocol = request->getParam("ogn_proto")->value().toInt();
-        }
 
         if (request->hasParam("ogn_proto2"))
-        {
             settings->rf_protocol2 = request->getParam("ogn_proto2")->value().toInt();
-        }
 
         if (request->hasParam("ogn_d1090"))
-        {
             settings->d1090 = request->getParam("ogn_d1090")->value().toInt();
-        }
 
         if (request->hasParam("ogn_gdl90"))
-        {
             settings->gdl90 = request->getParam("ogn_gdl90")->value().toInt();
-        }
 
         if (request->hasParam("ogn_nmea"))
-        {
             settings->nmea_out = request->getParam("ogn_nmea")->value().toInt();
-        }
 
         if (request->hasParam("ogn_no_track_bit"))
-        {
             settings->no_track = request->getParam("ogn_no_track_bit")->value().toInt();
-        }
 
         if (request->hasParam("ogn_stealth_bit"))
-        {
             settings->stealth = request->getParam("ogn_stealth_bit")->value().toInt();
-        }
 
         if (request->hasParam("ogn_aprs_debug"))
-        {
             settings->ogndebug = request->getParam("ogn_aprs_debug")->value().toInt();
-        }
 
         if (request->hasParam("aprs_debug_port"))
-        {
             settings->ogndebugp = request->getParam("aprs_debug_port")->value().toInt();
-        }
 
         if (request->hasParam("ogn_range"))
-        {
             settings->range = request->getParam("ogn_range")->value().toInt();
-        }
 
         if (request->hasParam("ogn_agc"))
-        {
             settings->sxlna = request->getParam("ogn_agc")->value().toInt();
-        }
 
         if (request->hasParam("ogn_ssid"))
-        {
             ogn_ssid = request->getParam("ogn_ssid")->value();
-        }
 
         if (request->hasParam("ogn_wifi_password"))
-        {
             ogn_wpass = request->getParam("ogn_wifi_password")->value();
-        }
         //geoid_separation
         if (request->hasParam("ogn_geoid"))
-        {
             ogn_geoid_separation = request->getParam("ogn_geoid")->value().toInt();
-        }
 
         if (request->hasParam("ogn_ignore_track"))
             settings->ignore_no_track = request->getParam("ogn_ignore_track")->value().toInt();
@@ -507,7 +472,7 @@ void Web_setup(ufo_t* this_aircraft)
         }
         if (request->hasParam("ogn_wakeup_time"))
             settings->wake_up_timer = request->getParam("ogn_wakeup_time")->value().toInt();
-        
+
         if (request->hasParam("zabbix_trap_en"))
             settings->zabbix_en = request->getParam("zabbix_trap_en")->value().toInt();
 
@@ -516,19 +481,19 @@ void Web_setup(ufo_t* this_aircraft)
 
         // ogn_reset_all
         if (request->hasParam("ogn_reset_all"))
-            if(request->getParam("ogn_reset_all")->value() == "on"){
-              SPIFFS.format();
-              RF_Shutdown();
-              delay(1000);
-              SoC->reset();
+            if (request->getParam("ogn_reset_all")->value() == "on")
+            {
+                SPIFFS.format();
+                RF_Shutdown();
+                delay(1000);
+                SoC->reset();
             }
-            
-       EEPROM_store();
-       OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_callsign, ogn_lat, ogn_lon, ogn_alt);
-       RF_Shutdown();
-       delay(1000);
-       SoC->reset();
 
+        EEPROM_store();
+        OGN_config_store(&ogn_ssid, &ogn_wpass, &ogn_callsign, ogn_lat, ogn_lon, ogn_alt);
+        RF_Shutdown();
+        delay(1000);
+        SoC->reset();
     });
 
     SoC->swSer_enableRx(true);

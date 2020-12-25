@@ -40,6 +40,7 @@ void Web_loop(void);
 void Web_fini(void);
 
 void Web_start(void);
+
 void Web_stop(void);
 
 #if DEBUG

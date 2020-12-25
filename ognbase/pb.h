@@ -6,12 +6,12 @@
 #define PB_H_INCLUDED
 
 /*****************************************************************
- * Nanopb compilation time options. You can change these here by *
- * uncommenting the lines, or on the compiler command line.      *
- *****************************************************************/
+* Nanopb compilation time options. You can change these here by *
+* uncommenting the lines, or on the compiler command line.      *
+*****************************************************************/
 
-/* Enable support for dynamically allocated fields */
-/* #define PB_ENABLE_MALLOC 1 */
+/* Enable support for dynamically allocated fields
+   #define PB_ENABLE_MALLOC 1*/
 
 /* Define this if your CPU / compiler combination does not support
  * unaligned memory access to packed structures. */
@@ -21,14 +21,14 @@
  * A compiler warning will tell if you need this. */
 /* #define PB_MAX_REQUIRED_FIELDS 256 */
 
-/* Add support for tag numbers > 65536 and fields larger than 65536 bytes. */
-/* #define PB_FIELD_32BIT 1 */
+/* Add support for tag numbers > 65536 and fields larger than 65536 bytes.
+   #define PB_FIELD_32BIT 1*/
 
-/* Disable support for error messages in order to save some code space. */
-/* #define PB_NO_ERRMSG 1 */
+/* Disable support for error messages in order to save some code space.
+   #define PB_NO_ERRMSG 1*/
 
-/* Disable support for custom streams (support only memory buffers). */
-/* #define PB_BUFFER_ONLY 1 */
+/* Disable support for custom streams (support only memory buffers).
+   #define PB_BUFFER_ONLY 1*/
 
 /* Disable support for 64-bit datatypes, for compilers without int64_t
    or to save some code space. */
@@ -48,14 +48,14 @@
 /* #define PB_VALIDATE_UTF8 1 */
 
 /******************************************************************
- * You usually don't need to change anything below this line.     *
- * Feel free to look around and use the defined macros, though.   *
- ******************************************************************/
+* You usually don't need to change anything below this line.     *
+* Feel free to look around and use the defined macros, though.   *
+******************************************************************/
 
 
 /* Version of the nanopb library. Just in case you want to check it in
  * your own program. */
-#define NANOPB_VERSION nanopb-0.4.4-dev
+#define NANOPB_VERSION nanopb - 0.4 .4 - dev
 
 /* Include all the system headers needed by nanopb. You will need the
  * definitions of the following:
@@ -90,27 +90,27 @@ extern "C" {
  * This just reduces memory requirements, but is not required.
  */
 #if defined(PB_NO_PACKED_STRUCTS)
-    /* Disable struct packing */
+/* Disable struct packing */
 #   define PB_PACKED_STRUCT_START
 #   define PB_PACKED_STRUCT_END
 #   define pb_packed
 #elif defined(__GNUC__) || defined(__clang__)
-    /* For GCC and clang */
+/* For GCC and clang */
 #   define PB_PACKED_STRUCT_START
 #   define PB_PACKED_STRUCT_END
 #   define pb_packed __attribute__((packed))
 #elif defined(__ICCARM__) || defined(__CC_ARM)
-    /* For IAR ARM and Keil MDK-ARM compilers */
+/* For IAR ARM and Keil MDK-ARM compilers */
 #   define PB_PACKED_STRUCT_START _Pragma("pack(push, 1)")
 #   define PB_PACKED_STRUCT_END _Pragma("pack(pop)")
 #   define pb_packed
 #elif defined(_MSC_VER) && (_MSC_VER >= 1500)
-    /* For Microsoft Visual C++ */
+/* For Microsoft Visual C++ */
 #   define PB_PACKED_STRUCT_START __pragma(pack(push, 1))
 #   define PB_PACKED_STRUCT_END __pragma(pack(pop))
 #   define pb_packed
 #else
-    /* Unknown compiler */
+/* Unknown compiler */
 #   define PB_PACKED_STRUCT_START
 #   define PB_PACKED_STRUCT_END
 #   define pb_packed
@@ -146,18 +146,18 @@ extern "C" {
 #ifndef PB_NO_STATIC_ASSERT
 #  ifndef PB_STATIC_ASSERT
 #    if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-       /* C11 standard _Static_assert mechanism */
-#      define PB_STATIC_ASSERT(COND,MSG) _Static_assert(COND,#MSG);
+/* C11 standard _Static_assert mechanism */
+#      define PB_STATIC_ASSERT(COND, MSG) _Static_assert(COND,#MSG);
 #    else
-       /* Classic negative-size-array static assert mechanism */
-#      define PB_STATIC_ASSERT(COND,MSG) typedef char PB_STATIC_ASSERT_MSG(MSG, __LINE__, __COUNTER__)[(COND)?1:-1];
+/* Classic negative-size-array static assert mechanism */
+#      define PB_STATIC_ASSERT(COND, MSG) typedef char PB_STATIC_ASSERT_MSG(MSG, __LINE__, __COUNTER__)[(COND) ? 1:-1];
 #      define PB_STATIC_ASSERT_MSG(MSG, LINE, COUNTER) PB_STATIC_ASSERT_MSG_(MSG, LINE, COUNTER)
-#      define PB_STATIC_ASSERT_MSG_(MSG, LINE, COUNTER) pb_static_assertion_##MSG##_##LINE##_##COUNTER
+#      define PB_STATIC_ASSERT_MSG_(MSG, LINE, COUNTER) pb_static_assertion_ ## MSG ## _ ## LINE ## _ ## COUNTER
 #    endif
 #  endif
 #else
-   /* Static asserts disabled by PB_NO_STATIC_ASSERT */
-#  define PB_STATIC_ASSERT(COND,MSG)
+/* Static asserts disabled by PB_NO_STATIC_ASSERT */
+#  define PB_STATIC_ASSERT(COND, MSG)
 #endif
 
 /* Number of required fields to keep track of. */
@@ -238,7 +238,7 @@ typedef uint_least8_t pb_type_t;
 #define PB_HTYPE_MASK     0x30U
 
 /**** Field allocation types ****/
- 
+
 #define PB_ATYPE_STATIC   0x00U
 #define PB_ATYPE_POINTER  0x80U
 #define PB_ATYPE_CALLBACK 0x40U
@@ -254,11 +254,11 @@ typedef uint_least8_t pb_type_t;
  * and array counts.
  */
 #if defined(PB_FIELD_32BIT)
-    typedef uint32_t pb_size_t;
-    typedef int32_t pb_ssize_t;
+typedef uint32_t pb_size_t;
+typedef int32_t pb_ssize_t;
 #else
-    typedef uint_least16_t pb_size_t;
-    typedef int_least16_t pb_ssize_t;
+typedef uint_least16_t pb_size_t;
+typedef int_least16_t pb_ssize_t;
 #endif
 #define PB_SIZE_MAX ((pb_size_t)-1)
 
@@ -277,12 +277,13 @@ typedef struct pb_field_iter_s pb_field_iter_t;
  * to specify struct fields.
  */
 typedef struct pb_msgdesc_s pb_msgdesc_t;
-struct pb_msgdesc_s {
-    const uint32_t *field_info;
-    const pb_msgdesc_t * const * submsg_info;
-    const pb_byte_t *default_value;
+struct pb_msgdesc_s
+{
+    const uint32_t* field_info;
+    const pb_msgdesc_t * const* submsg_info;
+    const pb_byte_t* default_value;
 
-    bool (*field_callback)(pb_istream_t *istream, pb_ostream_t *ostream, const pb_field_iter_t *field);
+    bool (* field_callback)(pb_istream_t* istream, pb_ostream_t* ostream, const pb_field_iter_t* field);
 
     pb_size_t field_count;
     pb_size_t required_field_count;
@@ -290,9 +291,10 @@ struct pb_msgdesc_s {
 };
 
 /* Iterator for message descriptor */
-struct pb_field_iter_s {
-    const pb_msgdesc_t *descriptor;  /* Pointer to message descriptor constant */
-    void *message;                   /* Pointer to start of the structure */
+struct pb_field_iter_s
+{
+    const pb_msgdesc_t* descriptor;  /* Pointer to message descriptor constant */
+    void* message;                   /* Pointer to start of the structure */
 
     pb_size_t index;                 /* Index of the field */
     pb_size_t field_info_index;      /* Index to descriptor->field_info array */
@@ -304,11 +306,11 @@ struct pb_field_iter_s {
     pb_size_t array_size;            /* Number of array entries */
     pb_type_t type;                  /* Type of current field */
 
-    void *pField;                    /* Pointer to current field in struct */
-    void *pData;                     /* Pointer to current data contents. Different than pField for arrays and pointers. */
-    void *pSize;                     /* Pointer to count/has field */
+    void* pField;                    /* Pointer to current field in struct */
+    void* pData;                     /* Pointer to current data contents. Different than pField for arrays and pointers. */
+    void* pSize;                     /* Pointer to count/has field */
 
-    const pb_msgdesc_t *submsg_desc; /* For submessage fields, pointer to field descriptor for the submessage. */
+    const pb_msgdesc_t* submsg_desc; /* For submessage fields, pointer to field descriptor for the submessage. */
 };
 
 /* For compatibility with legacy code */
@@ -332,7 +334,8 @@ PB_STATIC_ASSERT(sizeof(uint64_t) == 2 * sizeof(uint32_t), UINT64_T_WRONG_SIZE)
 #define PB_BYTES_ARRAY_T(n) struct { pb_size_t size; pb_byte_t bytes[n]; }
 #define PB_BYTES_ARRAY_T_ALLOCSIZE(n) ((size_t)n + offsetof(pb_bytes_array_t, bytes))
 
-struct pb_bytes_array_s {
+struct pb_bytes_array_s
+{
     pb_size_t size;
     pb_byte_t bytes[1];
 };
@@ -357,27 +360,30 @@ typedef struct pb_bytes_array_s pb_bytes_array_t;
  * The callback can be null if you want to skip a field.
  */
 typedef struct pb_callback_s pb_callback_t;
-struct pb_callback_s {
+struct pb_callback_s
+{
     /* Callback functions receive a pointer to the arg field.
      * You can access the value of the field as *arg, and modify it if needed.
      */
-    union {
-        bool (*decode)(pb_istream_t *stream, const pb_field_t *field, void **arg);
-        bool (*encode)(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
+    union
+    {
+        bool (* decode)(pb_istream_t* stream, const pb_field_t* field, void** arg);
+        bool (* encode)(pb_ostream_t* stream, const pb_field_t* field, void * const* arg);
     } funcs;
-    
+
     /* Free arg for use by callback */
-    void *arg;
+    void* arg;
 };
 
-extern bool pb_default_field_callback(pb_istream_t *istream, pb_ostream_t *ostream, const pb_field_t *field);
+extern bool pb_default_field_callback(pb_istream_t* istream, pb_ostream_t* ostream, const pb_field_t* field);
 
 /* Wire types. Library user needs these only in encoder callbacks. */
-typedef enum {
+typedef enum
+{
     PB_WT_VARINT = 0,
-    PB_WT_64BIT  = 1,
+    PB_WT_64BIT = 1,
     PB_WT_STRING = 2,
-    PB_WT_32BIT  = 5
+    PB_WT_32BIT = 5
 } pb_wire_type_t;
 
 /* Structure for defining the handling of unknown/extension fields.
@@ -388,48 +394,49 @@ typedef enum {
  */
 typedef struct pb_extension_type_s pb_extension_type_t;
 typedef struct pb_extension_s pb_extension_t;
-struct pb_extension_type_s {
+struct pb_extension_type_s
+{
     /* Called for each unknown field in the message.
      * If you handle the field, read off all of its data and return true.
      * If you do not handle the field, do not read anything and return true.
      * If you run into an error, return false.
      * Set to NULL for default handler.
      */
-    bool (*decode)(pb_istream_t *stream, pb_extension_t *extension,
-                   uint32_t tag, pb_wire_type_t wire_type);
-    
+    bool (* decode)(pb_istream_t* stream, pb_extension_t* extension, uint32_t tag, pb_wire_type_t wire_type);
+
     /* Called once after all regular fields have been encoded.
      * If you have something to write, do so and return true.
      * If you do not have anything to write, just return true.
      * If you run into an error, return false.
      * Set to NULL for default handler.
      */
-    bool (*encode)(pb_ostream_t *stream, const pb_extension_t *extension);
-    
+    bool (* encode)(pb_ostream_t* stream, const pb_extension_t* extension);
+
     /* Free field for use by the callback. */
-    const void *arg;
+    const void* arg;
 };
 
-struct pb_extension_s {
+struct pb_extension_s
+{
     /* Type describing the extension field. Usually you'll initialize
      * this to a pointer to the automatically generated structure. */
-    const pb_extension_type_t *type;
-    
+    const pb_extension_type_t* type;
+
     /* Destination for the decoded data. This must match the datatype
      * of the extension field. */
-    void *dest;
-    
+    void* dest;
+
     /* Pointer to the next extension handler, or NULL.
      * If this extension does not match a field, the next handler is
      * automatically called. */
-    pb_extension_t *next;
+    pb_extension_t* next;
 
     /* The decoder sets this to true if the extension was found.
      * Ignored for encoding. */
     bool found;
 };
 
-#define pb_extension_init_zero {NULL,NULL,NULL,false}
+#define pb_extension_init_zero {NULL, NULL, NULL, false}
 
 /* Memory allocation functions to use. You can define pb_realloc and
  * pb_free to custom functions if you want. */
@@ -445,9 +452,9 @@ struct pb_extension_s {
 /* This is used to inform about need to regenerate .pb.h/.pb.c files. */
 #define PB_PROTO_HEADER_VERSION 40
 
-/* These macros are used to declare pb_field_t's in the constant array. */
-/* Size of a structure member, in bytes. */
-#define pb_membersize(st, m) (sizeof ((st*)0)->m)
+/* These macros are used to declare pb_field_t's in the constant array.
+   Size of a structure member, in bytes.*/
+#define pb_membersize(st, m) (sizeof ((st *)0)->m)
 /* Number of entries in an array. */
 #define pb_arraysize(st, m) (pb_membersize(st, m) / pb_membersize(st, m[0]))
 /* Delta from start of one member to the start of another member. */
@@ -463,28 +470,28 @@ struct pb_extension_s {
         msgname ## _FIELDLIST(PB_GEN_FIELD_INFO_ ## width, structname) \
         0 \
     }; \
-    const pb_msgdesc_t* const structname ## _submsg_info[] = \
+    const pb_msgdesc_t * const structname ## _submsg_info[] = \
     { \
         msgname ## _FIELDLIST(PB_GEN_SUBMSG_INFO, structname) \
         NULL \
     }; \
     const pb_msgdesc_t structname ## _msg = \
     { \
-       structname ## _field_info, \
-       structname ## _submsg_info, \
-       msgname ## _DEFAULT, \
-       msgname ## _CALLBACK, \
-       0 msgname ## _FIELDLIST(PB_GEN_FIELD_COUNT, structname), \
-       0 msgname ## _FIELDLIST(PB_GEN_REQ_FIELD_COUNT, structname), \
-       0 msgname ## _FIELDLIST(PB_GEN_LARGEST_TAG, structname), \
+        structname ## _field_info, \
+        structname ## _submsg_info, \
+        msgname ## _DEFAULT, \
+        msgname ## _CALLBACK, \
+        0 msgname ## _FIELDLIST(PB_GEN_FIELD_COUNT, structname), \
+        0 msgname ## _FIELDLIST(PB_GEN_REQ_FIELD_COUNT, structname), \
+        0 msgname ## _FIELDLIST(PB_GEN_LARGEST_TAG, structname), \
     }; \
     msgname ## _FIELDLIST(PB_GEN_FIELD_INFO_ASSERT_ ## width, structname)
 
-#define PB_GEN_FIELD_COUNT(structname, atype, htype, ltype, fieldname, tag) +1
+#define PB_GEN_FIELD_COUNT(structname, atype, htype, ltype, fieldname, tag) + 1
 #define PB_GEN_REQ_FIELD_COUNT(structname, atype, htype, ltype, fieldname, tag) \
     + (PB_HTYPE_ ## htype == PB_HTYPE_REQUIRED)
 #define PB_GEN_LARGEST_TAG(structname, atype, htype, ltype, fieldname, tag) \
-    * 0 + tag
+    *0 + tag
 
 /* X-macro for generating the entries in struct_field_info[] array. */
 #define PB_GEN_FIELD_INFO_1(structname, atype, htype, ltype, fieldname, tag) \
@@ -517,11 +524,11 @@ struct pb_extension_s {
 
 #define PB_GEN_FIELD_INFO_AUTO(structname, atype, htype, ltype, fieldname, tag) \
     PB_FIELDINFO_AUTO2(PB_FIELDINFO_WIDTH_AUTO(_PB_ATYPE_ ## atype, _PB_HTYPE_ ## htype, _PB_LTYPE_ ## ltype), \
-                   tag, PB_ATYPE_ ## atype | PB_HTYPE_ ## htype | PB_LTYPE_MAP_ ## ltype, \
-                   PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
+                       tag, PB_ATYPE_ ## atype | PB_HTYPE_ ## htype | PB_LTYPE_MAP_ ## ltype, \
+                       PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                       PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                       PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                       PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
 
 #define PB_FIELDINFO_AUTO2(width, tag, type, data_offset, data_size, size_offset, array_size) \
     PB_FIELDINFO_AUTO3(width, tag, type, data_offset, data_size, size_offset, array_size)
@@ -534,39 +541,39 @@ struct pb_extension_s {
  * but it is not easily reused because of how macro substitutions work. */
 #define PB_GEN_FIELD_INFO_ASSERT_1(structname, atype, htype, ltype, fieldname, tag) \
     PB_FIELDINFO_ASSERT_1(tag, PB_ATYPE_ ## atype | PB_HTYPE_ ## htype | PB_LTYPE_MAP_ ## ltype, \
-                   PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
+                          PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
 
 #define PB_GEN_FIELD_INFO_ASSERT_2(structname, atype, htype, ltype, fieldname, tag) \
     PB_FIELDINFO_ASSERT_2(tag, PB_ATYPE_ ## atype | PB_HTYPE_ ## htype | PB_LTYPE_MAP_ ## ltype, \
-                   PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
+                          PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
 
 #define PB_GEN_FIELD_INFO_ASSERT_4(structname, atype, htype, ltype, fieldname, tag) \
     PB_FIELDINFO_ASSERT_4(tag, PB_ATYPE_ ## atype | PB_HTYPE_ ## htype | PB_LTYPE_MAP_ ## ltype, \
-                   PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
+                          PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
 
 #define PB_GEN_FIELD_INFO_ASSERT_8(structname, atype, htype, ltype, fieldname, tag) \
     PB_FIELDINFO_ASSERT_8(tag, PB_ATYPE_ ## atype | PB_HTYPE_ ## htype | PB_LTYPE_MAP_ ## ltype, \
-                   PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
+                          PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                          PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
 
 #define PB_GEN_FIELD_INFO_ASSERT_AUTO(structname, atype, htype, ltype, fieldname, tag) \
     PB_FIELDINFO_ASSERT_AUTO2(PB_FIELDINFO_WIDTH_AUTO(_PB_ATYPE_ ## atype, _PB_HTYPE_ ## htype, _PB_LTYPE_ ## ltype), \
-                   tag, PB_ATYPE_ ## atype | PB_HTYPE_ ## htype | PB_LTYPE_MAP_ ## ltype, \
-                   PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
-                   PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
+                              tag, PB_ATYPE_ ## atype | PB_HTYPE_ ## htype | PB_LTYPE_MAP_ ## ltype, \
+                              PB_DATA_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                              PB_DATA_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                              PB_SIZE_OFFSET_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname), \
+                              PB_ARRAY_SIZE_ ## atype(_PB_HTYPE_ ## htype, structname, fieldname))
 
 #define PB_FIELDINFO_ASSERT_AUTO2(width, tag, type, data_offset, data_size, size_offset, array_size) \
     PB_FIELDINFO_ASSERT_AUTO3(width, tag, type, data_offset, data_size, size_offset, array_size)
@@ -647,9 +654,9 @@ struct pb_extension_s {
 #define PB_DS_CB_PB_HTYPE_FIXARRAY(structname, fieldname) pb_membersize(structname, fieldname)
 
 #define PB_ONEOF_NAME(type, tuple) PB_EXPAND(PB_ONEOF_NAME_ ## type tuple)
-#define PB_ONEOF_NAME_UNION(unionname,membername,fullname) unionname
-#define PB_ONEOF_NAME_MEMBER(unionname,membername,fullname) membername
-#define PB_ONEOF_NAME_FULL(unionname,membername,fullname) fullname
+#define PB_ONEOF_NAME_UNION(unionname, membername, fullname) unionname
+#define PB_ONEOF_NAME_MEMBER(unionname, membername, fullname) membername
+#define PB_ONEOF_NAME_FULL(unionname, membername, fullname) fullname
 
 #define PB_GEN_SUBMSG_INFO(structname, atype, htype, ltype, fieldname, tag) \
     PB_SUBMSG_INFO_ ## htype(_PB_LTYPE_ ## ltype, structname, fieldname)
@@ -683,7 +690,7 @@ struct pb_extension_s {
 #define PB_SI_PB_LTYPE_UINT64(t)
 #define PB_SI_PB_LTYPE_EXTENSION(t)
 #define PB_SI_PB_LTYPE_FIXED_LENGTH_BYTES(t)
-#define PB_SUBMSG_DESCRIPTOR(t)    &(t ## _msg),
+#define PB_SUBMSG_DESCRIPTOR(t)    & (t ## _msg),
 
 /* The field descriptors use a variable width format, with width of either
  * 1, 2, 4 or 8 of 32-bit words. The two lowest bytes of the first byte always
@@ -738,30 +745,30 @@ struct pb_extension_s {
  * you can increase the descriptor width by defining PB_FIELDINFO_WIDTH or by setting
  * descriptorsize option in .options file.
  */
-#define PB_FITS(value,bits) ((uint32_t)(value) < ((uint32_t)1<<bits))
+#define PB_FITS(value, bits) ((uint32_t)(value) < ((uint32_t)1 << bits))
 #define PB_FIELDINFO_ASSERT_1(tag, type, data_offset, data_size, size_offset, array_size) \
-    PB_STATIC_ASSERT(PB_FITS(tag,6) && PB_FITS(data_offset,8) && PB_FITS(size_offset,4) && PB_FITS(data_size,4) && PB_FITS(array_size,1), FIELDINFO_DOES_NOT_FIT_width1_field ## tag)
+    PB_STATIC_ASSERT(PB_FITS(tag, 6) && PB_FITS(data_offset, 8) && PB_FITS(size_offset, 4) && PB_FITS(data_size, 4) && PB_FITS(array_size, 1), FIELDINFO_DOES_NOT_FIT_width1_field ## tag)
 
 #define PB_FIELDINFO_ASSERT_2(tag, type, data_offset, data_size, size_offset, array_size) \
-    PB_STATIC_ASSERT(PB_FITS(tag,10) && PB_FITS(data_offset,16) && PB_FITS(size_offset,4) && PB_FITS(data_size,12) && PB_FITS(array_size,12), FIELDINFO_DOES_NOT_FIT_width2_field ## tag)
+    PB_STATIC_ASSERT(PB_FITS(tag, 10) && PB_FITS(data_offset, 16) && PB_FITS(size_offset, 4) && PB_FITS(data_size, 12) && PB_FITS(array_size, 12), FIELDINFO_DOES_NOT_FIT_width2_field ## tag)
 
 #ifndef PB_FIELD_32BIT
 /* Maximum field sizes are still 16-bit if pb_size_t is 16-bit */
 #define PB_FIELDINFO_ASSERT_4(tag, type, data_offset, data_size, size_offset, array_size) \
-    PB_STATIC_ASSERT(PB_FITS(tag,16) && PB_FITS(data_offset,16) && PB_FITS((int_least8_t)size_offset,8) && PB_FITS(data_size,16) && PB_FITS(array_size,16), FIELDINFO_DOES_NOT_FIT_width4_field ## tag)
+    PB_STATIC_ASSERT(PB_FITS(tag, 16) && PB_FITS(data_offset, 16) && PB_FITS((int_least8_t)size_offset, 8) && PB_FITS(data_size, 16) && PB_FITS(array_size, 16), FIELDINFO_DOES_NOT_FIT_width4_field ## tag)
 
 #define PB_FIELDINFO_ASSERT_8(tag, type, data_offset, data_size, size_offset, array_size) \
-    PB_STATIC_ASSERT(PB_FITS(tag,16) && PB_FITS(data_offset,16) && PB_FITS((int_least8_t)size_offset,8) && PB_FITS(data_size,16) && PB_FITS(array_size,16), FIELDINFO_DOES_NOT_FIT_width8_field ## tag)
+    PB_STATIC_ASSERT(PB_FITS(tag, 16) && PB_FITS(data_offset, 16) && PB_FITS((int_least8_t)size_offset, 8) && PB_FITS(data_size, 16) && PB_FITS(array_size, 16), FIELDINFO_DOES_NOT_FIT_width8_field ## tag)
 #else
 /* Up to 32-bit fields supported.
  * Note that the checks are against 31 bits to avoid compiler warnings about shift wider than type in the test.
  * I expect that there is no reasonable use for >2GB messages with nanopb anyway.
  */
 #define PB_FIELDINFO_ASSERT_4(tag, type, data_offset, data_size, size_offset, array_size) \
-    PB_STATIC_ASSERT(PB_FITS(tag,30) && PB_FITS(data_offset,31) && PB_FITS(size_offset,8) && PB_FITS(data_size,31) && PB_FITS(array_size,16), FIELDINFO_DOES_NOT_FIT_width4_field ## tag)
+    PB_STATIC_ASSERT(PB_FITS(tag, 30) && PB_FITS(data_offset, 31) && PB_FITS(size_offset, 8) && PB_FITS(data_size, 31) && PB_FITS(array_size, 16), FIELDINFO_DOES_NOT_FIT_width4_field ## tag)
 
 #define PB_FIELDINFO_ASSERT_8(tag, type, data_offset, data_size, size_offset, array_size) \
-    PB_STATIC_ASSERT(PB_FITS(tag,30) && PB_FITS(data_offset,31) && PB_FITS(size_offset,8) && PB_FITS(data_size,31) && PB_FITS(array_size,31), FIELDINFO_DOES_NOT_FIT_width8_field ## tag)
+    PB_STATIC_ASSERT(PB_FITS(tag, 30) && PB_FITS(data_offset, 31) && PB_FITS(size_offset, 8) && PB_FITS(data_size, 31) && PB_FITS(array_size, 31), FIELDINFO_DOES_NOT_FIT_width8_field ## tag)
 #endif
 
 
@@ -865,9 +872,11 @@ struct pb_extension_s {
 #define PB_INLINE_CONSTEXPR PB_CONSTEXPR
 #endif  // __cplusplus >= 201703L
 
-namespace nanopb {
+namespace nanopb
+{
 // Each type will be partially specialized by the generator.
-template <typename GenMessageT> struct MessageDescriptor;
+    template <typename GenMessageT>
+    struct MessageDescriptor;
 }  // namespace nanopb
 #endif  /* __cplusplus */
 

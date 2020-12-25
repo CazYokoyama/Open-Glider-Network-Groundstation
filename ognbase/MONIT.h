@@ -24,6 +24,7 @@
 #define MONITHELPER_H
 
 static bool MONIT_setup();
+
 void MONIT_send_trap();
 
 #endif /* MONITHELPER_H */

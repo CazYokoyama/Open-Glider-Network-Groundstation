@@ -139,50 +139,44 @@ static void OGN_APRS_DEBUG(String* buf)
     }
 }
 
-static bool OGN_APRS_check_reg(){ // check return message logresp OGN123456 verified, server GLIDERN4
+static bool OGN_APRS_check_reg()  // check return message logresp OGN123456 verified, server GLIDERN4
+{
+    String msg;
+    int    i;
+    char*  part;
+    bool   registred = false;
 
-  String msg;
-  int i;
-  char *part;
-  bool registred = false;
+    char* RXbuffer  = (char *) malloc(128);
+    char* TMPbuffer = (char *) malloc(128);
 
-  char* RXbuffer = (char *) malloc(128);
-  char* TMPbuffer = (char *) malloc(128);
+    delay(1000);
+    int recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
 
-  delay(1000);
-  int recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
+    for (i=0; i < recStatus; i++)
+        msg += RXbuffer[i];
+    if (recStatus && registred)
+        OGN_APRS_DEBUG(&msg);
 
-  for(i=0;i<recStatus;i++){
-    msg += RXbuffer[i];
+    char* token = strtok(RXbuffer, " ");
+    while (token != NULL) {
+        if (!strcmp("verified,", token))
+            registred = true;
+        token = strtok(NULL, " ");
     }
-  if(recStatus && registred){
-    OGN_APRS_DEBUG(&msg);  
-   }
-
-  char* token = strtok(RXbuffer, " "); 
-  while (token != NULL) { 
-    if(!strcmp("verified,", token)){
-      registred = true;
-    }
-    token = strtok(NULL, " "); 
-  } 
-   return registred;
+    return registred;
 }
 
-bool OGN_APRS_check_keepalive(){
+bool OGN_APRS_check_keepalive()
+{
+    char*  RXbuffer  = (char *) malloc(128);
+    int    recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
+    String msg;
 
-  char* RXbuffer = (char *) malloc(128);
-  int recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
-  String msg;
-
-  for(int i=0;i<recStatus;i++){
-    msg += RXbuffer[i];
-    }
-  if(recStatus){
-    OGN_APRS_DEBUG(&msg);  
-   }
+    for (int i=0; i < recStatus; i++)
+        msg += RXbuffer[i];
+    if (recStatus)
+        OGN_APRS_DEBUG(&msg);
 }
-
 
 void OGN_APRS_Export()
 {
@@ -201,30 +195,30 @@ void OGN_APRS_Export()
 
             float LAT = fabs(Container[i].latitude);
             float LON = fabs(Container[i].longitude);
-            
+
 
             APRS_AIRC.callsign = String(Container[i].addr, HEX);
             APRS_AIRC.callsign.toUpperCase();
             APRS_AIRC.rec_callsign = ogn_callsign;
 
 
-			// TBD need to use Container[i].timestamp instead of hour(), minute(), second()
-			// actually, need to make sure Container[i].timestamp is based on SlotTime not current time due slot-2 time extension
-			//converting Container[i].timestamp to hour minutes seconds
-			time_t receive_time = Container[i].timestamp;
-			APRS_AIRC.timestamp = zeroPadding(String(hour(receive_time)), 2) + zeroPadding(String(minute(receive_time)), 2) + zeroPadding(String(second(receive_time)), 2) + "h";
+            // TBD need to use Container[i].timestamp instead of hour(), minute(), second()
+            // actually, need to make sure Container[i].timestamp is based on SlotTime not current time due slot-2 time extension
+            //converting Container[i].timestamp to hour minutes seconds
+            time_t receive_time = Container[i].timestamp;
+            APRS_AIRC.timestamp = zeroPadding(String(hour(receive_time)), 2) + zeroPadding(String(minute(receive_time)), 2) + zeroPadding(String(second(receive_time)), 2) + "h";
 
             /*Latitude*/
-            APRS_AIRC.lat_deg   = String(int(LAT));
-            APRS_AIRC.lat_min   = zeroPadding(String((LAT - int(LAT)) * 60), 5);
+            APRS_AIRC.lat_deg = String(int(LAT));
+            APRS_AIRC.lat_min = zeroPadding(String((LAT - int(LAT)) * 60), 5);
 
             /*Longitude*/
             APRS_AIRC.lon_deg = zeroPadding(String(int(LON)), 3);
             APRS_AIRC.lon_min = zeroPadding(String((LON - int(LON)) * 60), 5);
 
             /*Altitude*/
-            APRS_AIRC.alt          = zeroPadding(String(int(Container[i].altitude * 3.28084)), 6);
-            
+            APRS_AIRC.alt = zeroPadding(String(int(Container[i].altitude * 3.28084)), 6);
+
             APRS_AIRC.heading      = zeroPadding(String(int(Container[i].course)), 3);
             APRS_AIRC.ground_speed = zeroPadding(String(int(Container[i].speed)), 3);
 
@@ -306,14 +300,13 @@ void OGN_APRS_Export()
             if (!Container[i].stealth && !Container[i].no_track || settings->ignore_no_track && settings->ignore_stealth)
                 SoC->WiFi_transmit_TCP(AircraftPacket);
         }
-        
+
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) // cleaning up containers
-      Container[i] = EmptyFO;
+        Container[i] = EmptyFO;
 }
 
 bool OGN_APRS_Register(ufo_t* this_aircraft)
 {
-
     if (OGN_APRS_Connect() && !aprs_registred)
     {
         struct aprs_login_packet APRS_LOGIN;
@@ -342,17 +335,17 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
     if (aprs_registred)
     {
         /* RUSSIA>APRS,TCPIP*,qAC,248280:/220757h626.56NI09353.92E&/A=000446 */
-        
-        struct  aprs_reg_packet APRS_REG;
-        float LAT = fabs(this_aircraft->latitude);
-        float LON = fabs(this_aircraft->longitude);
 
-        APRS_REG.origin = ogn_callsign;
+        struct  aprs_reg_packet APRS_REG;
+        float                   LAT = fabs(this_aircraft->latitude);
+        float                   LON = fabs(this_aircraft->longitude);
+
+        APRS_REG.origin   = ogn_callsign;
         APRS_REG.callsign = String(this_aircraft->addr, HEX);
         APRS_REG.callsign.toUpperCase();
         APRS_REG.alt       = zeroPadding(String(int(this_aircraft->altitude * 3.28084)), 6);
-        APRS_REG.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h"; 
-        APRS_REG.lat_deg   = zeroPadding(String(int(LAT)), 2); 
+        APRS_REG.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
+        APRS_REG.lat_deg   = zeroPadding(String(int(LAT)), 2);
         APRS_REG.lat_min   = zeroPadding(String((LAT - int(LAT)) * 60), 5);
         APRS_REG.lon_deg   = zeroPadding(String(int(LON)), 3);
         APRS_REG.lon_min   = zeroPadding(String((LON - int(LON)) * 60), 5);
@@ -365,15 +358,15 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
         RegisterPacket += APRS_REG.timestamp;
         RegisterPacket += APRS_REG.lat_deg + APRS_REG.lat_min;
         if (this_aircraft->latitude < 0)
-          RegisterPacket += "S";
+            RegisterPacket += "S";
         else
-          RegisterPacket += "N";
+            RegisterPacket += "N";
         RegisterPacket += "I";
         RegisterPacket += APRS_REG.lon_deg + APRS_REG.lon_min;
         if (this_aircraft->longitude < 0)
-          RegisterPacket += "W";
+            RegisterPacket += "W";
         else
-          RegisterPacket += "E";
+            RegisterPacket += "E";
         RegisterPacket += "&/A=";
         RegisterPacket += APRS_REG.alt;
         RegisterPacket += "\r\n";
@@ -399,8 +392,8 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     APRS_STAT.callsign = String(this_aircraft->addr, HEX);
     APRS_STAT.callsign.toUpperCase();
     APRS_STAT.timestamp      = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
-    APRS_STAT.platform = SOFTRF_FIRMWARE_VERSION;
-    APRS_STAT.platform += "_ESP32";
+    APRS_STAT.platform       = SOFTRF_FIRMWARE_VERSION;
+    APRS_STAT.platform      += "_ESP32";
     APRS_STAT.realtime_clock = String(0.0);
     APRS_STAT.board_voltage  = String(Battery_voltage()) + "V";
 

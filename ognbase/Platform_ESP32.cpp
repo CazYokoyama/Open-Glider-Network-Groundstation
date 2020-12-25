@@ -715,15 +715,15 @@ static int ESP32_WiFi_transmit_TCP(String message)
     return 0;
 }
 
-static int ESP32_WiFi_receive_TCP(char *RXbuffer, int RXbuffer_size)
-{  
-  int i = 0;
-  while (client.available() && i < RXbuffer_size - 1){
-    RXbuffer[i] = client.read();
-    i++;
-    RXbuffer[i] = '\0';
-  }
-  return(i);
+static int ESP32_WiFi_receive_TCP(char* RXbuffer, int RXbuffer_size)
+{
+    int i = 0;
+    while (client.available() && i < RXbuffer_size - 1) {
+        RXbuffer[i] = client.read();
+        i++;
+        RXbuffer[i] = '\0';
+    }
+    return i;
 }
 
 static int ESP32_WiFi_isconnected_TCP()

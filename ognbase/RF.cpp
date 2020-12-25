@@ -1,7 +1,7 @@
 /*
  * RF.cpp
  * Copyright (C) 2019-2020 Linar Yusupov
- * 
+ *
  * Bug fixes and improvements
  * Copyright (C) 2020 Nick
  *
@@ -320,12 +320,12 @@ byte RF_setup(void)
 
 extern int status_LED;  // LEDHelper
 
-static long TimeReference =   0;  // Hop reference timing
-static long TimeReference_2 = 0; 
-static long Now_millis =      0;
+static long TimeReference   =   0;// Hop reference timing
+static long TimeReference_2 = 0;
+static long Now_millis      =      0;
 static long prev_TimeCommit = 0;
-uint8_t Slot = 0;
-time_t slotTime = 0;
+uint8_t     Slot            = 0;
+time_t      slotTime        = 0;
 
 void RF_SetChannel(void)
 {
@@ -343,7 +343,7 @@ void RF_SetChannel(void)
         case SOFTRF_MODE_GROUND:
         case SOFTRF_MODE_NORMAL:
         default:
-/*		
+/*
             unsigned long pps_btime_ms  = SoC->get_PPS_TimeMarker();
             unsigned long time_corr_pos = 0;
             unsigned long time_corr_neg = 0;
@@ -380,103 +380,111 @@ void RF_SetChannel(void)
     / FANET uses 868.2 MHz. Bandwidth is 250kHz
     if (settings->rf_protocol == RF_PROTOCOL_FANET) {
         Slot = 0;
-	}
+    }
 
     uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
-*/
-    unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();
+ */
+            unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();
 //    unsigned long time_corr_pos = 0;
-    unsigned long time_corr_neg = 0;
-    unsigned long timeAge = 0;
-    unsigned long lastCommitTime = (Now_millis = millis()) - (timeAge = gnss.time.age());
-	
-    // HOP Testing - NMEA sentence time commit
-    //Serial.printf("Commit: %d, %d, %d\r\n", lastCommitTime, prev_TimeCommit, pps_btime_ms);
-	
-	// Time could be in GGA or RMC. For consistency must pick only first one
-	// problem is that the second commit is 450 msec after the first or only 550 before next !
-	// not needed if PPS is available
-	if (lastCommitTime - prev_TimeCommit < 500) {
-	  lastCommitTime = prev_TimeCommit;
-      timeAge = Now_millis - lastCommitTime;
-	} else {
-	  prev_TimeCommit = lastCommitTime;
-	}
-    
-    // if PPS available, reference time is PPS relative for accuracy
-    if (pps_btime_ms) {
-      // calculate delta time from millis() to PPS reference
-      if (pps_btime_ms <= lastCommitTime) {
-        time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
-      } else {
-        time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
-      }
-    } else {  // no PPS, approximate reference delay
-      time_corr_neg = DELAY_PPS_GPSTIME;
+            unsigned long time_corr_neg  = 0;
+            unsigned long timeAge        = 0;
+            unsigned long lastCommitTime = (Now_millis = millis()) - (timeAge = gnss.time.age());
+
+            // HOP Testing - NMEA sentence time commit
+            //Serial.printf("Commit: %d, %d, %d\r\n", lastCommitTime, prev_TimeCommit, pps_btime_ms);
+
+            // Time could be in GGA or RMC. For consistency must pick only first one
+            // problem is that the second commit is 450 msec after the first or only 550 before next !
+            // not needed if PPS is available
+            if (lastCommitTime - prev_TimeCommit < 500)
+            {
+                lastCommitTime = prev_TimeCommit;
+                timeAge        = Now_millis - lastCommitTime;
+            }
+            else
+                prev_TimeCommit = lastCommitTime;
+
+            // if PPS available, reference time is PPS relative for accuracy
+            if (pps_btime_ms)
+            {
+                // calculate delta time from millis() to PPS reference
+                if (pps_btime_ms <= lastCommitTime)
+                    time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
+                else
+                    time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
+            }
+            else // no PPS, approximate reference delay
+                time_corr_neg = DELAY_PPS_GPSTIME;
+
+            // only frequency hop with legacy and OGN protocols
+            switch (settings->rf_protocol)
+            {
+                case RF_PROTOCOL_LEGACY:
+                case RF_PROTOCOL_OGNTP:
+                    if ((Now_millis - TimeReference) >= 1000)
+                    {
+                        if (pps_btime_ms)
+                        {
+                            TimeReference = pps_btime_ms + SLOT1_START - SLOT1_ADVANCE - 0; // allow for latency ?
+                        }
+                        else
+                            TimeReference = lastCommitTime - time_corr_neg + SLOT1_START - SLOT1_ADVANCE;
+                        Slot = 0;
+                        if ((Now_millis - TimeReference) >= 1000) // has PPS stopped ?
+                        {
+                            TxTimeMarker = Now_millis; // if so no Tx
+                            return;
+                        }
+                        else
+                            TxTimeMarker = TimeReference;
+                        TxRandomValue = SoC->random(0, SLOT_DURATION - 10) + SLOT1_ADVANCE; // allow some margin
+                    }
+                    else
+                    {
+                        if ((Now_millis - TimeReference_2) >= 1000)
+                        {
+                            TimeReference_2 = TimeReference + SLOT_DURATION + SLOT1_ADVANCE;
+                            Slot            = 1;
+                            TxTimeMarker    = TimeReference_2;
+                            TxRandomValue   = SoC->random(10, SLOT_DURATION - 0); //  allow some margin
+                        }
+                        else
+                            return;
+                    }
+                    break;
+                default:
+                    /* FANET uses 868.2 MHz. Bandwidth is 250kHz  */
+                    Slot = 0;
+                    break;
+            }
+
+            // HOP Testing - slot timing 400 and 800 msec after PPS
+            //Serial.printf("Timing: %d, %d, %d, %d, %d, %d, %d\r\n", Now_millis, pps_btime_ms, timeAge, time_corr_neg, TimeReference, TxRandomValue, Slot);
+
+            // latest time from GPS
+            int yr = gnss.date.year();
+            if (yr > 99)
+                yr = yr - 1970;
+            else
+                yr += 30;
+            tm.Year   = yr;
+            tm.Month  = gnss.date.month();
+            tm.Day    = gnss.date.day();
+            tm.Hour   = gnss.time.hour();
+            tm.Minute = gnss.time.minute();
+            tm.Second = gnss.time.second();
+
+            // time right now is:
+            slotTime = Time = makeTime(tm) + (timeAge + time_corr_neg) / 1000;
+            break;
     }
 
-    // only frequency hop with legacy and OGN protocols
-    switch (settings->rf_protocol) {
-      case RF_PROTOCOL_LEGACY: 
-      case RF_PROTOCOL_OGNTP: 
-        if ((Now_millis - TimeReference) >= 1000) {   
-	      if (pps_btime_ms) {
-	        TimeReference = pps_btime_ms +SLOT1_START -SLOT1_ADVANCE -0; // allow for latency ?
-		  } else {
-            TimeReference = lastCommitTime -time_corr_neg +SLOT1_START -SLOT1_ADVANCE;
-		  }
-          Slot = 0;
-          if ((Now_millis - TimeReference) >= 1000) { // has PPS stopped ?
-		    TxTimeMarker = Now_millis;                // if so no Tx
-			return;
-		  } else {
-            TxTimeMarker = TimeReference;
-		  }
-          TxRandomValue = SoC->random(0, SLOT_DURATION -10) +SLOT1_ADVANCE;  // allow some margin
-        } else {
-          if ((Now_millis - TimeReference_2) >= 1000) {
-	        TimeReference_2 = TimeReference +SLOT_DURATION +SLOT1_ADVANCE;
-            Slot = 1;
-            TxTimeMarker = TimeReference_2;
-            TxRandomValue = SoC->random(10, SLOT_DURATION -0);  //  allow some margin
-          } else {
- 	        return;	  
-          }
-	    }
-        break;
-      default:
-        /* FANET uses 868.2 MHz. Bandwidth is 250kHz  */
-        Slot = 0;
-        break;
-    }
+    uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
 
-    // HOP Testing - slot timing 400 and 800 msec after PPS
-    //Serial.printf("Timing: %d, %d, %d, %d, %d, %d, %d\r\n", Now_millis, pps_btime_ms, timeAge, time_corr_neg, TimeReference, TxRandomValue, Slot);
+    uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
 
-    // latest time from GPS
-    int yr = gnss.date.year();
-    if( yr > 99)
-        yr = yr - 1970;
-    else
-        yr += 30;
-    tm.Year = yr;
-    tm.Month = gnss.date.month();
-    tm.Day = gnss.date.day();
-    tm.Hour = gnss.time.hour();
-    tm.Minute = gnss.time.minute();
-    tm.Second = gnss.time.second();
-
-    // time right now is:
-    slotTime = Time = makeTime(tm) + (timeAge + time_corr_neg)/ 1000;
-    break;
-  }
-
-  uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
-
-  uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
-
-  // HOP Testing - time and channel
-  //Serial.printf("Time: %d, %d\r\n", Time,chan);
+    // HOP Testing - time and channel
+    //Serial.printf("Time: %d, %d\r\n", Time,chan);
 #if DEBUG
     Serial.print("Plan: ");
     Serial.println(RF_FreqPlan.Plan);
@@ -488,48 +496,50 @@ void RF_SetChannel(void)
     Serial.println(chan);
 #endif
 
-    if (RF_ready && rf_chip) {
+    if (RF_ready && rf_chip)
         rf_chip->channel(chan);
-	}
 }
 
 void RF_loop()
 {
-    if (!RF_ready) {
-        if (RF_FreqPlan.Plan == RF_BAND_AUTO) {
-            if (ThisAircraft.latitude || ThisAircraft.longitude) {
+    if (!RF_ready)
+    {
+        if (RF_FreqPlan.Plan == RF_BAND_AUTO)
+        {
+            if (ThisAircraft.latitude || ThisAircraft.longitude)
+            {
                 RF_FreqPlan.setPlan((int32_t)(ThisAircraft.latitude  * 600000),
                                     (int32_t)(ThisAircraft.longitude * 600000));
                 RF_ready = true;
             }
-        } else {
+        }
+        else
             RF_ready = true;
-		}	
     }
 
-    if (RF_ready) {
+    if (RF_ready)
         RF_SetChannel();
-	}	
 }
 
 size_t RF_Encode(ufo_t* fop)
 {
     size_t size = 0;
-    if (RF_ready && protocol_encode) {
-		
-        if (settings->txpower == RF_TX_POWER_OFF) {
+    if (RF_ready && protocol_encode)
+    {
+        if (settings->txpower == RF_TX_POWER_OFF)
             return size;
-		}	
 
-        if ((millis() - TxTimeMarker) > TxRandomValue) {
-          switch (settings->rf_protocol) {
-            case RF_PROTOCOL_LEGACY: 
-            case RF_PROTOCOL_OGNTP: 
-              fop->timestamp = slotTime;
-		    break;  
-	      }
-          size = (*protocol_encode)((void *) &TxBuffer[0], fop);
-		}  
+        if ((millis() - TxTimeMarker) > TxRandomValue)
+        {
+            switch (settings->rf_protocol)
+            {
+                case RF_PROTOCOL_LEGACY:
+                case RF_PROTOCOL_OGNTP:
+                    fop->timestamp = slotTime;
+                    break;
+            }
+            size = (*protocol_encode)((void *) &TxBuffer[0], fop);
+        }
     }
     return size;
 }
@@ -537,11 +547,10 @@ size_t RF_Encode(ufo_t* fop)
 size_t RF_Encode_Fanet_s(ufo_t* fop)
 {
     size_t size = 0;
-    if (RF_ready && fanet_encode_sp) {
-    
-        if (settings->txpower == RF_TX_POWER_OFF) {
+    if (RF_ready && fanet_encode_sp)
+    {
+        if (settings->txpower == RF_TX_POWER_OFF)
             return size;
-        } 
         size = (*fanet_encode_sp)((void *) &TxBuffer[0], fop);
     }
     return size;
@@ -549,7 +558,8 @@ size_t RF_Encode_Fanet_s(ufo_t* fop)
 
 bool RF_Transmit(size_t size, bool wait)
 {
-    if (RF_ready && rf_chip && (size > 0)){
+    if (RF_ready && rf_chip && (size > 0))
+    {
         RF_tx_size = size;
 
         if (settings->txpower == RF_TX_POWER_OFF)
@@ -573,33 +583,34 @@ bool RF_Transmit(size_t size, bool wait)
             RF_tx_size = 0;
 /*
             TxRandomValue = (
-#if !defined(EXCLUDE_SX12XX)
+ #if !defined(EXCLUDE_SX12XX)
                 LMIC.protocol ?
                 SoC->random(LMIC.protocol->tx_interval_min, LMIC.protocol->tx_interval_max) :
-#endif
+ #endif
                 SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
 
             TxTimeMarker = millis();
-*/
-          switch (settings->rf_protocol) {
-            case RF_PROTOCOL_LEGACY: 
-            case RF_PROTOCOL_OGNTP: 
-              TxRandomValue = 2000;   // HOP - stop any re-trigger for now until next channel change
-              TxTimeMarker = millis();
-              break;
-          default:
-            TxRandomValue = (
+ */
+            switch (settings->rf_protocol)
+            {
+                case RF_PROTOCOL_LEGACY:
+                case RF_PROTOCOL_OGNTP:
+                    TxRandomValue = 2000; // HOP - stop any re-trigger for now until next channel change
+                    TxTimeMarker  = millis();
+                    break;
+                default:
+                    TxRandomValue = (
 #if !defined(EXCLUDE_SX12XX)
-			  LMIC.protocol ?
-              SoC->random(LMIC.protocol->tx_interval_min, LMIC.protocol->tx_interval_max) :
+                        LMIC.protocol ?
+                        SoC->random(LMIC.protocol->tx_interval_min, LMIC.protocol->tx_interval_max) :
 #endif
-              SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
-            TxTimeMarker = millis();
-            break;
-          }
-      
-      // HOP testing - transmit time
-      //Serial.printf("Tx: %d, %d, %d\r\n", millis(), TxTimeMarker, TxRandomValue);
+                        SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
+                    TxTimeMarker = millis();
+                    break;
+            }
+
+            // HOP testing - transmit time
+            //Serial.printf("Tx: %d, %d, %d\r\n", millis(), TxTimeMarker, TxRandomValue);
             return true;
         }
     }
@@ -610,13 +621,11 @@ bool RF_Receive(void)
 {
     bool rval = false;
 
-    if (RF_ready && rf_chip) {
+    if (RF_ready && rf_chip)
         rval = rf_chip->receive();
-	}
-	if (rval) {
-		// make sure the correct timestamp is used for decoding
-		ThisAircraft.timestamp = slotTime;
-	}
+    if (rval)
+        // make sure the correct timestamp is used for decoding
+        ThisAircraft.timestamp = slotTime;
 
     return rval;
 }

@@ -114,7 +114,6 @@ typedef struct
     unsigned int addData1     : 8;
     unsigned int addData2     : 8;
     unsigned int addData3     : 8;
-
 } __attribute__((packed)) fanet_packet_s;
 
 #define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)
@@ -129,6 +128,7 @@ extern const rf_proto_desc_t fanet_proto_desc;
 bool fanet_decode(void *, ufo_t *, ufo_t *);
 
 size_t fanet_encode(void *, ufo_t *);
+
 size_t fanet_encode_sp(void *, ufo_t *);
 
 #endif /* PROTOCOL_FANET_H */

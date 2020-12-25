@@ -397,10 +397,10 @@ size_t fanet_encode(void* fanet_pkt, ufo_t* this_aircraft)
 
 size_t fanet_encode_sp(void* fanet_pkt_s, ufo_t* this_aircraft)
 {
-    uint32_t     id            = this_aircraft->addr;
-    float        lat           = this_aircraft->latitude;
-    float        lon           = this_aircraft->longitude;
-    int16_t      alt           = (int16_t) this_aircraft->altitude;
+    uint32_t id  = this_aircraft->addr;
+    float    lat = this_aircraft->latitude;
+    float    lon = this_aircraft->longitude;
+    int16_t  alt = (int16_t) this_aircraft->altitude;
 
     fanet_packet_s* pkt = (fanet_packet_s *) fanet_pkt_s;
 
@@ -413,10 +413,10 @@ size_t fanet_encode_sp(void* fanet_pkt_s, ufo_t* this_aircraft)
 
     coord2payload_absolut(lat, lon, ((uint8_t *) pkt) + FANET_HEADER_SIZE);
 
-    pkt->header  = 0b01000000;  //bit 6 Temp
-    pkt->addData1 = 0x25; //37 degrees
-    pkt->addData2 = 0x00; //Temp needs only one byte
-    pkt->addData3 = 0x00; //Temp needs only one byte
+    pkt->header   = 0b01000000; //bit 6 Temp
+    pkt->addData1 = 0x25;       //37 degrees
+    pkt->addData2 = 0x00;       //Temp needs only one byte
+    pkt->addData3 = 0x00;       //Temp needs only one byte
 
     return sizeof(fanet_packet_s);
 }

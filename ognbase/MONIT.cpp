@@ -24,30 +24,26 @@
 #include "zabbixSender.h"
 #include "global.h"
 
-#define hours() (millis()/ 3600000)
+#define hours() (millis() / 3600000)
 
 
 WiFiClient zclient;
 
 String zabbix_server;
-int zabbix_port;
+int    zabbix_port;
 String zabbix_host;
-bool config_status;
+bool   config_status;
 
 static bool loadConfig()
 {
     int line = 0;
 
     if (!SPIFFS.begin(true))
-    {
-        return(false);
-    }
-    
+        return false;
+
     File configFile = SPIFFS.open("/zabbix.txt", "r");
     if (!configFile)
-    {
         return false;
-    }
 
     while (configFile.available() && line < 7)
     {
@@ -69,28 +65,26 @@ static bool loadConfig()
     return true;
 }
 
-static bool MONIT_setup(){
-  if(!config_status){
-    config_status = loadConfig(); 
-  }
-  return(config_status);
+static bool MONIT_setup()
+{
+    if (!config_status)
+        config_status = loadConfig();
+    return config_status;
 }
 
+void MONIT_send_trap()
+{
+    if (MONIT_setup())
+    {
+        ZabbixSender zs;
+        String       jsonPayload;
 
-void MONIT_send_trap(){
+        jsonPayload = zs.createPayload(zabbix_host.c_str(), Battery_voltage(), RF_last_rssi, int(hours()), gnss.satellites.value(), ThisAircraft.timestamp, largest_range);
 
-  if(MONIT_setup()){
-    ZabbixSender zs;
-    String jsonPayload;
-    
-    jsonPayload = zs.createPayload(zabbix_host.c_str(),Battery_voltage(), RF_last_rssi, int(hours()), gnss.satellites.value(), ThisAircraft.timestamp, largest_range);
-    
-    String msg = zs.createMessage(jsonPayload);
-  
-    if (zclient.connect(zabbix_server.c_str(), zabbix_port)) {
-      zclient.print(msg);  
-      }
-    zclient.stop();
-      
-  }
+        String msg = zs.createMessage(jsonPayload);
+
+        if (zclient.connect(zabbix_server.c_str(), zabbix_port))
+            zclient.print(msg);
+        zclient.stop();
+    }
 }

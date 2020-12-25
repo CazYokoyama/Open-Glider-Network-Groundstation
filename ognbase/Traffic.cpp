@@ -156,12 +156,12 @@ void ParseData()
 
     if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo))
     {
-		int i;
+        int i;
 
         fo.rssi = RF_last_rssi;
 
         // for debugging
-		Serial.printf("Pkt: %06x\r\n", fo.addr);
+        Serial.printf("Pkt: %06x\r\n", fo.addr);
 
         for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
             if (Container[i].addr == fo.addr)
@@ -177,13 +177,12 @@ void ParseData()
                 break;
             }
         }
-		// detect and delete double IDs - Caz Yokoyama fix
-		while (++i < MAX_TRACKING_OBJECTS) {
-			if (Container[i].addr == fo.addr) {
-				Container[i] = EmptyFO;
-			}	
-		}
-	}
+        // detect and delete double IDs - Caz Yokoyama fix
+        while (++i < MAX_TRACKING_OBJECTS) {
+            if (Container[i].addr == fo.addr)
+                Container[i] = EmptyFO;
+        }
+    }
 }
 
 void Traffic_setup()
@@ -229,5 +228,5 @@ void ClearExpired()
 {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++)
         if (Container[i].addr && (ThisAircraft.timestamp - Container[i].timestamp) > ENTRY_EXPIRATION_TIME)
-          Container[i] = EmptyFO;
+            Container[i] = EmptyFO;
 }
