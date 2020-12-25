@@ -1,9 +1,3 @@
-// This is an example of how to handle 'union' style messages
-// with nanopb, without allocating memory for all the message types.
-//
-// There is no official type in Protocol Buffers for describing unions,
-// but they are commonly implemented by filling out exactly one of
-// several optional fields.
 
 syntax = "proto2";
 
@@ -31,8 +25,25 @@ message FanetService
 
 message ReceiverConfiguration
 {
-
+	optional int32 maxrange = 1;
+	optional int32 band = 2;
+	optional int32 protocol = 3;
+	optional bool aprsd = 4;
+	optional int32 aprsp = 5;
+	optional bool itrackb = 6;
+	optional bool istealthb = 7;
+	optional int32 sleepm = 8;
+	optional int32 rxidle = 9;
+	optional int32 wakeup = 10;
+	optional bool reset = 11;
+	optional bool reboot = 12;
+	optional float alt = 13;
+	optional bool zabbixen = 14;
 }
 
+message OneMessage
+{
+	optional FanetService fanetService = 1;
+	optional ReceiverConfiguration receiverConfiguration = 2;
 
-
+}

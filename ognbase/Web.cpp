@@ -24,9 +24,14 @@
 #include "RF.h"
 #include "global.h"
 #include "Battery.h"
+
+//
+#include <ErriezCRC32.h>
+
 #include <FS.h>   // Include the SPIFFS library
 
 #define  U_PART U_FLASH
+#define INDEX_CRC 1363406144
 
 #define hours() (millis()/ 3600000)
 
@@ -224,7 +229,15 @@ void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size
     }
 }
 
-void Web_setup(void)
+void Web_start(){
+  wserver.begin();
+}
+
+void Web_stop(){
+  wserver.end();
+}
+
+void Web_setup(ufo_t* this_aircraft)
 {
     if (!SPIFFS.begin(true))
     {
@@ -240,7 +253,7 @@ void Web_setup(void)
 
         wserver.on("/doUpload", HTTP_POST, [](AsyncWebServerRequest* request) {}, handleUpload);
 
-        wserver.begin();
+        Web_start();
         return;
     }
 
@@ -263,6 +276,19 @@ void Web_setup(void)
     file.read((uint8_t *)index_html, filesize);
     index_html[filesize + 1] = '\0';
 
+    //CRC check 1363406144
+    uint32_t crc = crc32String(index_html);
+    if(crc != INDEX_CRC){
+      SPIFFS.remove("/index.html");
+      Serial.println("CRC checksum from index.html doesnt match");
+      wserver.on("/", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
+        request->send(200, "text/html", upload_html);
+        });
+      Web_start();
+      return;
+    }
+    //
+
     size_t size = 8700;
     char*  offset;
     char*  Settings_temp = (char *) malloc(size);
@@ -272,7 +298,11 @@ void Web_setup(void)
 
     offset = Settings_temp;
 
-    snprintf(offset, size, index_html, 
+    String station_addr = String(this_aircraft->addr, HEX);
+    station_addr.toUpperCase();
+    
+    snprintf(offset, size, index_html,
+             station_addr,
              SOFTRF_FIRMWARE_VERSION,
              ogn_callsign,
              String(ogn_lat, 5),
@@ -322,10 +352,13 @@ void Web_setup(void)
 
              (settings->sleep_mode == 0 ? "selected" : ""), "Disabled",
              (settings->sleep_mode == 1 ? "selected" : ""), "Full",
-             (settings->sleep_mode == 2 ? "selected" : ""), "without GPS",
+             (settings->sleep_mode == 2 ? "selected" : ""), "without GPS", //zabbix_trap_en
 
              String(settings->sleep_after_rx_idle),
-             String(settings->wake_up_timer)
+             String(settings->wake_up_timer),
+
+             (settings->zabbix_en == 0 ? "selected" : ""), "Disabled",
+             (settings->zabbix_en == 1 ? "selected" : ""), "Enabled"
              );
 
     size_t len = strlen(offset);
@@ -365,116 +398,95 @@ void Web_setup(void)
         if (request->hasParam("callsign"))
         {
             ogn_callsign = request->getParam("callsign")->value();
-            Serial.println(ogn_callsign);
         }
-
-
         if (request->hasParam("ogn_lat"))
         {
             ogn_lat = request->getParam("ogn_lat")->value().toFloat();
-            Serial.println(ogn_lat);
         }
 
         if (request->hasParam("ogn_lon"))
         {
             ogn_lon = request->getParam("ogn_lon")->value().toFloat();
-            Serial.println(ogn_lon);
         }
 
         if (request->hasParam("ogn_alt"))
         {
             ogn_alt = request->getParam("ogn_alt")->value().toInt();
-            Serial.println(ogn_alt);
         }
 
         if (request->hasParam("ogn_freq"))
         {
             settings->band = request->getParam("ogn_freq")->value().toInt();
-            Serial.println(settings->band);
         }
 
         if (request->hasParam("ogn_proto"))
         {
             settings->rf_protocol = request->getParam("ogn_proto")->value().toInt();
-            Serial.println(settings->rf_protocol);
         }
 
         if (request->hasParam("ogn_proto2"))
         {
             settings->rf_protocol2 = request->getParam("ogn_proto2")->value().toInt();
-            Serial.println(settings->rf_protocol2);
         }
 
         if (request->hasParam("ogn_d1090"))
         {
             settings->d1090 = request->getParam("ogn_d1090")->value().toInt();
-            Serial.println(settings->d1090);
         }
 
         if (request->hasParam("ogn_gdl90"))
         {
             settings->gdl90 = request->getParam("ogn_gdl90")->value().toInt();
-            Serial.println(settings->gdl90);
         }
 
         if (request->hasParam("ogn_nmea"))
         {
             settings->nmea_out = request->getParam("ogn_nmea")->value().toInt();
-            Serial.println(settings->nmea_out);
         }
 
         if (request->hasParam("ogn_no_track_bit"))
         {
             settings->no_track = request->getParam("ogn_no_track_bit")->value().toInt();
-            Serial.println(settings->no_track);
         }
 
         if (request->hasParam("ogn_stealth_bit"))
         {
             settings->stealth = request->getParam("ogn_stealth_bit")->value().toInt();
-            Serial.println(settings->stealth);
         }
 
         if (request->hasParam("ogn_aprs_debug"))
         {
             settings->ogndebug = request->getParam("ogn_aprs_debug")->value().toInt();
-            Serial.println(settings->ogndebug);
         }
 
         if (request->hasParam("aprs_debug_port"))
         {
             settings->ogndebugp = request->getParam("aprs_debug_port")->value().toInt();
-            Serial.println(settings->ogndebugp);
         }
 
         if (request->hasParam("ogn_range"))
         {
             settings->range = request->getParam("ogn_range")->value().toInt();
-            Serial.println(settings->range);
         }
 
         if (request->hasParam("ogn_agc"))
         {
             settings->sxlna = request->getParam("ogn_agc")->value().toInt();
-            Serial.println(settings->sxlna);
         }
 
         if (request->hasParam("ogn_ssid"))
         {
             ogn_ssid = request->getParam("ogn_ssid")->value();
-            Serial.println(ogn_ssid);
         }
 
         if (request->hasParam("ogn_wifi_password"))
         {
             ogn_wpass = request->getParam("ogn_wifi_password")->value();
-            Serial.println(ogn_wpass);
         }
         //geoid_separation
         if (request->hasParam("ogn_geoid"))
         {
             ogn_geoid_separation = request->getParam("ogn_geoid")->value().toInt();
-            Serial.println(ogn_geoid_separation);
         }
 
         if (request->hasParam("ogn_ignore_track"))
@@ -495,6 +507,9 @@ void Web_setup(void)
         }
         if (request->hasParam("ogn_wakeup_time"))
             settings->wake_up_timer = request->getParam("ogn_wakeup_time")->value().toInt();
+        
+        if (request->hasParam("zabbix_trap_en"))
+            settings->zabbix_en = request->getParam("zabbix_trap_en")->value().toInt();
 
 
         request->redirect("/");
@@ -520,7 +535,7 @@ void Web_setup(void)
     free(Settings_temp);
 
     // Start server
-    wserver.begin();
+    Web_start();
 }
 
 void Web_loop(void)

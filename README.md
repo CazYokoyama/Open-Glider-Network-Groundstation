@@ -33,8 +33,9 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * ADS-B decoder
 	- we still need some hardware
 * send APRS messages over LoraWan
-* send Fanet service data (weather) - **in progress**
+* send Fanet service data (google protobuf) - **in testing**
 * Plutonium battery for a life of 100 years
+* configure via remote (google protobuf) - **in progress**
 
 ## Known bugs / Missing features
 * SNR calculation not correct
@@ -153,6 +154,25 @@ while True:
     current_time = now.strftime("%H:%M:%S")
     print("%s Message: %s from %s"%(current_time, data.decode("utf-8"), addr))
 ```
+should look something like this..
+
+	12:08:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:08:45 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:09:15 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:05 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:09:35 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:25 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:09:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:45 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:10:15 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:05 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:10:35 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:25 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:10:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:45 GMT GLIDERN5 88.99.111.134:14580
+	from ('10.0.0.30', 8888)
+	12:11:04 Message: MUHLBtest>APRS,TCPIP*,qAC,248280:/111104h4657.38NI00715.50E&/A=001811
+
+
 ## OGN Debugging
 
 If you want to debug the aprs messages in the OG network, the python aprs client is ideal.
@@ -191,25 +211,6 @@ except KeyboardInterrupt:
     print('\nStop ogn gateway')
     client.disconnect()
 ```
-should look something like this..
-
-	12:08:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:08:45 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:09:15 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:05 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:09:35 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:25 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:09:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:45 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:10:15 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:05 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:10:35 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:25 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:10:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:45 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:11:04 Message: MUHLBtest>APRS,TCPIP*,qAC,248280:/111104h4657.38NI00715.50E&/A=001811
-
-
 ## Configuration example
 
 * MULHBtest
@@ -233,12 +234,65 @@ should look something like this..
 		- ***Attention, the T-Beam cannot be brought out of sleep mode remotely!***
 	- to disable enter zero
 
+## Remote control
+
+Remote control is possible using google protobuf. Take a look at proto folder.
+The following command can be used to compile the .proto file.
+
+
+	protoc -I=. --python_out=. ogn_service.proto
+
+
+A short python script for illustration.
+
+```python
+#! /usr/bin/python
+
+import ogn_service_pb2
+import socket
+import time
+
+UDP_IP = "10.0.0.31"
+UDP_PORT = 12001 #always APRS D-Port + 1
+
+def addSize(data):
+    return(len(data).to_bytes(1, byteorder='big') + data)
+
+sock = socket.socket(socket.AF_INET, # Internet
+                     socket.SOCK_DGRAM) # UDP
+
+RSM = ogn_service_pb2.OneMessage()
+values = RSM.receiverConfiguration
+values.band = 1
+values.protocol = 1
+values.aprsd = 0
+values.aprsp = 12000
+values.itrackb = 1
+values.istealthb = 1
+values.sleepm = 0
+values.rxidle = 1601
+values.wakeup = 1601
+values.reset = 0
+values.reboot = 1
+
+msg = addSize(RSM.SerializeToString())
+sock.sendto(msg, (UDP_IP, UDP_PORT))
+```
+
 
 Please note that pictures are not necessarily up to date!
 
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/12/ogn-768x696.png)
 
 ## Simple monitoring with zabbix trapper
+
+Example of zabbix.txt configuration file. Very rudimentary. Some parameters will be added in the future.
+
+```
+xxx.xxx.xxx.xxx
+10051
+ogn_base
+```
 
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/12/zabbix_1-1024x535.png)
 
@@ -288,3 +342,5 @@ Phil Karn - FEC library
 Lewis He - AXP20X library  
 Bodmer - TFT library  
 Michael Kuyper - Basic MAC library  
+Erriez - ErriezCRC32 library  
+IntelliTrend GmbH - zabbix-iot library   

@@ -22,7 +22,7 @@
   </script>
 </head>
 <body>
-  <h1>OGN Ground Station</h1>
+  <h1>OGN Ground Station - %s</h1>
   <h3>Version %s</h3>
   <table cellspacing="4" align="center" cellpadding="5">
   <class="circle-container">
@@ -173,7 +173,7 @@
   <td><INPUT type='password' name='ogn_wifi_password' value='%s' size="8" ></td>
 </tr>
 <tr>
-  <td>Sleep Mode:</td>
+  <td>Sleep Mode</td>
   <td><select id="ogn_sleep" name="ogn_deep_sleep">
     <option %s value="0">%s</option>
     <option %s value="1">%s</option>
@@ -186,6 +186,14 @@
 <tr>
   <td>Wake up Timer [sec]</td>
   <td><INPUT type='number' name='ogn_wakeup_time' placeholder="3600" value='%s' size="8" ></td>
+  <td>Zabbix Trapper</td>
+  <td><select id="zabbix_trap_en" name="zabbix_trap_en">
+    <option %s value="0">%s</option>
+    <option %s value="1">%s</option>
+  </select>
+  </td>
+</tr>
+<tr>
   <td>RESET:</td>
   <td><INPUT type="checkbox" name="ogn_reset_all"></td>
 </tr>

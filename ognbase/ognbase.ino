@@ -86,6 +86,8 @@
 #include "MONIT.h"
 #include "global.h"
 
+#include <rom/rtc.h>
+
 #include <TimeLib.h>
 
 #if defined(ENABLE_AHRS)
@@ -124,7 +126,7 @@
 #define APRS_PROTO_SWITCH 2
 #define TimeToswitchProto() (seconds() - ExportTimeSwitch >= APRS_PROTO_SWITCH)
 
-#define TIME_TO_REFRESH_WEB 10
+#define TIME_TO_REFRESH_WEB 30
 #define TimeToRefreshWeb() (seconds() - ExportTimeWebRefresh >= TIME_TO_REFRESH_WEB)
 
 //testing
@@ -182,7 +184,7 @@ void print_wakeup_reason(){
 void setup()
 {
 
-   rst_info *resetInfo;
+  rst_info *resetInfo;
 
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
@@ -209,7 +211,7 @@ void setup()
 
   if (resetInfo) {
     Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
-  }
+    }
   Serial.println(SoC->getResetReason());
   Serial.print(F("Free heap size: ")); Serial.println(SoC->getFreeHeap());
   Serial.println(SoC->getResetInfo()); Serial.println("");
@@ -270,7 +272,7 @@ void setup()
 
   delay(2000);
 
-  Web_setup();
+  Web_setup(&ThisAircraft);
   Time_setup();
 
   SoC->WDT_setup();
@@ -419,7 +421,7 @@ void ground()
       RSM_receiver();
     }
     else{
-      fanet_transmitter = RSM_Setup(12100);
+      fanet_transmitter = RSM_Setup(settings->ogndebugp+1);
     }
     ExportTimeFanetService = seconds();
     

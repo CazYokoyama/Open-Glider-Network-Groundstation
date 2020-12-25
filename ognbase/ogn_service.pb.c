@@ -12,7 +12,13 @@ PB_BIND(type_4, type_4, AUTO)
 PB_BIND(type_5, type_5, AUTO)
 
 
-PB_BIND(UnionMessage, UnionMessage, AUTO)
+PB_BIND(FanetService, FanetService, AUTO)
+
+
+PB_BIND(ReceiverConfiguration, ReceiverConfiguration, AUTO)
+
+
+PB_BIND(OneMessage, OneMessage, AUTO)
 
 
 

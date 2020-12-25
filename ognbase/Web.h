@@ -33,11 +33,14 @@
 #define BOOL_STR(x) (x ? "true":"false")
 #define JS_MAX_CHUNK_SIZE 4096
 
-void Web_setup(void);
+void Web_setup(ufo_t* this_aircraft);
 
 void Web_loop(void);
 
 void Web_fini(void);
+
+void Web_start(void);
+void Web_stop(void);
 
 #if DEBUG
 void Hex2Bin(String, byte *);

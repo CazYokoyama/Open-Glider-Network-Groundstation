@@ -32,10 +32,16 @@ WiFiClient zclient;
 String zabbix_server;
 int zabbix_port;
 String zabbix_host;
+bool config_status;
 
 static bool loadConfig()
 {
     int line = 0;
+
+    if (!SPIFFS.begin(true))
+    {
+        return(false);
+    }
     
     File configFile = SPIFFS.open("/zabbix.txt", "r");
     if (!configFile)
@@ -63,12 +69,17 @@ static bool loadConfig()
     return true;
 }
 
+static bool MONIT_setup(){
+  if(!config_status){
+    config_status = loadConfig(); 
+  }
+  return(config_status);
+}
+
 
 void MONIT_send_trap(){
 
-  int status = loadConfig();
-
-  if(status){
+  if(MONIT_setup()){
     ZabbixSender zs;
     String jsonPayload;
     
@@ -77,7 +88,6 @@ void MONIT_send_trap(){
     String msg = zs.createMessage(jsonPayload);
   
     if (zclient.connect(zabbix_server.c_str(), zabbix_port)) {
-      Serial.println("sending trapper");
       zclient.print(msg);  
       }
     zclient.stop();
