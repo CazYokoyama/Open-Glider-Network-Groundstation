@@ -33,6 +33,8 @@
 #include "Protocol_Legacy.h"
 #include "RF.h"
 
+#include "Log.h"
+
 const rf_proto_desc_t fanet_proto_desc = {
     "FANET",
     .type            = RF_PROTOCOL_FANET,
@@ -297,6 +299,12 @@ bool fanet_decode(void* fanet_pkt, ufo_t* this_aircraft, ufo_t* fop)
         Serial.flush();
 #endif
         rval = true;
+    }
+
+    if (pkt->ext_header == 0 && (pkt->type == 2 || pkt->type == 3 || pkt->type == 4))    /* Service  */
+    {
+        String logf = "found FANET service data";
+        Logger_send_udp(&logf);
     }
 
     return rval;

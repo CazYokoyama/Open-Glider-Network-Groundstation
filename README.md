@@ -344,3 +344,4 @@ Bodmer - TFT library
 Michael Kuyper - Basic MAC library  
 Erriez - ErriezCRC32 library  
 IntelliTrend GmbH - zabbix-iot library   
+Marian Craciunescu - ESP32PING library  

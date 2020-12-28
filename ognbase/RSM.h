@@ -26,6 +26,4 @@ bool RSM_Setup(int);
 
 void RSM_receiver();
 
-static void OGN_APRS_DEBUG(String *);
-
 #endif /* RSMHELPER_H */

@@ -28,16 +28,9 @@
 #include "RF.h"
 #include "global.h"
 #include "Web.h"
+#include "Log.h"
 
 WiFiUDP udp;
-
-static void RSM_DEBUG(String* buf)
-{
-    int  debug_len = buf->length() + 1;
-    byte debug_msg[debug_len];
-    buf->getBytes(debug_msg, debug_len);
-    SoC->WiFi_transmit_UDP_debug(settings->ogndebugp + 1, debug_msg, debug_len);
-}
 
 static bool RSM_transmit(uint8_t* msg_buffer, size_t msg_size)
 {
@@ -49,11 +42,11 @@ bool RSM_Setup(int port)
     if (udp.begin(port))
     {
         String status = "starting RSM server..";
-        RSM_DEBUG(&status);
+        Logger_send_udp(&status);
         return true;
     }
     String status = "cannot start RSM server..";
-    RSM_DEBUG(&status);
+    Logger_send_udp(&status);
     return false;
 }
 

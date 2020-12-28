@@ -21,6 +21,8 @@
 
 #include "SoftRF.h"
 
+void Logger_send_udp(String *);
+
 #if LOGGER_IS_ENABLED
 
 #include <FS.h>

@@ -84,6 +84,7 @@
 #include "APRS.h"
 #include "RSM.h"
 #include "MONIT.h"
+#include "Log.h"
 #include "global.h"
 
 #include <rom/rtc.h>
@@ -140,7 +141,7 @@
 
 ufo_t ThisAircraft;
 bool groundstation = false;
-bool ground_registred = false;
+int ground_registred = 0;
 bool fanet_transmitter = false;
 bool time_synced = false;
 int proto_in_use = 0;
@@ -167,6 +168,7 @@ unsigned long ExportTimeWebRefresh = 0;
 unsigned long ExportTimeFanetService = 0;
 unsigned long ExportTimeCheckKeepAliveOGN = 0;
 
+/*
 void print_wakeup_reason(){
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause();
@@ -180,6 +182,7 @@ void print_wakeup_reason(){
     default : Serial.println("Wakeup was not caused by deep sleep"); break;
   }
 }
+*/
 
 void setup()
 {
@@ -338,7 +341,7 @@ void shutdown(const char *msg)
 void ground()
 {
 
-  bool success;
+   bool success;
 
   GNSS_loop();
 
@@ -373,15 +376,22 @@ void ground()
     ThisAircraft.speed = 0;
     ThisAircraft.hdop = 0;
     ThisAircraft.geoid_separation = ogn_geoid_separation;
+
+    //GNSS_sleep();
+    //String msg = "GPS values static, disable GNSS module";
+    //Logger_send_udp(&msg);
   }
 
-  if ( (TimeToRegisterOGN() && isValidFix()) || (!ground_registred && isValidFix()) )
+  String msg;
+
+  if ( (TimeToRegisterOGN() && isValidFix()) || (ground_registred == 0 ) && isValidFix())
   {
+   
     ground_registred = OGN_APRS_Register(&ThisAircraft);
-    ExportTimeRegisterOGN = seconds();
+    ExportTimeRegisterOGN = seconds(); ;
   }
 
-  if (TimeToExportOGN() && ground_registred)
+  if (TimeToExportOGN() && ground_registred == 1)
   {
 
     OGN_APRS_Export();
@@ -389,13 +399,13 @@ void ground()
     ExportTimeOGN = seconds();
   }
 
-  if (TimeToKeepAliveOGN() && ground_registred)
+  if (TimeToKeepAliveOGN() && ground_registred == 1)
   {
     OGN_APRS_KeepAlive();
     ExportTimeKeepAliveOGN = seconds();
   }
 
-  if (TimeToStatusOGN() && ground_registred && isValidFix())
+  if (TimeToStatusOGN() && ground_registred == 1 && isValidFix())
   {
     OGN_APRS_Status(&ThisAircraft);
     ExportTimeStatusOGN = seconds();
@@ -411,7 +421,11 @@ void ground()
     if (settings->sleep_mode == 1){
       GNSS_sleep(); 
     }
+    ground_registred = 0;
     esp_deep_sleep_start();
+  }
+  else{
+    ExportTimeSleep = seconds();
   }
 
 
@@ -424,11 +438,11 @@ void ground()
       fanet_transmitter = RSM_Setup(settings->ogndebugp+1);
     }
     ExportTimeFanetService = seconds();
-    
+
   }
 
   if(TimeToCheckKeepAliveOGN()){
-    OGN_APRS_check_keepalive();
+    ground_registred = OGN_APRS_check_messages();
     ExportTimeCheckKeepAliveOGN = seconds();
 
     MONIT_send_trap();

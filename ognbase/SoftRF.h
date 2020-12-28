@@ -31,7 +31,9 @@
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 
-#define SOFTRF_FIRMWARE_VERSION "0.0.12"
+#include "version.h"
+
+#define SOFTRF_FIRMWARE_VERSION  _VERSION
 #define SOFTRF_IDENT            "OGNB-"
 
 #define ENTRY_EXPIRATION_TIME   10 /* seconds */

@@ -19,6 +19,3 @@ PB_BIND(ReceiverConfiguration, ReceiverConfiguration, AUTO)
 
 
 PB_BIND(OneMessage, OneMessage, AUTO)
-
-
-

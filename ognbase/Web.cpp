@@ -25,13 +25,12 @@
 #include "global.h"
 #include "Battery.h"
 
-//
 #include <ErriezCRC32.h>
 
 #include <FS.h>   // Include the SPIFFS library
 
 #define  U_PART U_FLASH
-#define INDEX_CRC 1363406144
+#define INDEX_CRC 3948812196
 
 #define hours() (millis() / 3600000)
 
@@ -276,21 +275,20 @@ void Web_setup(ufo_t* this_aircraft)
     char*  index_html = (char *) malloc(filesize + 1);
 
     file.read((uint8_t *)index_html, filesize);
-    index_html[filesize + 1] = '\0';
+    index_html[filesize] = '\0';
 
     //CRC check 1363406144
-    uint32_t crc = crc32String(index_html);
-    if (crc != INDEX_CRC)
-    {
+    /*
+       uint32_t crc = crc32String(index_html);
+       if (crc != INDEX_CRC)
+       {
         SPIFFS.remove("/index.html");
         Serial.println("CRC checksum from index.html doesnt match");
-        wserver.on("/", HTTP_GET, [upload_html](AsyncWebServerRequest* request){
-            request->send(200, "text/html", upload_html);
-        });
-        Web_start();
-        return;
-    }
-    //
+        Serial.println(crc);
+        ESP.restart();
+       }
+       //
+     */
 
     size_t size = 8700;
     char*  offset;
@@ -498,6 +496,7 @@ void Web_setup(ufo_t* this_aircraft)
 
     SoC->swSer_enableRx(true);
     free(Settings_temp);
+    //free(index_html);
 
     // Start server
     Web_start();

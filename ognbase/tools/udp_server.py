@@ -1,8 +1,16 @@
-#!usr/bin/python3
 
 import socket
 import sys
 from datetime import datetime
+
+from termcolor import colored, cprint
+
+print_yellow = lambda x: cprint(x, 'yellow')
+print_red = lambda x: cprint(x, 'red')
+print_green = lambda x: cprint(x, 'green')
+print_blue = lambda x: cprint(x, 'cyan')
+print_magenta = lambda x: cprint(x, 'magenta')
+print_on_white = lambda x: cprint(x, 'magenta','on_white',attrs=['bold'])
 
 if len(sys.argv) > 1:
     UDP_PORT_NO = int(sys.argv[1])
@@ -20,4 +28,5 @@ while True:
     data, addr = serverSock.recvfrom(512)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
-    print("%s Message: %s from %s"%(current_time, data.decode("utf-8"), addr))
+    print_green("%s Message: %s from %s"%(current_time, data.decode("utf-8"), addr))
+

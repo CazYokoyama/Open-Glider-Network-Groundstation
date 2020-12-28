@@ -18,6 +18,18 @@
 
 #include "SoC.h"
 #include "Log.h"
+#include "EEPROM.h"
+
+void Logger_send_udp(String* buf)
+{
+    if (settings->ogndebug)
+    {
+        int  debug_len = buf->length() + 1;
+        byte debug_msg[debug_len];
+        buf->getBytes(debug_msg, debug_len);
+        SoC->WiFi_transmit_UDP_debug(settings->ogndebugp, debug_msg, debug_len);
+    }
+}
 
 #if LOGGER_IS_ENABLED
 

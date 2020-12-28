@@ -1,6 +1,6 @@
 /*
- * TTN.h
- * Copyright (C) 2018-2020 Linar Yusupov
+ * OGN.h
+ * Copyright (C) 2020 Manuel Rösel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TTNHELPER_H
-#define TTNHELPER_H
+#include <string.h>
+#include "SoC.h"
 
-#include "SoftRF.h"
-#if defined(ENABLE_TTN)
+#ifndef UPDATEHELPER_H
+#define UPDATEHELPER_H
 
-void TTN_setup(void);
 
-void TTN_loop(void);
-
-#endif /* ENABLE_TTN */
-
-#endif /* TTNHELPER_H */
+#endif /* UPDATEHELPER_H */

@@ -23,6 +23,7 @@
 #include "RF.h"
 #include "EEPROM.h"
 #include "global.h"
+#include "Log.h"
 
 #include <TimeLib.h>
 
@@ -33,9 +34,12 @@ int MIN_SPEED = 0;
 
 const char aprsServer[] = "aprs.glidernet.org";
 
-int  aprsPort       = 14580;
-bool aprs_registred = false;
-bool aprs_connected = false;
+int  aprsPort         = 14580;
+int  aprs_registred   = 0;
+bool aprs_connected   = false;
+int  last_packet_time = 0; // seconds
+
+#define seconds() (millis() / 1000)
 
 static String zeroPadding(String data, int len)
 {
@@ -56,7 +60,7 @@ static String getWW(String data)
 
 static float SnrCalc(float rssi)
 {
-    float noise = -110.0;
+    float noise = -108.0;
     return rssi - (noise);
 }
 
@@ -115,7 +119,8 @@ static long double distance(long double lat1, long double long1, long double lat
 
 static bool OGN_APRS_Connect()
 {
-    if (!SoC->WiFi_connect_TCP(aprsServer, aprsPort))
+    delay(250);
+    if (SoC->WiFi_connect_TCP(aprsServer, aprsPort))
         return true;
     else
         return false;
@@ -128,45 +133,37 @@ static bool OGN_APRS_DisConnect()
     return false;
 }
 
-static void OGN_APRS_DEBUG(String* buf)
+static int OGN_APRS_check_reg(String* msg) // 0 = unverified // 1 = verified // -1 = wrong message
 {
-    if (settings->ogndebug)
+    int len = msg->length();
+
+    if (msg->indexOf("verified") > -1)
+        return 1;
+    if (msg->indexOf("unverified") > -1)
+        return 0;
+    if (msg->indexOf("invalid") > -1)
+        return 2;
+
+    return -1;
+}
+
+static bool OGN_APRS_check_Wifi()
+{
+    if (WiFi.status() != WL_CONNECTED)
     {
-        int  debug_len = buf->length() + 1;
-        byte debug_msg[debug_len];
-        buf->getBytes(debug_msg, debug_len);
-        SoC->WiFi_transmit_UDP_debug(settings->ogndebugp, debug_msg, debug_len);
+        WiFi.disconnect();
+        WiFi.mode(WIFI_OFF);
+        WiFi.mode(WIFI_STA);
+        WiFi.begin(ogn_ssid.c_str(), ogn_wpass.c_str());
+        delay(100);
     }
+    if (WiFi.status() == WL_CONNECTED)
+        return true;
+    else
+        return false;
 }
 
-static bool OGN_APRS_check_reg()  // check return message logresp OGN123456 verified, server GLIDERN4
-{
-    String msg;
-    int    i;
-    char*  part;
-    bool   registred = false;
-
-    char* RXbuffer  = (char *) malloc(128);
-    char* TMPbuffer = (char *) malloc(128);
-
-    delay(1000);
-    int recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
-
-    for (i=0; i < recStatus; i++)
-        msg += RXbuffer[i];
-    if (recStatus && registred)
-        OGN_APRS_DEBUG(&msg);
-
-    char* token = strtok(RXbuffer, " ");
-    while (token != NULL) {
-        if (!strcmp("verified,", token))
-            registred = true;
-        token = strtok(NULL, " ");
-    }
-    return registred;
-}
-
-bool OGN_APRS_check_keepalive()
+int OGN_APRS_check_messages()
 {
     char*  RXbuffer  = (char *) malloc(128);
     int    recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
@@ -174,8 +171,33 @@ bool OGN_APRS_check_keepalive()
 
     for (int i=0; i < recStatus; i++)
         msg += RXbuffer[i];
-    if (recStatus)
-        OGN_APRS_DEBUG(&msg);
+
+    Logger_send_udp(&msg);
+
+    if (recStatus > 0)
+    {
+        if (OGN_APRS_check_reg(&msg) == 0)
+            msg = "login unsuccessful";
+        if (OGN_APRS_check_reg(&msg) == 1)
+            msg = "login successful";
+
+        last_packet_time = seconds();
+    }
+
+    Logger_send_udp(&msg);
+
+    if (seconds() - last_packet_time > 60)
+    {
+        msg = "no packet since > 60 seconds...reconnecting";
+        Logger_send_udp(&msg);
+        SoC->WiFi_disconnect_TCP();
+        OGN_APRS_check_Wifi();
+        aprs_registred = 0;
+    }
+
+
+    free(RXbuffer);
+    return aprs_registred;
 }
 
 void OGN_APRS_Export()
@@ -295,7 +317,7 @@ void OGN_APRS_Export()
             AircraftPacket += "dB 0e -0.0kHz";
             AircraftPacket += "\r\n";
 
-            OGN_APRS_DEBUG(&AircraftPacket);
+            Logger_send_udp(&AircraftPacket);
 
             if (!Container[i].stealth && !Container[i].no_track || settings->ignore_no_track && settings->ignore_stealth)
                 SoC->WiFi_transmit_TCP(AircraftPacket);
@@ -305,9 +327,9 @@ void OGN_APRS_Export()
         Container[i] = EmptyFO;
 }
 
-bool OGN_APRS_Register(ufo_t* this_aircraft)
+int OGN_APRS_Register(ufo_t* this_aircraft)
 {
-    if (OGN_APRS_Connect() && !aprs_registred)
+    if (OGN_APRS_Connect())
     {
         struct aprs_login_packet APRS_LOGIN;
 
@@ -324,15 +346,21 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
         LoginPacket += APRS_LOGIN.appname;
         LoginPacket += " ";
         LoginPacket += APRS_LOGIN.version;
+        LoginPacket += " ";
+        LoginPacket += "m/";
+        LoginPacket += String(settings->range);
         LoginPacket += "\n";
 
+        Logger_send_udp(&LoginPacket);
+
+        delay(250);
+
         SoC->WiFi_transmit_TCP(LoginPacket);
-        OGN_APRS_DEBUG(&LoginPacket);
-        //aprs_registred = OGN_APRS_check_reg(); //not quite finished yet
-        aprs_registred = true;
+
+        aprs_registred = 1;
     }
 
-    if (aprs_registred)
+    if (aprs_registred == 1)
     {
         /* RUSSIA>APRS,TCPIP*,qAC,248280:/220757h626.56NI09353.92E&/A=000446 */
 
@@ -357,6 +385,7 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
         RegisterPacket += ":/";
         RegisterPacket += APRS_REG.timestamp;
         RegisterPacket += APRS_REG.lat_deg + APRS_REG.lat_min;
+
         if (this_aircraft->latitude < 0)
             RegisterPacket += "S";
         else
@@ -370,8 +399,11 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
         RegisterPacket += "&/A=";
         RegisterPacket += APRS_REG.alt;
         RegisterPacket += "\r\n";
+
+        delay(250);
+
         SoC->WiFi_transmit_TCP(RegisterPacket);
-        OGN_APRS_DEBUG(&RegisterPacket);
+        Logger_send_udp(&RegisterPacket);
     }
     return aprs_registred;
 }
@@ -379,7 +411,7 @@ bool OGN_APRS_Register(ufo_t* this_aircraft)
 void OGN_APRS_KeepAlive()
 {
     String KeepAlivePacket = "#keepalive\n\n";
-    OGN_APRS_DEBUG(&KeepAlivePacket);
+    Logger_send_udp(&KeepAlivePacket);
     SoC->WiFi_transmit_TCP(KeepAlivePacket);
 }
 
@@ -413,6 +445,6 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     //StatusPacket += ThisAircraft.timestamp;
     StatusPacket += "\r\n";
     SoC->WiFi_transmit_TCP(StatusPacket);
-    OGN_APRS_DEBUG(&StatusPacket);
+    Logger_send_udp(&StatusPacket);
     return;
 }

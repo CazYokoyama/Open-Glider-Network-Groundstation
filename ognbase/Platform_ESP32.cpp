@@ -38,6 +38,8 @@
 #include "WiFi.h"
 #include "Bluetooth.h"
 
+#include "Log.h"
+#include <ESP32Ping.h>
 
 #include "Battery.h"
 
@@ -690,17 +692,14 @@ static void ESP32_WiFi_transmit_UDP(int port, byte* buf, size_t size)
 
 static int ESP32_WiFi_connect_TCP(const char* host, int port)
 {
-    if (client.connected())
-        return 0;
+    bool ret = Ping.ping(host, 2);
 
-    if (!client.connect(host, port))
+    if (ret)
     {
-        Serial.println("Connection to host failed");
-        delay(1000);
+        if (!client.connect(host, port))
+            return 0;
         return 1;
     }
-    else
-        return 0;
 }
 
 static int ESP32_WiFi_disconnect_TCP()
@@ -710,20 +709,29 @@ static int ESP32_WiFi_disconnect_TCP()
 
 static int ESP32_WiFi_transmit_TCP(String message)
 {
-    //Serial.println("sending data");
-    client.print(message);
+    if (client.connected())
+    {
+        client.print(message);
+        return 0;
+    }
     return 0;
 }
 
 static int ESP32_WiFi_receive_TCP(char* RXbuffer, int RXbuffer_size)
 {
     int i = 0;
-    while (client.available() && i < RXbuffer_size - 1) {
-        RXbuffer[i] = client.read();
-        i++;
-        RXbuffer[i] = '\0';
+
+    if (client.connected())
+    {
+        while (client.available() && i < RXbuffer_size - 1) {
+            RXbuffer[i] = client.read();
+            i++;
+            RXbuffer[i] = '\0';
+        }
+        return i;
     }
-    return i;
+    client.stop();
+    return -1;
 }
 
 static int ESP32_WiFi_isconnected_TCP()

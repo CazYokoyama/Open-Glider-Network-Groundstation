@@ -804,6 +804,8 @@ static void rxlora (bool rxcontinuous) {
     writeReg(RegLna, LNA_RX_GAIN);
 #endif
 
+	writeReg(RegAgcRef, 0x00);
+
     // set max payload size
     writeReg(LORARegPayloadMaxLength, 64);
 
@@ -923,7 +925,7 @@ static void rxfsk (bool rxcontinuous) {
       writeReg(FSKRegRxBw, 0x0B); // 50kHz SSb
       break;
     case RF_RX_BANDWIDTH_SS_100KHZ:
-      writeReg(FSKRegRxBw, 0x06); // 100kHz SSb
+      writeReg(FSKRegRxBw, 0x0A); // 100kHz SSb
       break;
     case RF_RX_BANDWIDTH_SS_166KHZ:
       writeReg(FSKRegRxBw, 0x11); // 166.6kHz SSB

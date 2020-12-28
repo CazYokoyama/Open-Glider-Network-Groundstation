@@ -74,6 +74,7 @@ static bool MONIT_setup()
 
 void MONIT_send_trap()
 {
+    int timeout = 5;
     if (MONIT_setup())
     {
         ZabbixSender zs;
@@ -83,7 +84,7 @@ void MONIT_send_trap()
 
         String msg = zs.createMessage(jsonPayload);
 
-        if (zclient.connect(zabbix_server.c_str(), zabbix_port))
+        if (zclient.connect(zabbix_server.c_str(), zabbix_port, timeout))
             zclient.print(msg);
         zclient.stop();
     }

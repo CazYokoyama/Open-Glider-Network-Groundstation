@@ -95,15 +95,17 @@ static bool OGN_APRS_DisConnect();
 
 void OGN_APRS_Export();
 
-bool OGN_APRS_Register(ufo_t* this_aircraft);
+void OGN_APRS_Weather();
+
+int OGN_APRS_Register(ufo_t* this_aircraft);
 
 void OGN_APRS_KeepAlive();
 
 void OGN_APRS_Status(ufo_t* this_aircraft);
 
-static bool OGN_APRS_check_reg();
+static int OGN_APRS_check_reg(String *);
 
-bool OGN_APRS_check_keepalive();
+int OGN_APRS_check_messages();
 
 extern String ogn_callsign;
 #endif /* OGNHELPER_H */
