@@ -128,13 +128,19 @@ The destination port can be freely selected in the web interface. 12000 is used 
 
 	python3 udp_server.py 12000
 
+If you have several ESP32 running, they will be displayed with different colors.
+
+**Please note that no core dumps are shown here! A serial connection is necessary for this.**
+
 
 ```python
-#!usr/bin/python3
-
 import socket
 import sys
 from datetime import datetime
+
+from termcolor import colored, cprint
+
+colors =['blue','green','yellow','cyan','magenta','']
 
 if len(sys.argv) > 1:
     UDP_PORT_NO = int(sys.argv[1])
@@ -143,35 +149,46 @@ else:
     sys.exit(1)
 
 
-UDP_IP_ADDRESS = "10.0.0.200"
+UDP_IP_ADDRESS = "xxx.xxx.xxx.200" #change ip
 
 serverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 serverSock.bind((UDP_IP_ADDRESS, UDP_PORT_NO))
 
+stations = []
+
 while True:
     data, addr = serverSock.recvfrom(512)
+
+    if addr[0] not in stations:
+        stations.append(addr[0]);
+
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
-    print("%s Message: %s from %s"%(current_time, data.decode("utf-8"), addr))
+
+    index = stations.index(addr[0])
+    print_c = lambda x: cprint(x, colors[index])
+    print_c("%s Message: %s from %s"%(current_time, data.decode("utf-8"), addr[0]))
 ```
 should look something like this..
 
-	12:08:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:08:45 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:09:15 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:05 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:09:35 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:25 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:09:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:09:45 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:10:15 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:05 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:10:35 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:25 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:10:55 Message: # aprsc 2.1.5-g8af3cdc 24 Dec 2020 11:10:45 GMT GLIDERN5 88.99.111.134:14580
-	from ('10.0.0.30', 8888)
-	12:11:04 Message: MUHLBtest>APRS,TCPIP*,qAC,248280:/111104h4657.38NI00715.50E&/A=001811
-
+```
+17:23:49 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:23:43 GMT GLIDERN1 51.178.19.212:14580
+ from 10.0.0.30
+17:24:09 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:03 GMT GLIDERN1 51.178.19.212:14580
+ from 10.0.0.30
+17:24:09 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:03 GMT GLIDERN1 51.178.19.212:14580
+ from 10.0.0.30
+17:24:29 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:23 GMT GLIDERN1 51.178.19.212:14580
+ from 10.0.0.30
+17:24:29 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:23 GMT GLIDERN1 51.178.19.212:14580
+ from 10.0.0.30
+17:24:47 Message: user 248280 pass 16852 vers ESP32 0.1.0-2 m/100
+ from 10.0.0.30
+17:24:48 Message: MUHLB>APRS,TCPIP*,qAC,248280:/162447h4657.37NI00715.50E&/A=001814
+ from 10.0.0.30
+17:24:49 Message: entering sleep mode for 43200 seconds - good night from 10.0.0.30
+17:28:46 Message: good morning, startup esp32 groundstation after Deep Sleep reset digital core from 10.0.0.30
+```
 
 ## OGN Debugging
 
@@ -300,7 +317,17 @@ ogn_base
 
 I am always open to wishes and suggestions, but would also like to emphasize that I do this project in my spare time. I am not responsible for any damage caused by this software.  
 
-**Feel free to contact me - manuel.roesel@ros-it.ch**
+
+
+## Buy me a coffee
+
+<a href="https://www.buymeacoffee.com/roema" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
+I first had contact with the SoftRF project at the beginning of 2020. The idea of ​​turning it into a low cost and low power ground station came up in June. I spend a lot of my free time on this project. If you like this project, then I would be happy if you buy me a coffee.
+
+**manuel.roesel@ros-it.ch**
+
+**If you have any wishes or suggestions, don't hesitate to contact me!**
 
 ## Thanks to my testers and fermentum
 * Peter A.
