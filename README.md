@@ -76,6 +76,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 	- **esptool.py  erase_flash**
 	- **ESP32 Download Tool - ERASE**
 	- use always actual .html .css files
+	 - upload files before install new firmware!
 
 ### Build erros
 * like - *TinyGPS++ is not found*
