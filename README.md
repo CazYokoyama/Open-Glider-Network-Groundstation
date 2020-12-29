@@ -324,7 +324,7 @@ I am always open to wishes and suggestions, but would also like to emphasize tha
 
 <a href="https://www.buymeacoffee.com/roema" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
-I first had contact with the SoftRF project at the beginning of 2020. The idea of ​​turning it into a low cost and low power ground station came up in June. I spend a lot of my free time on this project. If you like this project, then I would be happy if you buy me a coffee.
+I first had contact with the SoftRF project at the beginning of 2020. The idea of ​​turning it into a low cost and low power ground station came up in June. I spend a lot of my free time on this project. If you like this project, then I would be happy if you buy me a coffee [beer].
 
 **manuel.roesel@ros-it.ch**
 
