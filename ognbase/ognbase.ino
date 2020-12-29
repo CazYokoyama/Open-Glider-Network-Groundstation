@@ -1,4 +1,3 @@
-- 
 
 /*
    ognbase(.ino) firmware
@@ -342,12 +341,17 @@ void ground()
 {
 
    bool success;
+   String msg;
 
   GNSS_loop();
 
   if (!groundstation) {
     RF_Transmit(RF_Encode(&ThisAircraft), true);
     groundstation = true;
+
+    msg = "good morning, startup esp32 groundstation after ";
+    msg += String(SoC->getResetInfo());
+    Logger_send_udp(&msg);  
   }
 
 
@@ -382,8 +386,6 @@ void ground()
     //Logger_send_udp(&msg);
   }
 
-  String msg;
-
   if ( (TimeToRegisterOGN() && isValidFix()) || (ground_registred == 0 ) && isValidFix())
   {
    
@@ -414,20 +416,29 @@ void ground()
   
   if ( TimeToSleep() && settings->sleep_mode )
   {
-    if(settings->wake_up_timer > 0){
-      esp_sleep_enable_timer_wakeup(settings->wake_up_timer*1000000);
+    String msg = "entering sleep mode for ";
+    msg += String(settings->wake_up_timer);
+    msg += " seconds - good night";
+    Logger_send_udp(&msg);
+
+    delay(1000);
+    
+    if(21600 > settings->wake_up_timer > 180){
+      esp_sleep_enable_timer_wakeup(settings->wake_up_timer*1000000LL);
+    }
+    else{
+      esp_sleep_enable_timer_wakeup(3600*1000000LL);
     }
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_26,1);
     if (settings->sleep_mode == 1){
       GNSS_sleep(); 
     }
+    
     ground_registred = 0;
+    SoC->WiFi_disconnect_TCP();
+    
     esp_deep_sleep_start();
   }
-  else{
-    ExportTimeSleep = seconds();
-  }
-
 
   if(TimeToExportFanetService()){
       
@@ -441,19 +452,11 @@ void ground()
 
   }
 
-  if(TimeToCheckKeepAliveOGN()){
+  if(TimeToCheckKeepAliveOGN() && ground_registred == 1){
     ground_registred = OGN_APRS_check_messages();
     ExportTimeCheckKeepAliveOGN = seconds();
-
     MONIT_send_trap();
   }
-
-  /*if(TimeToCheckWifi()){
-    if (!Wifi_connected()){
-      Serial.println("Reconnecting to WiFi...");
-      //SoC->reset();
-    }
-    }*/
 
   // Handle Air Connect
   NMEA_loop();

@@ -463,8 +463,8 @@ void Web_setup(ufo_t* this_aircraft)
 
         if (request->hasParam("ogn_sleep_time"))
         {
-            if (request->getParam("ogn_sleep_time")->value().toInt() < 180)
-                settings->sleep_after_rx_idle = 180;
+            if (request->getParam("ogn_sleep_time")->value().toInt() <= 60)
+                settings->sleep_after_rx_idle = 60;
             else
                 settings->sleep_after_rx_idle = request->getParam("ogn_sleep_time")->value().toInt();
         }

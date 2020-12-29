@@ -20,6 +20,7 @@
 #include "Log.h"
 #include "EEPROM.h"
 
+
 void Logger_send_udp(String* buf)
 {
     if (settings->ogndebug)
