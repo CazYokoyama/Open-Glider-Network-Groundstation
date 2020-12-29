@@ -56,7 +56,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 
 * Install arduino ide
 	- make sure you are using the correct librarys
-* Install ESP32 Filesystem Uploader - only on first insta needed
+* Install ESP32 Filesystem Uploader - only on first installation needed
 * Compile and upload Sketch and files (.css and .html)
 * Connect to OGN Wifi AP and configure
 * You can update you installation http://you-ogn-ground-ip/update
