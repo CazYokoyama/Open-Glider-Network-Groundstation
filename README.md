@@ -183,7 +183,7 @@ should look something like this..
  from 10.0.0.30
 17:24:29 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:23 GMT GLIDERN1 51.178.19.212:14580
  from 10.0.0.30
-17:24:47 Message: user 248280 pass 16852 vers ESP32 0.1.0-2 m/100
+17:24:47 Message: user XXXXXXX pass XXXXX vers ESP32 0.1.0-2 m/100
  from 10.0.0.30
 17:24:48 Message: MUHLB>APRS,TCPIP*,qAC,248280:/162447h4657.37NI00715.50E&/A=001814
  from 10.0.0.30
