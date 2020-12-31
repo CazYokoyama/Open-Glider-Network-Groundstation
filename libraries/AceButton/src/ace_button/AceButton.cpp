@@ -22,18 +22,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "TimingStats.h"
 #include "AceButton.h"
 
 namespace ace_button {
 
+// Macros to perform compile-time assertions. See
+// https://www.embedded.com/electronics-blogs/programming-pointers/4025549/Catching-errors-early-with-compile-time-assertions
+// and https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
+#define CONCAT_(x, y) x##y
+#define CONCAT(x,y) CONCAT_(x,y)
+#define COMPILE_TIME_ASSERT(cond, msg) \
+    extern char CONCAT(compile_time_assert, __LINE__)[(cond) ? 1 : -1];
+
 // Check that the Arduino constants HIGH and LOW are defined to be 1 and 0,
 // respectively. Otherwise, this library won't work.
-#if HIGH != 1
-  #error HIGH must be defined to be 1
-#endif
-#if LOW != 0
-  #error LOW must be defined to be 0
+COMPILE_TIME_ASSERT(HIGH == 1, "HIGH must be 1")
+COMPILE_TIME_ASSERT(LOW == 0, "LOW must be 0")
+
+// On boards using the new PinStatus API, check that kButtonStateUnknown is
+// different from all other PinStatus enums.
+#if ARDUINO_API_VERSION >= 10000
+  COMPILE_TIME_ASSERT(\
+    AceButton::kButtonStateUnknown != LOW \
+    && AceButton::kButtonStateUnknown != HIGH \
+    && AceButton::kButtonStateUnknown != CHANGE \
+    && AceButton::kButtonStateUnknown != FALLING \
+    && AceButton::kButtonStateUnknown != RISING, \
+    "kButtonStateUnknown conflicts with PinStatus enum")
 #endif
 
 AceButton::AceButton(uint8_t pin, uint8_t defaultReleasedState, uint8_t id):
@@ -41,9 +56,9 @@ AceButton::AceButton(uint8_t pin, uint8_t defaultReleasedState, uint8_t id):
   init(pin, defaultReleasedState, id);
 }
 
-AceButton::AceButton(ButtonConfig* buttonConfig):
-    mButtonConfig(buttonConfig) {
-  init(0, HIGH, 0);
+AceButton::AceButton(ButtonConfig* buttonConfig, uint8_t pin,
+    uint8_t defaultReleasedState, uint8_t id) {
+  init(buttonConfig, pin, defaultReleasedState, id);
 }
 
 void AceButton::init(uint8_t pin, uint8_t defaultReleasedState, uint8_t id) {
@@ -56,6 +71,12 @@ void AceButton::init(uint8_t pin, uint8_t defaultReleasedState, uint8_t id) {
   setDefaultReleasedState(defaultReleasedState);
 }
 
+void AceButton::init(ButtonConfig* buttonConfig, uint8_t pin,
+    uint8_t defaultReleasedState, uint8_t id) {
+  mButtonConfig = buttonConfig;
+  init(pin, defaultReleasedState, id);
+}
+
 void AceButton::setDefaultReleasedState(uint8_t state) {
   if (state == HIGH) {
     mFlags |= kFlagDefaultReleasedState;
@@ -64,23 +85,23 @@ void AceButton::setDefaultReleasedState(uint8_t state) {
   }
 }
 
-uint8_t AceButton::getDefaultReleasedState() {
+uint8_t AceButton::getDefaultReleasedState() const {
   return (mFlags & kFlagDefaultReleasedState) ? HIGH : LOW;
 }
 
 // NOTE: It would be interesting to rewrite the check() method using a Finite
 // State Machine.
 void AceButton::check() {
-  // Get the micros.
-  uint16_t nowMicros = mButtonConfig->getClockMicros();
+  uint8_t buttonState = mButtonConfig->readButton(mPin);
+  checkState(buttonState);
+}
 
+void AceButton::checkState(uint8_t buttonState) {
   // Retrieve the current time just once and use that in the various checkXxx()
   // functions below. This provides some robustness of the various timing
-  // algorithms even if any of the event handlers takes more time than the
+  // algorithms even if one of the event handlers takes more time than the
   // threshold time limits such as 'debounceDelay' or longPressDelay'.
   uint16_t now = mButtonConfig->getClock();
-
-  uint8_t buttonState = mButtonConfig->readButton(mPin);
 
   // debounce the button
   if (checkDebounced(now, buttonState)) {
@@ -88,12 +109,6 @@ void AceButton::check() {
     if (checkInitialized(buttonState)) {
       checkEvent(now, buttonState);
     }
-  }
-
-  TimingStats* stats = mButtonConfig->getTimingStats();
-  if (stats != nullptr) {
-    uint16_t elapsedMicros = mButtonConfig->getClockMicros() - nowMicros;
-    stats->update(elapsedMicros);
   }
 }
 
@@ -247,7 +262,10 @@ void AceButton::checkReleased(uint16_t now, uint8_t buttonState) {
     checkClicked(now);
   }
 
-  // check if Released events are suppressed
+  // Save whether this was generated from a long press.
+  bool wasLongPressed = isLongPressed();
+
+  // Check if Released events are suppressed.
   bool suppress =
       ((isLongPressed() &&
           mButtonConfig->
@@ -261,13 +279,22 @@ void AceButton::checkReleased(uint16_t now, uint8_t buttonState) {
           mButtonConfig->
               isFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick)));
 
-  // button was released
+  // Button was released, so clear current flags. Note that the compiler will
+  // optimize the following 4 statements to be equivalent to this single one:
+  //    mFlags &= ~kFlagPressed & ~kFlagDoubleClicked & ~kFlagLongPressed
+  //        & ~kFlagRepeatPressed;
   clearPressed();
   clearDoubleClicked();
   clearLongPressed();
   clearRepeatPressed();
 
-  if (!suppress) {
+  // Fire off a Released event, unless suppressed. Replace Released with
+  // LongReleased if this was a LongPressed.
+  if (suppress) {
+    if (wasLongPressed) {
+      handleEvent(kEventLongReleased);
+    }
+  } else {
     handleEvent(kEventReleased);
   }
 }
@@ -363,10 +390,7 @@ void AceButton::checkPostponedClick(uint16_t now) {
 }
 
 void AceButton::handleEvent(uint8_t eventType) {
-  ButtonConfig::EventHandler eventHandler = mButtonConfig->getEventHandler();
-  if (eventHandler) {
-    eventHandler(this, eventType, getLastButtonState());
-  }
+  mButtonConfig->dispatchEvent(this, eventType, getLastButtonState());
 }
 
 }

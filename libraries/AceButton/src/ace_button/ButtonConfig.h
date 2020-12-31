@@ -25,20 +25,22 @@ SOFTWARE.
 #ifndef ACE_BUTTON_BUTTON_CONFIG_H
 #define ACE_BUTTON_BUTTON_CONFIG_H
 
-#if !defined(RASPBERRY_PI)
 #include <Arduino.h>
-#else
-#include <raspi/raspi.h>
-#endif /* RASPBERRY_PI */
+#include "IEventHandler.h"
 
-// TODO: Verify if this is actually needed. The program size seems to be
-// identical with or without it on the Arduino IDE (which uses gcc).
-#define ACE_BUTTON_INLINE __attribute__((always_inline))
+// https://stackoverflow.com/questions/295120
+#if defined(__GNUC__) || defined(__clang__)
+  #define ACE_BUTTON_DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+  #define ACE_BUTTON_DEPRECATED __declspec(deprecated)
+#else
+  #pragma message("WARNING: Implement ACE_BUTTON_DEPRECATED for this compiler")
+  #define ACE_BUTTON_DEPRECATED
+#endif
 
 namespace ace_button {
 
 class AceButton;
-class TimingStats;
 
 /**
  * Class that defines the timing parameters and event handler of an AceButton or
@@ -145,6 +147,12 @@ class ButtonConfig {
     static const FeatureFlagType kFeatureSuppressClickBeforeDoubleClick = 0x100;
 
     /**
+     * Internal flag to indicate that mEventHandler is an IEventHandler object
+     * pointer instead of an EventHandler function pointer.
+     */
+    static const FeatureFlagType kInternalFeatureIEventHandler = 0x8000;
+
+    /**
      * Convenience flag to suppress all suppressions. Calling
      * setFeature(kFeatureSuppressAll) suppresses all and
      * clearFeature(kFeatureSuppressAll) clears all suppression. Note however
@@ -169,29 +177,57 @@ class ButtonConfig {
         uint8_t buttonState);
 
     /** Constructor. */
-    ButtonConfig() {}
+    ButtonConfig() = default;
 
-    // These configuration methods are virtual so that they can be overriddden.
-    // Subclasses can override at the class-level by defining a new virtual
-    // function in the subclass, or by defining an instance variable and storing
-    // the parameter with each instance of this class.
+    #if ! defined(ARDUINO_ARCH_AVR)
+      /**
+       * If the ButtonConfig is created and deleted on the heap, a virtual
+       * destructor is technically required by the C++ language to prevent
+       * memory leaks. But ButtonConfig does not have any memory to leak, so
+       * everything is fine even without a virtual destructor. This virtual
+       * destructor definition is provided for the sole purpose of keeping the
+       * compiler quiet.
+       *
+       * The problem is that for 8-bit AVR processors, the addition of a virtual
+       * destructor causes the flash memory size of the library to increase by
+       * 600 bytes, which is far too large compared to the ~1000 bytes consumed
+       * by the entire library. For 32-bit processors, the virtual destructor
+       * seems to increase the code size by 60-120 bytes, probably because
+       * the malloc/free are pulled in by something else already. This small
+       * increase in flash memory is tiny compared to the ~1 MB of total flash
+       * memory space offered by the ESP8266 and ESP32.
+       *
+       * Therefore, I expose the virtual destructor only to non-AVR
+       * microcontrollers, which I hope means that only 32-bit chips with
+       * large flash memory will pay the cost of the virtual destructor. The
+       * check for the ARDUINO_ARCH_AVR macro seems to cover the ATmega328 chips
+       * (e.g. Arduino Nano), the ATmega32U4 (e.g. SparkFun Pro Micro), and the
+       * ATtiny85 (e.g. DigiSparks ATtiny85).
+       *
+       * If there are other Arduino compatible boards with low flash memory that
+       * need to be excluded from the virtual destructor, we need to figure out
+       * the appropriate ARDUINO_ARCH_xxx macro, and add it to the `#if`
+       * statement above.
+       */
+      virtual ~ButtonConfig() = default;
+    #endif
 
     /** Milliseconds to wait for debouncing. */
-    uint16_t getDebounceDelay() { return mDebounceDelay; }
+    uint16_t getDebounceDelay() const { return mDebounceDelay; }
 
     /** Milliseconds to wait for a possible click. */
-    uint16_t getClickDelay() { return mClickDelay; }
+    uint16_t getClickDelay() const { return mClickDelay; }
 
     /**
      * Milliseconds between the first and second click to register as a
      * double-click.
      */
-    uint16_t getDoubleClickDelay() {
+    uint16_t getDoubleClickDelay() const {
       return mDoubleClickDelay;
     }
 
     /** Milliseconds for a long press event. */
-    uint16_t getLongPressDelay() {
+    uint16_t getLongPressDelay() const {
       return mLongPressDelay;
     }
 
@@ -201,14 +237,14 @@ class ButtonConfig {
      * as this delay has passed. Subsequent events will fire after
      * getRepeatPressInterval() time.
      */
-    uint16_t getRepeatPressDelay() {
+    uint16_t getRepeatPressDelay() const {
       return mRepeatPressDelay;
     }
 
     /**
      * Milliseconds between two successive RepeatPressed events.
      */
-    uint16_t getRepeatPressInterval() {
+    uint16_t getRepeatPressInterval() const {
       return mRepeatPressInterval;
     }
 
@@ -250,83 +286,113 @@ class ButtonConfig {
      * Return the milliseconds of the internal clock. Override to use something
      * other than millis(). The return type is 'unsigned long' instead of
      * uint16_t because that's the return type of millis().
+     *
+     * Note: This should have been a const function. I cannot change it now
+     * without breaking backwards compatibility.
      */
     virtual unsigned long getClock() { return millis(); }
-
-    /**
-     * Return the microseconds of the internal clock. Can be overridden
-     * for testing purposes.
-     */
-    virtual unsigned long getClockMicros() { return micros(); }
 
     /**
      * Return the HIGH or LOW state of the button. Override to use something
      * other than digitalRead(). The return type is 'int' instead of uint16_t
      * because that's the return type of digitalRead().
+     *
+     * Note: This should have been a const function. I cannot change it now
+     * without breaking backwards compatibility.
      */
     virtual int readButton(uint8_t pin) {
       return digitalRead(pin);
     }
 
-    // These methods return the various feature flags that control the
+    // These methods provide access to various feature flags that control the
     // functionality of the AceButton.
 
     /** Check if the given features are enabled. */
-    bool isFeature(FeatureFlagType features) ACE_BUTTON_INLINE {
+    bool isFeature(FeatureFlagType features) const {
       return mFeatureFlags & features;
     }
 
     /** Enable the given features. */
-    void setFeature(FeatureFlagType features) ACE_BUTTON_INLINE {
+    void setFeature(FeatureFlagType features) {
       mFeatureFlags |= features;
     }
 
     /** Disable the given features. */
-    void clearFeature(FeatureFlagType features) ACE_BUTTON_INLINE {
+    void clearFeature(FeatureFlagType features) {
       mFeatureFlags &= ~features;
+    }
+
+    /**
+     * Disable all (externally visible) features. Useful when the ButtonConfig
+     * is reused in different configurations. Also useful for testing. Internal
+     * feature flags (e.g. kInternalFeatureIEventHandler) are *not* cleared.
+     */
+    void resetFeatures() {
+      // NOTE: If any additional kInternalFeatureXxx flag is added, it must be
+      // added here like this:
+      // mFeatureFlags &= (kInternalFeatureIEventHandler | kInternalFeatureXxx)
+      mFeatureFlags &= kInternalFeatureIEventHandler;
     }
 
     // EventHandler
 
-    /** Return the eventHandler. */
-    EventHandler getEventHandler() ACE_BUTTON_INLINE {
-      return mEventHandler;
+    /**
+     * Return the eventHandler function pointer. This is meant to be an
+     * internal method.
+     *
+     * Deprecated as of v1.6 because the event handler can now be either a
+     * function pointer or an object pointer. AceButton class now calls
+     * dispatchEvent() which correctly handles both cases. Application code
+     * should never need to retrieve the event handler directly.
+     */
+    EventHandler getEventHandler() const ACE_BUTTON_DEPRECATED {
+      return reinterpret_cast<EventHandler>(mEventHandler);
     }
 
     /**
-     * Install the event handler. The event handler must be defined for the
-     * AceButton to be useful.
+     * Dispatch the event to the handler. This is meant to be an internal
+     * method.
      */
-    void setEventHandler(EventHandler eventHandler) ACE_BUTTON_INLINE {
+    void dispatchEvent(AceButton* button, uint8_t eventType,
+        uint8_t buttonState) const {
+
+      if (! mEventHandler) return;
+
+      if (isFeature(kInternalFeatureIEventHandler)) {
+        IEventHandler* eventHandler =
+            reinterpret_cast<IEventHandler*>(mEventHandler);
+        eventHandler->handleEvent(button, eventType, buttonState);
+      } else {
+        EventHandler eventHandler =
+            reinterpret_cast<EventHandler>(mEventHandler);
+        eventHandler(button, eventType, buttonState);
+      }
+    }
+
+    /**
+     * Install the EventHandler function pointer. The event handler must be
+     * defined for the AceButton to be useful.
+     */
+    void setEventHandler(EventHandler eventHandler) {
+      mEventHandler = reinterpret_cast<void*>(eventHandler);
+      clearFeature(kInternalFeatureIEventHandler);
+    }
+
+    /**
+     * Install the IEventHandler object pointer. The event handler must be
+     * defined for the AceButton to be useful.
+     */
+    void setIEventHandler(IEventHandler* eventHandler) {
       mEventHandler = eventHandler;
+      setFeature(kInternalFeatureIEventHandler);
     }
-
-    // TimingStats
-
-    /** Set the timing stats object. The timingStats can be nullptr. */
-    void setTimingStats(TimingStats* timingStats) {
-      mTimingStats = timingStats;
-    }
-
-    /** Get the timing stats. Can return nullptr. */
-    TimingStats* getTimingStats() { return mTimingStats; }
 
     /**
      * Return a pointer to the singleton instance of the ButtonConfig
      * which is attached to all AceButton instances by default.
      */
-    static ButtonConfig* getSystemButtonConfig() ACE_BUTTON_INLINE {
+    static ButtonConfig* getSystemButtonConfig() {
       return &sSystemButtonConfig;
-    }
-
-  protected:
-    /**
-     * Initialize to its pristine state, except for the EventHandler which is
-     * unchanged. This is intended mostly for testing purposes.
-     */
-    virtual void init() {
-      mFeatureFlags = 0;
-      mTimingStats = nullptr;
     }
 
   private:
@@ -341,13 +407,10 @@ class ButtonConfig {
     ButtonConfig& operator=(const ButtonConfig&) = delete;
 
     /** The event handler for all buttons associated with this ButtonConfig. */
-    EventHandler mEventHandler = nullptr;
+    void* mEventHandler = nullptr;
 
     /** A bit mask flag that activates certain features. */
     FeatureFlagType mFeatureFlags = 0;
-
-    /** The timing stats object. */
-    TimingStats* mTimingStats = nullptr;
 
     uint16_t mDebounceDelay = kDebounceDelay;
     uint16_t mClickDelay = kClickDelay;

@@ -147,7 +147,7 @@ static int OGN_APRS_check_reg(String* msg) // 0 = unverified // 1 = verified // 
     return -1;
 }
 
-static bool OGN_APRS_check_Wifi()
+bool OGN_APRS_check_Wifi()
 {
     if (WiFi.status() != WL_CONNECTED)
     {

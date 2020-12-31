@@ -85,6 +85,7 @@
 #include "MONIT.h"
 #include "Log.h"
 #include "global.h"
+#include "version.h"
 
 #include <rom/rtc.h>
 
@@ -349,7 +350,10 @@ void ground()
     RF_Transmit(RF_Encode(&ThisAircraft), true);
     groundstation = true;
 
-    msg = "good morning, startup esp32 groundstation after ";
+    msg = "good morning, startup esp32 groundstation ";
+    msg += "version ";
+    msg += String(_VERSION);
+    msg += " after ";
     msg += String(SoC->getResetInfo());
     Logger_send_udp(&msg);  
   }
@@ -416,24 +420,16 @@ void ground()
   
   if ( TimeToSleep() && settings->sleep_mode )
   {
-    String msg = "entering sleep mode for ";
-    msg += String(settings->wake_up_timer);
+    msg = "entering sleep mode for ";
+    msg += String(settings->wake_up_timer); 
     msg += " seconds - good night";
     Logger_send_udp(&msg);
-
-    delay(1000);
     
-    if(21600 > settings->wake_up_timer > 180){
-      esp_sleep_enable_timer_wakeup(settings->wake_up_timer*1000000LL);
-    }
-    else{
-      esp_sleep_enable_timer_wakeup(3600*1000000LL);
-    }
+    esp_sleep_enable_timer_wakeup(settings->wake_up_timer*1000000LL);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_26,1);
     if (settings->sleep_mode == 1){
       GNSS_sleep(); 
     }
-    
     ground_registred = 0;
     SoC->WiFi_disconnect_TCP();
     
@@ -449,13 +445,18 @@ void ground()
       fanet_transmitter = RSM_Setup(settings->ogndebugp+1);
     }
     ExportTimeFanetService = seconds();
-
+    msg = "uptime ";
+    msg += String(millis());
+    Logger_send_udp(&msg);
   }
 
   if(TimeToCheckKeepAliveOGN() && ground_registred == 1){
     ground_registred = OGN_APRS_check_messages();
     ExportTimeCheckKeepAliveOGN = seconds();
     MONIT_send_trap();
+  }
+  if(TimeToCheckKeepAliveOGN()){
+    OGN_APRS_check_Wifi(); 
   }
 
   // Handle Air Connect

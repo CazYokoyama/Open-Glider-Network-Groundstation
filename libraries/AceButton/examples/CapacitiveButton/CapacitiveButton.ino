@@ -6,21 +6,25 @@
  *
  * Prompted by questions from Gaston Loos.
  *
+ * ESP8266 and ESP32 requires the development version of
+ * https://github.com/PaulStoffregen/CapacitiveSensor (directly from GitHub)
+ * because the fixes for those boards have not been released as of 2019-08-11.
+ *
+ * This program cannot be compiled using
+ * https://github.com/bxparks/UnixHostDuino because the external
+ * CapacitiveSensor library cannot be compiled with it.
+ *
  * Brian T. Park 2018
  */
-
-#if defined(ESP32) || defined(ESP8266)
-  #error ESP32 or ESP8266 not supported
-#endif
 
 #include <CapacitiveSensor.h>
 #include <AceButton.h>
 using namespace ace_button;
 
 /**
- * A subclass of ButtonConfig that emulates a mechanical switch connected to a
- * pull-up resistor on the input pin. A "touch" sends a LOW signal, just like a
- * mechnical switch.
+ * A subclass of ButtonConfig that allows a CapacitiveSensor to emulate a
+ * mechanical switch connected to a pull-up resistor on the input pin. A "touch"
+ * sends a LOW signal, just like a mechnical switch.
  */
 class CapacitiveConfig: public ButtonConfig {
   public:

@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['init',['init',['../classace__button_1_1AceButton.html#a18c47304c694c6f084a343a7c83bef34',1,'ace_button::AceButton::init()'],['../classace__button_1_1ButtonConfig.html#a86f8f6b62825258e477e0a41846e0223',1,'ace_button::ButtonConfig::init()']]],
-  ['isfeature',['isFeature',['../classace__button_1_1ButtonConfig.html#aae51c7a2986eafd400784cdbe6bb1815',1,'ace_button::ButtonConfig']]],
-  ['ispressedraw',['isPressedRaw',['../classace__button_1_1AceButton.html#af80a2bd19d929bff5dcce54a3db6fb0a',1,'ace_button::AceButton']]],
-  ['isreleased',['isReleased',['../classace__button_1_1AceButton.html#aa3cbb3fb16076cfe9255e0f70cc6aa72',1,'ace_button::AceButton']]]
+  ['encoded4to2buttonconfig_88',['Encoded4To2ButtonConfig',['../classace__button_1_1Encoded4To2ButtonConfig.html#ad04fcc5c8bf65b83a8a9bc9b47a570c3',1,'ace_button::Encoded4To2ButtonConfig']]],
+  ['encoded8to3buttonconfig_89',['Encoded8To3ButtonConfig',['../classace__button_1_1Encoded8To3ButtonConfig.html#a8415b8569aff2a5a5aea3fba8e9dfc4c',1,'ace_button::Encoded8To3ButtonConfig']]],
+  ['encodedbuttonconfig_90',['EncodedButtonConfig',['../classace__button_1_1EncodedButtonConfig.html#a5538117156240cf8ee188a974db43586',1,'ace_button::EncodedButtonConfig']]]
 ];
