@@ -43,6 +43,10 @@ int  last_packet_time = 0; // seconds
 
 static String zeroPadding(String data, int len)
 {
+  if(data.length() > len){
+    data.remove(len, data.length());
+  }
+  
     String tmp = "";
     for (int i=data.length(); i < len; i++)
         tmp += "0";
@@ -232,11 +236,11 @@ void OGN_APRS_Export()
 
             /*Latitude*/
             APRS_AIRC.lat_deg = String(int(LAT));
-            APRS_AIRC.lat_min = zeroPadding(String((LAT - int(LAT)) * 60), 5);
+            APRS_AIRC.lat_min = zeroPadding(String((LAT - int(LAT)) * 60, 3), 5);
 
             /*Longitude*/
             APRS_AIRC.lon_deg = zeroPadding(String(int(LON)), 3);
-            APRS_AIRC.lon_min = zeroPadding(String((LON - int(LON)) * 60), 5);
+            APRS_AIRC.lon_min = zeroPadding(String((LON - int(LON)) * 60, 3), 5);
 
             /*Altitude*/
             APRS_AIRC.alt = zeroPadding(String(int(Container[i].altitude * 3.28084)), 6);
@@ -318,6 +322,7 @@ void OGN_APRS_Export()
             AircraftPacket += "\r\n";
 
             Logger_send_udp(&AircraftPacket);
+            Logger_send_udp(&APRS_AIRC.pos_precision);
 
             if (!Container[i].stealth && !Container[i].no_track || settings->ignore_no_track && settings->ignore_stealth)
                 SoC->WiFi_transmit_TCP(AircraftPacket);
@@ -373,10 +378,12 @@ int OGN_APRS_Register(ufo_t* this_aircraft)
         APRS_REG.callsign.toUpperCase();
         APRS_REG.alt       = zeroPadding(String(int(this_aircraft->altitude * 3.28084)), 6);
         APRS_REG.timestamp = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
+        
         APRS_REG.lat_deg   = zeroPadding(String(int(LAT)), 2);
-        APRS_REG.lat_min   = zeroPadding(String((LAT - int(LAT)) * 60), 5);
+        APRS_REG.lat_min   = zeroPadding(String((LAT - int(LAT)) * 60, 3), 5);
+        
         APRS_REG.lon_deg   = zeroPadding(String(int(LON)), 3);
-        APRS_REG.lon_min   = zeroPadding(String((LON - int(LON)) * 60), 5);
+        APRS_REG.lon_min   = zeroPadding(String((LON - int(LON)) * 60, 3), 5);
 
         String RegisterPacket = "";
         RegisterPacket += APRS_REG.origin;

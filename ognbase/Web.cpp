@@ -496,7 +496,7 @@ void Web_setup(ufo_t* this_aircraft)
 
     SoC->swSer_enableRx(true);
     free(Settings_temp);
-    //free(index_html);
+    free(index_html);
 
     // Start server
     Web_start();
@@ -511,11 +511,11 @@ void Web_loop(void)
         values += "_";
         values += RF_last_rssi;
         values += "_";
-        values += int(hours());
+        values += hours();
         values += "_";
         values += gnss.satellites.value();
         values += "_";
-        values += ThisAircraft.timestamp;
+        values += now();
         values += "_";
         values += largest_range;
         globalClient->text(values);

@@ -135,7 +135,7 @@
 #define TimeToSleep() (seconds() - ExportTimeSleep >= settings->sleep_after_rx_idle)
 
 /*Testing FANET service messages*/
-#define TIME_TO_EXPORT_FANET_SERVICE 10 /*every 40 sec 10 for testing*/
+#define TIME_TO_EXPORT_FANET_SERVICE 20 /*every 40 sec 10 for testing*/
 #define TimeToExportFanetService() (seconds() - ExportTimeFanetService >= TIME_TO_EXPORT_FANET_SERVICE)
 
 
@@ -144,6 +144,7 @@ bool groundstation = false;
 int ground_registred = 0;
 bool fanet_transmitter = false;
 bool time_synced = false;
+bool ntp_in_use = false;
 int proto_in_use = 0;
 
 hardware_info_t hw_info = {
@@ -344,8 +345,6 @@ void ground()
    bool success;
    String msg;
 
-  GNSS_loop();
-
   if (!groundstation) {
     RF_Transmit(RF_Encode(&ThisAircraft), true);
     groundstation = true;
@@ -365,9 +364,10 @@ void ground()
     ExportTimeSleep = seconds();
   }
 
-  ThisAircraft.timestamp = now();
-
   if (isValidFix() && ogn_lat == 0 && ogn_lon == 0 && ogn_alt == 0) {
+
+     GNSS_loop();
+    
     ThisAircraft.latitude = gnss.location.lat();
     ThisAircraft.longitude = gnss.location.lng();
     ThisAircraft.altitude = gnss.altitude.meters();
@@ -385,12 +385,15 @@ void ground()
     ThisAircraft.hdop = 0;
     ThisAircraft.geoid_separation = ogn_geoid_separation;
 
-    //GNSS_sleep();
-    //String msg = "GPS values static, disable GNSS module";
-    //Logger_send_udp(&msg);
+    if(!ntp_in_use){
+      GNSS_sleep();
+    }
+    ntp_in_use = true;
   }
 
-  if ( (TimeToRegisterOGN() && isValidFix()) || (ground_registred == 0 ) && isValidFix())
+  ThisAircraft.timestamp = now();
+
+  if ((TimeToRegisterOGN() && (isValidFix() || ntp_in_use)) || (ground_registred == 0 ) && (isValidFix() || ntp_in_use))
   {
    
     ground_registred = OGN_APRS_Register(&ThisAircraft);
@@ -411,7 +414,7 @@ void ground()
     ExportTimeKeepAliveOGN = seconds();
   }
 
-  if (TimeToStatusOGN() && ground_registred == 1 && isValidFix())
+  if (TimeToStatusOGN() && ground_registred == 1 && (isValidFix() || ntp_in_use))
   {
     OGN_APRS_Status(&ThisAircraft);
     ExportTimeStatusOGN = seconds();
@@ -445,8 +448,8 @@ void ground()
       fanet_transmitter = RSM_Setup(settings->ogndebugp+1);
     }
     ExportTimeFanetService = seconds();
-    msg = "uptime ";
-    msg += String(millis());
+    msg = "unix epoch time ";
+    msg += String(now());
     Logger_send_udp(&msg);
   }
 

@@ -19,7 +19,8 @@ Since the T-Beam is very energy-saving, it can be operated very easily on a batt
 There are also a few drawbacks to the traditional OGN receivers. Several protocols cannot be decoded at the same time (at the moment - second protocol has no function).
 
 ## Features:
-* Power consumption around 20 mA in sleep mode - 120mA on normal mode ;
+* Power consumption around 20 mA in sleep mode - 120mA on normal mode  
+	* 40 - 60 mA without GPS
 * Deep Sleep  
 	* Auto wakeup on RX packages
 	* Wakeup Timer
