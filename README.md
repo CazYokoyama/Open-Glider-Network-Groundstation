@@ -20,8 +20,9 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 
 ## Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode ;
-* Auto wakeup on RX packages ;
-* Wakeup Timer
+* Deep Sleep  
+	* Auto wakeup on RX packages
+	* Wakeup Timer
 * No additional computer necessary - only Wifi ;
 * Ideal for solar and battery supply
 * low cost hardware
@@ -43,6 +44,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * no GPS signal quality data in APRS messages
 * no turn rate in APRS messages (always zero)
 * disable sleep mode if everyone is connected to webserver
+* **DEEPSLEEP_RESET gets stuck after a few resets - arduino-esp32 #796**
 * and a lot more...
 
 
