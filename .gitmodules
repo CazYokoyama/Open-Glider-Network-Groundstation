@@ -1,0 +1,3 @@
+[submodule "libraries/ErriezCRC32"]
+	path = libraries/ErriezCRC32
+	url = https://github.com/Erriez/ErriezCRC32.git
