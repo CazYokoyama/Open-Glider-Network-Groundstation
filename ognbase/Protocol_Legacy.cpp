@@ -29,6 +29,7 @@
 #include "RF.h"
 #include "Protocol_Legacy.h"
 #include "EEPROM.h"
+#include "Log.h"
 
 const rf_proto_desc_t legacy_proto_desc = {
     "Legacy",
@@ -123,6 +124,8 @@ void make_key(uint32_t key[4], uint32_t timestamp, uint32_t address)
 
 bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
 {
+    String msg;
+  
     legacy_packet_t* pkt = (legacy_packet_t *) legacy_pkt;
 
     float    ref_lat   = this_aircraft->latitude;
@@ -145,8 +148,8 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
     {
         if (settings->nmea_p)
         {
-            StdOut.print(F("$PSRFE,bad parity of decoded packet: "));
-            StdOut.println(pkt_parity % 2, HEX);
+            msg = "bad parity of decoded legacy packet";
+            Logger_send_udp(&msg);
         }
         return false;
     }
