@@ -277,7 +277,7 @@ void setup()
   delay(2000);
 
   Web_setup(&ThisAircraft);
-  Time_setup();
+  //Time_setup();
 
   SoC->WDT_setup();
 }
@@ -345,9 +345,7 @@ void ground()
    bool success;
    String msg;
 
-  if(!ntp_in_use){
-    GNSS_loop();
-  }
+  GNSS_loop();
 
   if (!groundstation) {
     RF_Transmit(RF_Encode(&ThisAircraft), true);
@@ -387,9 +385,6 @@ void ground()
     ThisAircraft.hdop = 0;
     ThisAircraft.geoid_separation = ogn_geoid_separation;
 
-    if(!ntp_in_use){
-      GNSS_sleep();
-    }
     ntp_in_use = true;
   }
 
@@ -461,7 +456,7 @@ void ground()
     MONIT_send_trap();
   }
   if(TimeToCheckKeepAliveOGN()){
-    OGN_APRS_check_Wifi(); 
+    //OGN_APRS_check_Wifi(); 
   }
 
   // Handle Air Connect

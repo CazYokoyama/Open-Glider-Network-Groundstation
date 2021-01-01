@@ -33,7 +33,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 	- there should be enough time to decode a second protocol
 * ~~Frequency hopping in legacy mode (868.2 / 868.4)~~ works (Thanks Nick)
 * ADS-B decoder
-	- we still need some hardware
+	- we still need some hardware  - **in progress**
 * send APRS messages over LoraWan
 * send Fanet service data (google protobuf) - **in testing**
 * Plutonium battery for a life of 100 years
