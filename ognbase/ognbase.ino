@@ -345,6 +345,10 @@ void ground()
    bool success;
    String msg;
 
+  if(!ntp_in_use){
+    GNSS_loop();
+  }
+
   if (!groundstation) {
     RF_Transmit(RF_Encode(&ThisAircraft), true);
     groundstation = true;
@@ -365,8 +369,6 @@ void ground()
   }
 
   if (isValidFix() && ogn_lat == 0 && ogn_lon == 0 && ogn_alt == 0) {
-
-     GNSS_loop();
     
     ThisAircraft.latitude = gnss.location.lat();
     ThisAircraft.longitude = gnss.location.lng();

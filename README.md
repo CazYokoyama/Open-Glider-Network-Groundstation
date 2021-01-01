@@ -54,6 +54,12 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * describe your problem in a few sentences
 * I will try to deal with **all issues**, maybe it will take a little longer sometimes, just be patient
 
+## Build Instructions
+
+* install latest Arduino IDE
+* git clone https://github.com/roema/Open-Glider-Network-Groundstation.git --recursive
+* make sure the arduino ide is using the correct libraries.  
+
 
 ## Installation
 

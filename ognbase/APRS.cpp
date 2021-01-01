@@ -43,10 +43,13 @@ int  last_packet_time = 0; // seconds
 
 static String zeroPadding(String data, int len)
 {
-  if(data.length() > len){
-    data.remove(len, data.length());
+  if(data.charAt(2) == '.'){
+      data.remove(len, data.length());
   }
-  
+
+  if(data.charAt(1) == '.'){
+    data.remove(len-1, data.length());
+  }
     String tmp = "";
     for (int i=data.length(); i < len; i++)
         tmp += "0";
