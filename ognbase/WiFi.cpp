@@ -120,30 +120,6 @@ bool loadConfig(String* ssid, String* pass)
     return true;
 } // loadConfig
 
-/**
- * @brief Save WiFi SSID and PSK to configuration file.
- * @param ssid SSID as string pointer.
- * @param pass PSK as string pointer,
- * @return True or False.
- */
-/*bool saveConfig(String *ssid, String *pass)
-   {
-   // Open config file for writing.
-   File configFile = SPIFFS.open("/ogn_conf.txt", "w");
-   if (!configFile)
-   {
-    Serial.println(F("Failed to open ogn_conf.txt for writing"));
-    return false;
-   }
-
-   // Save SSID and PSK.
-   configFile.println(*ssid);
-   configFile.println(*pass);
-   configFile.close();
-
-   return true;
-   } // saveConfig*/
-
 size_t Raw_Receive_UDP(uint8_t* buf)
 {
     int noBytes = Uni_Udp.parsePacket();

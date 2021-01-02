@@ -414,6 +414,17 @@ void ground()
   if (TimeToStatusOGN() && ground_registred == 1 && (isValidFix() || ntp_in_use))
   {
     OGN_APRS_Status(&ThisAircraft);
+
+    msg = "Version: ";
+    msg += String(_VERSION);
+    msg += " Power: ";
+    msg += String(SoC->Battery_voltage());
+    msg += String(" Uptime: ");
+    msg += String(millis() / 3600000);
+    msg += String(" GNSS: ");
+    msg += String(gnss.satellites.value());
+    Logger_send_udp(&msg);
+
     ExportTimeStatusOGN = seconds();
   }
 
@@ -445,7 +456,7 @@ void ground()
       fanet_transmitter = RSM_Setup(settings->ogndebugp+1);
     }
     ExportTimeFanetService = seconds();
-    msg = "unix epoch time ";
+    msg = "current system time  ";
     msg += String(now());
     Logger_send_udp(&msg);
   }
@@ -456,7 +467,7 @@ void ground()
     MONIT_send_trap();
   }
   if(TimeToCheckKeepAliveOGN()){
-    //OGN_APRS_check_Wifi(); 
+    OGN_APRS_check_Wifi(); 
   }
 
   // Handle Air Connect

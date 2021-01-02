@@ -156,7 +156,7 @@ static int OGN_APRS_check_reg(String* msg) // 0 = unverified // 1 = verified // 
 
 bool OGN_APRS_check_Wifi()
 {
-    if (WiFi.status() != WL_CONNECTED)
+    if (WiFi.status() != WL_CONNECTED && WiFi.getMode() != WIFI_STA)
     {
         WiFi.disconnect();
         WiFi.mode(WIFI_OFF);
@@ -172,19 +172,20 @@ bool OGN_APRS_check_Wifi()
 
 int OGN_APRS_check_messages()
 {
-    char*  RXbuffer  = (char *) malloc(128);
-    int    recStatus = SoC->WiFi_receive_TCP(RXbuffer, 128);
+    char*  RXbuffer  = (char *) malloc(512);
+    int    recStatus = SoC->WiFi_receive_TCP(RXbuffer, 512);
     String msg;
 
     for (int i=0; i < recStatus; i++)
         msg += RXbuffer[i];
 
-    Logger_send_udp(&msg);
 
     if (recStatus > 0)
     {
+        
         if (OGN_APRS_check_reg(&msg) == 0)
             msg = "login unsuccessful";
+            
         if (OGN_APRS_check_reg(&msg) == 1)
             msg = "login successful";
 
@@ -198,7 +199,7 @@ int OGN_APRS_check_messages()
         msg = "no packet since > 60 seconds...reconnecting";
         Logger_send_udp(&msg);
         SoC->WiFi_disconnect_TCP();
-        //OGN_APRS_check_Wifi();
+        OGN_APRS_check_Wifi();
         aprs_registred = 0;
     }
 
@@ -257,7 +258,7 @@ void OGN_APRS_Export()
             APRS_AIRC.symbol_table = symbol_table[Container[i].aircraft_type];
             APRS_AIRC.symbol       = symbol[Container[i].aircraft_type];
 
-            APRS_AIRC.snr = zeroPadding(String(SnrCalc(RF_last_rssi)), 2);
+            APRS_AIRC.snr = String(SnrCalc( Container[i].rssi),1);
 
 
             String W_lat = String((LAT - int(LAT)) * 60, 3);

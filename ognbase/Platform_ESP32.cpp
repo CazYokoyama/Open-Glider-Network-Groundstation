@@ -638,7 +638,12 @@ static void ESP32_WiFi_transmit_UDP_debug(int port, byte* buf, size_t size)
         case WIFI_STA:
             ClientIP    = WiFi.gatewayIP();
             ClientIP[3] = 200;
-            //Serial.print(ClientIP);
+            Uni_Udp.begin(localPort);
+            Uni_Udp.beginPacket(ClientIP, port);
+            Uni_Udp.write(buf, size);
+            Uni_Udp.endPacket();
+
+            ClientIP[3] = 199;
             Uni_Udp.begin(localPort);
             Uni_Udp.beginPacket(ClientIP, port);
             Uni_Udp.write(buf, size);

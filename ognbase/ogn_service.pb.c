@@ -6,16 +6,19 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-PB_BIND(type_4, type_4, AUTO)
+PB_BIND(type_4, type_4, 2)
 
 
 PB_BIND(type_5, type_5, AUTO)
 
 
-PB_BIND(FanetService, FanetService, AUTO)
+PB_BIND(FanetService, FanetService, 2)
 
 
 PB_BIND(ReceiverConfiguration, ReceiverConfiguration, AUTO)
 
 
-PB_BIND(OneMessage, OneMessage, AUTO)
+PB_BIND(OneMessage, OneMessage, 2)
+
+
+

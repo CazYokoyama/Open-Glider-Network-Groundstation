@@ -1,5 +1,5 @@
 /*
- * RFHelper.cpp
+ * RF.cpp
  * Copyright (C) 2016-2020 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -943,6 +943,11 @@ static void sx12xx_setup()
 
   // Reset the MAC state. Session and pending data transfers will be discarded.
   LMIC_reset();
+
+
+  // range test.
+  LMIC.agcref = 0x00;
+  
 
   switch (settings->rf_protocol)
   {

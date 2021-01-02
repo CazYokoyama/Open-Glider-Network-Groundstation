@@ -24,6 +24,7 @@
 #include "RF.h"
 #include "global.h"
 #include "Battery.h"
+#include "Log.h"
 
 #include <ErriezCRC32.h>
 
@@ -182,6 +183,8 @@ void handleUpload(AsyncWebServerRequest* request, String filename, size_t index,
 
 void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size_t index, uint8_t* data, size_t len, bool final)
 {
+    String msg;
+    
     if (!index)
     {
         Serial.println("Update");
@@ -223,6 +226,8 @@ void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size
         {
             Serial.println("Update complete");
             Serial.flush();
+            msg = "updating firmware";
+            Logger_send_udp(&msg);
             ESP.restart();
         }
     }
