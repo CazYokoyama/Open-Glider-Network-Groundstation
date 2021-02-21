@@ -900,7 +900,7 @@ static void rxfsk (bool rxcontinuous) {
       break;
     }
 
-	writeReg(RegAgcRef, LMIC.agcref);
+	//writeReg(RegAgcRef, LMIC.agcref);
 	//writeReg(RegAgcThresh1, 0x5B);
 	//writeReg(RegAgcThresh2, 0x5B);
 	//writeReg(RegAgcThresh3, 0xDB);

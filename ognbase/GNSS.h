@@ -48,7 +48,7 @@ enum
 
 byte GNSS_setup(void);
 
-void GNSS_loop(void);
+void GNSS_loop(bool);
 
 void GNSS_fini(void);
 

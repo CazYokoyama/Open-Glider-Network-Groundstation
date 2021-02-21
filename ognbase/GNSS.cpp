@@ -595,12 +595,14 @@ void GNSS_wakeup()
         swSer.write(0xFF);
 }
 
-void GNSS_loop()
+void GNSS_loop(bool TimeSync)
 {
     PickGNSSFix();
 
-    GNSSTimeSync();
-
+    if(!TimeSync){
+      GNSSTimeSync();
+    }
+   
 #if defined(USE_GNSS_PSM)
     if (settings->power_save & POWER_SAVE_GNSS)
         if (hw_info.model == SOFTRF_MODEL_UNI)

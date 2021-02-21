@@ -107,17 +107,17 @@ typedef struct
     unsigned int address        : 16;
 
     /*TYPE 4 Service*/
-    unsigned int header         : 8; /*bit 6 Temperature [+1 byte] bit 5 Wind [+3 byte] */
+    unsigned int header         : 8;
     unsigned int latitude       : 24;
     unsigned int longitude      : 24;
-    /*Data Bytes Depending on byte 1, 1-3 bytes are required for the data*/
+
     unsigned int temperature    : 8;
     unsigned int wind_heading   : 8;
     unsigned int s_scale        : 1;
     unsigned int wind_speed     : 7;
     unsigned int g_scale        : 1;
     unsigned int wind_gusts     : 7;
-    unsigned int hunidity       : 8;
+    unsigned int humidity       : 8;
     unsigned int barometic_lsb  : 8;
     unsigned int barometic_msb  : 8; 
     

@@ -1,0 +1,27 @@
+<?xml version=\"1.0\"?>
+<root>
+    <wifi>
+    	<ssid>mobile</ssid>
+        <pass>Test1234</pass>
+    </wifi>
+    <ogn>
+    	<callsign>callsign</callsign>
+        <lat>46.12345</lat>
+        <lon>7.12345</lon>
+        <alt>550</alt>
+        <geoid>50</geoid>
+        <range>100</range>
+        <band>1</band>
+        <proto1>1</proto1>
+        <proto2>1</proto2>
+        <aprsdebug>0</aprsdebug>
+        <aprsport>12000</aprsport>
+        <itrackbit>1</itrackbit>
+        <istleathbit>1</istealthbit>
+        <sleepmode>1</sleepmode>
+        <rxidle>3600</rxidle>
+        <wakeuptimer>3600</wakeuptimer>
+        <zabbistrapper>1</zabbixtrapper>
+        <zabbixserver>10.0.0.200</zabbixserver>
+    </ogn>
+</root>

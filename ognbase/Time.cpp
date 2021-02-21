@@ -139,7 +139,6 @@ void Time_setup()
     unsigned long epoch = secsSince1900 - seventyYears;
     // print Unix time:
     Serial.println(epoch);
-
     setTime((time_t) epoch);
 
     // print the hour, minute and second:

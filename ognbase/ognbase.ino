@@ -83,9 +83,11 @@
 #include "APRS.h"
 #include "RSM.h"
 #include "MONIT.h"
+#include "OLED.h"
 #include "Log.h"
 #include "global.h"
 #include "version.h"
+#include "config.h"
 
 #include <rom/rtc.h>
 
@@ -221,6 +223,7 @@ void setup()
   Serial.println(SoC->getResetInfo()); Serial.println("");
 
   EEPROM_setup();
+  OLED_setup();
 
   SoC->Button_setup();
 
@@ -277,7 +280,7 @@ void setup()
   delay(2000);
 
   Web_setup(&ThisAircraft);
-  //Time_setup();
+  Time_setup();
 
   SoC->WDT_setup();
 }
@@ -342,28 +345,36 @@ void shutdown(const char *msg)
 void ground()
 {
 
+   char *disp;
    bool success;
    String msg;
 
-  GNSS_loop();
+   if (!groundstation) {
+    //OGN_read_config();
 
-  if (!groundstation) {
+    
+    disp = "setup GND......";
+    OLED_write(disp, 0, 1, true);
+    
     RF_Transmit(RF_Encode(&ThisAircraft), true);
     groundstation = true;
 
+   
     msg = "good morning, startup esp32 groundstation ";
     msg += "version ";
     msg += String(_VERSION);
     msg += " after ";
     msg += String(SoC->getResetInfo());
-    Logger_send_udp(&msg);  
+    Logger_send_udp(&msg);
   }
 
+  GNSS_loop(groundstation);
 
   success = RF_Receive();
   if (success && isValidFix()){
     ParseData();
     ExportTimeSleep = seconds();
+    delay(1000);
   }
 
   if (isValidFix() && ogn_lat == 0 && ogn_lon == 0 && ogn_alt == 0) {
@@ -375,6 +386,7 @@ void ground()
     ThisAircraft.speed = gnss.speed.knots();
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
+
   }
   if (ogn_lat != 0 && ogn_lon != 0 && ogn_alt != 0) {
     ThisAircraft.latitude = ogn_lat;
@@ -384,22 +396,23 @@ void ground()
     ThisAircraft.speed = 0;
     ThisAircraft.hdop = 0;
     ThisAircraft.geoid_separation = ogn_geoid_separation;
-
+    
+    if(!ntp_in_use){
+      //GNSS_sleep(); error in function, do not activate
+      }
     ntp_in_use = true;
   }
 
   ThisAircraft.timestamp = now();
 
   if ((TimeToRegisterOGN() && (isValidFix() || ntp_in_use)) || (ground_registred == 0 ) && (isValidFix() || ntp_in_use))
-  {
-   
+  {  
     ground_registred = OGN_APRS_Register(&ThisAircraft);
-    ExportTimeRegisterOGN = seconds(); ;
+    ExportTimeRegisterOGN = seconds();
   }
 
   if (TimeToExportOGN() && ground_registred == 1)
   {
-
     OGN_APRS_Export();
     ClearExpired();
     ExportTimeOGN = seconds();
@@ -407,12 +420,19 @@ void ground()
 
   if (TimeToKeepAliveOGN() && ground_registred == 1)
   {
+    disp = "keepalive OGN...";
+    OLED_write(disp, 0, 4, true);
+    
     OGN_APRS_KeepAlive();
     ExportTimeKeepAliveOGN = seconds();
   }
 
   if (TimeToStatusOGN() && ground_registred == 1 && (isValidFix() || ntp_in_use))
   {
+
+    disp = "status OGN...";
+    OLED_write(disp, 0, 4, true);
+    
     OGN_APRS_Status(&ThisAircraft);
 
     msg = "Version: ";
@@ -424,7 +444,6 @@ void ground()
     msg += String(" GNSS: ");
     msg += String(gnss.satellites.value());
     Logger_send_udp(&msg);
-
     ExportTimeStatusOGN = seconds();
   }
 
@@ -447,7 +466,10 @@ void ground()
     esp_deep_sleep_start();
   }
 
-  if(TimeToExportFanetService()){
+  if(ground_registred == 1 && TimeToExportFanetService()){
+
+    disp = "export FANET service...";
+    OLED_write(disp, 0, 4, true);
       
     if( fanet_transmitter ){
       RSM_receiver();
@@ -465,15 +487,22 @@ void ground()
     ground_registred = OGN_APRS_check_messages();
     ExportTimeCheckKeepAliveOGN = seconds();
     MONIT_send_trap();
+    OLED_info(ntp_in_use);
   }
   if(TimeToCheckKeepAliveOGN()){
-    OGN_APRS_check_Wifi(); 
+    OGN_APRS_check_Wifi();
   }
 
   // Handle Air Connect
   NMEA_loop();
   ClearExpired();
-
+  /*
+  if (WiFi.getMode() != WIFI_STA && TimeToRegisterOGN()){
+      disp = "setup MODE......";
+      OLED_write(disp, 0, 1, true);
+      disp = "please connect to AP......";
+      OLED_write(disp, 0, 2, false); 
+  }*/
 }
 
 void watchout()

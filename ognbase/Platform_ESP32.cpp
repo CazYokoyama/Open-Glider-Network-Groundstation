@@ -94,14 +94,14 @@ static uint32_t prev_rx_packets_counter = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
 extern bool     loopTaskWDTEnabled;
 
-const char* OLED_Protocol_ID[] = {
+/*const char* OLED_Protocol_ID[] = {
     [RF_PROTOCOL_LEGACY]    = "L",
     [RF_PROTOCOL_OGNTP]     = "O",
     [RF_PROTOCOL_P3I]       = "P",
     [RF_PROTOCOL_ADSB_1090] = "A",
     [RF_PROTOCOL_ADSB_UAT]  = "U",
     [RF_PROTOCOL_FANET]     = "F"
-};
+};*/
 
 const char SoftRF_text[]   = "SoftRF";
 const char ID_text[]       = "ID";
