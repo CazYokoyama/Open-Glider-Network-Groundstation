@@ -31,7 +31,6 @@
 
 #define kKey 0x73e2
 
-//String CALLSIGN = "MULHBtest";
 int MIN_SPEED = 0;
 
 const char aprsServer[] = "aprs.glidernet.org";
@@ -40,6 +39,7 @@ int  aprsPort         = 14580;
 int  aprs_registred   = 0;
 bool aprs_connected   = false;
 int  last_packet_time = 0; // seconds
+int  ap_uptime = 0;
 
 #define seconds() (millis() / 1000)
 
@@ -165,9 +165,13 @@ bool OGN_APRS_check_Wifi()
     WiFi.begin(ogn_ssid.c_str(), ogn_wpass.c_str());
     delay(100);
   }
-  if (WiFi.status() == WL_CONNECTED)
+  if (WiFi.status() == WL_CONNECTED){
     return true;
-  else
+    }
+  else{
+    Serial.println("more then 3 minutes in AP mode reset");
+    SoC->reset();
+  }
     return false;
 }
 
@@ -200,7 +204,7 @@ int OGN_APRS_check_messages()
     msg = "no packet since > 60 seconds...reconnecting";
     Logger_send_udp(&msg);
     SoC->WiFi_disconnect_TCP();
-    OGN_APRS_check_Wifi();
+    //OGN_APRS_check_Wifi();
     aprs_registred = 0;
   }
 

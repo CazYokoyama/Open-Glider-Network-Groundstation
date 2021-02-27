@@ -119,6 +119,7 @@ void OLED_write(char* text, short x, short y, bool clear)
     u8x8->setFont(u8x8_font_chroma48medium8_r);
     u8x8->drawString(x, y, text);
   }
+  return;
 }
 
 void OLED_clear()
@@ -151,10 +152,11 @@ void OLED_info(bool ntp)
   char buf[16];
   uint32_t disp_value;
   
-  OLED_clear();
   
-  snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
+  
   if (u8x8) {
+
+    OLED_clear();
 
     if(!oled_site){
       snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);

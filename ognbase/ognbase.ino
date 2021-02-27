@@ -120,11 +120,11 @@
 #define APRS_CHECK_KEEPALIVE_TIME 20
 #define TimeToCheckKeepAliveOGN() (seconds() - ExportTimeCheckKeepAliveOGN >= APRS_CHECK_KEEPALIVE_TIME)
 
+#define APRS_CHECK_WIFI_TIME 300
+#define TimeToCheckWifi() (seconds() - ExportTimeCheckWifi >= APRS_CHECK_WIFI_TIME)
+
 #define APRS_STATUS_REC 1800
 #define TimeToStatusOGN() (seconds() - ExportTimeStatusOGN >= APRS_STATUS_REC)
-
-#define RESET_TIMER 60
-#define TimeToCheckWifi() (seconds() - ExportTimeReset > RESET_TIMER)
 
 #define APRS_PROTO_SWITCH 2
 #define TimeToswitchProto() (seconds() - ExportTimeSwitch >= APRS_PROTO_SWITCH)
@@ -164,12 +164,12 @@ unsigned long ExportTimeOGN = 0;
 unsigned long ExportTimeRegisterOGN = 0;
 unsigned long ExportTimeKeepAliveOGN = 0;
 unsigned long ExportTimeStatusOGN = 0;
-unsigned long ExportTimeReset = 0;
 unsigned long ExportTimeSwitch = 0;
 unsigned long ExportTimeSleep = 0;
 unsigned long ExportTimeWebRefresh = 0;
 unsigned long ExportTimeFanetService = 0;
 unsigned long ExportTimeCheckKeepAliveOGN = 0;
+unsigned long ExportTimeCheckWifi = 0;
 
 /*
 void print_wakeup_reason(){
@@ -371,7 +371,7 @@ void ground()
   GNSS_loop(groundstation);
 
   success = RF_Receive();
-  if (success && isValidFix()){
+  if (success && isValidFix() || success && ntp_in_use){
     ParseData();
     ExportTimeSleep = seconds();
     delay(1000);
@@ -462,7 +462,6 @@ void ground()
     }
     ground_registred = 0;
     SoC->WiFi_disconnect_TCP();
-    
     esp_deep_sleep_start();
   }
 
@@ -489,8 +488,10 @@ void ground()
     MONIT_send_trap();
     OLED_info(ntp_in_use);
   }
-  if(TimeToCheckKeepAliveOGN()){
+  
+  if( TimeToCheckWifi() ){
     OGN_APRS_check_Wifi();
+    ExportTimeCheckWifi = seconds();
   }
 
   // Handle Air Connect

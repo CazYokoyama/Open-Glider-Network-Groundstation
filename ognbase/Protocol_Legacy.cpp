@@ -133,7 +133,6 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
     float    geo_separ = this_aircraft->geoid_separation;
     uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
 
-// Serial.printf("decode: %d, %d ", timestamp, (timestamp % 64));
 
     uint32_t key[4];
     int      ndx;
@@ -150,6 +149,8 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
         {
             msg = "bad parity of decoded legacy packet";
             Logger_send_udp(&msg);
+            msg = "decoding failed";
+            Logger_send_udp(&msg);          
         }
         return false;
     }
@@ -159,8 +160,6 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
     if (lat >= 0x040000)
         lat -= 0x080000;
     lat = ((lat + round_lat) << 7) /* + 0x40 */;
-
-// Serial.printf("lat: %d ", lat);
 
     int32_t round_lon = (int32_t) (ref_lon * 1e7) >> 7;
     int32_t lon       = (pkt->lon - round_lon) % (uint32_t) 0x100000;

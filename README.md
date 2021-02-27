@@ -21,7 +21,9 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 ## Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode  
 	* 40 - 60 mA without GPS
-* Deep Sleep  
+* OLED status messages
+* ntp time sync - no gps needed
+* Deep Sleep
 	* Auto wakeup on RX packages
 	* Wakeup Timer
 * No additional computer necessary - only Wifi ;
@@ -342,6 +344,8 @@ I first had contact with the SoftRF project at the beginning of 2020. The idea o
 ## Thanks to my testers and fermentum
 * Peter A.
 * Nick
+* Guy
+* Andreas
 
 ## Thanks to..
 

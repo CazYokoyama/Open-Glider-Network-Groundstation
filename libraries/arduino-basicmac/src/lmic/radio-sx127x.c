@@ -901,6 +901,7 @@ static void rxfsk (bool rxcontinuous) {
     }
 
 	//writeReg(RegAgcRef, LMIC.agcref);
+	writeReg(RegAgcRef, 0x00);
 	//writeReg(RegAgcThresh1, 0x5B);
 	//writeReg(RegAgcThresh2, 0x5B);
 	//writeReg(RegAgcThresh3, 0xDB);
@@ -915,8 +916,8 @@ static void rxfsk (bool rxcontinuous) {
 
     // configure receiver
     //writeReg(FSKRegRxConfig, 0x1E); // AFC auto, AGC, trigger on preamble?!?
-    writeReg(FSKRegRxConfig, 0x0E); // AFC off, AGC on, trigger on preamble?!?
-    //writeReg(FSKRegRxConfig, 0x06); // AFC off, AGC off, trigger on preamble?!?
+    //writeReg(FSKRegRxConfig, 0x0E); // AFC off, AGC on, trigger on preamble?!?
+    writeReg(FSKRegRxConfig, 0x06); // AFC off, AGC off, trigger on preamble?!?
 
     // set receiver bandwidth
     switch (LMIC.protocol->bandwidth)
@@ -951,7 +952,7 @@ static void rxfsk (bool rxcontinuous) {
     // set AFC bandwidth
 //    writeReg(FSKRegAfcBw, 0x0B); // 50kHz SSB  // PAW
 //    writeReg(FSKRegAfcBw, 0x12); // 83.3kHz SSB
-      writeReg(FSKRegAfcBw, 0x11); // 166.6kHz SSB
+//      writeReg(FSKRegAfcBw, 0x11); // 166.6kHz SSB
 //    writeReg(FSKRegAfcBw, 0x09); // 200kHz SSB
 //    writeReg(FSKRegAfcBw, 0x01); // 250kHz SSB
 
@@ -1030,7 +1031,7 @@ static void rxfsk (bool rxcontinuous) {
     default:
       writeReg(FSKRegFdevMsb, 0x03); // +/- 50kHz
       writeReg(FSKRegFdevLsb, 0x33);
-      break;
+      break;     
     }
 
     state.fifolen = -1;
