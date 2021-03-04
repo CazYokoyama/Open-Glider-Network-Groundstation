@@ -204,7 +204,6 @@ int OGN_APRS_check_messages()
     msg = "no packet since > 60 seconds...reconnecting";
     Logger_send_udp(&msg);
     SoC->WiFi_disconnect_TCP();
-    //OGN_APRS_check_Wifi();
     aprs_registred = 0;
   }
 

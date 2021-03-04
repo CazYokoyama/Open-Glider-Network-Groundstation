@@ -26,9 +26,15 @@
 #include "GNSS.h"
 #include "Battery.h"
 #include "Traffic.h"
-
 #include "global.h"
+#include "Web.h"
+#include "version.h"
 
+SSD1306Wire display(SSD1306_OLED_I2C_ADDR, SDA, SCL);  // ADDRESS, SDA, SCL
+bool display_init = false;
+
+int rssi = 0;
+int oled_site = 0;
 
 enum
 {
@@ -36,25 +42,6 @@ enum
   OLED_PAGE_OTHER,
   OLED_PAGE_COUNT
 };
-
-U8X8_OLED_I2C_BUS_TYPE u8x8_i2c(U8X8_PIN_NONE);
-
-U8X8_OLED_I2C_BUS_TYPE *u8x8 = NULL;
-
-static bool OLED_display_titles = false;
-static uint32_t prev_tx_packets_counter = (uint32_t) -1;
-static uint32_t prev_rx_packets_counter = (uint32_t) -1;
-extern uint32_t tx_packets_counter, rx_packets_counter;
-
-static uint32_t prev_acrfts_counter = (uint32_t) -1;
-static uint32_t prev_sats_counter   = (uint32_t) -1;
-static uint32_t prev_uptime_minutes = (uint32_t) -1;
-static int32_t  prev_voltage        = (uint32_t) -1;
-static int8_t   prev_fix            = (uint8_t)  -1;
-
-uint8_t oled_site = 0;
-
-unsigned long OLEDTimeMarker = 0;
 
 const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_LEGACY]    = "L",
@@ -79,177 +66,133 @@ const char *ISO3166_CC[] = {
   //[RF_BAND_KR]   = "KR"
 };
 
-const char OGN_text[]   = "OGN";
-const char ID_text[]       = "ID";
-const char PROTOCOL_text[] = "PROTOCOL";
-const char RX_text[]       = "RX";
-const char TX_text[]       = "TX";
-const char ACFTS_text[]    = "ACFTS";
-const char SATS_text[]     = "SATS";
-const char FIX_text[]      = "FIX";
-const char UPTIME_text[]   = "UPTIME";
-const char BAT_text[]      = "BAT";
-
-static const uint8_t Dot_Tile[] = { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 };
-
-static int OLED_current_page = OLED_PAGE_RADIO;
-
 byte OLED_setup() {
-
-  Wire.begin();
-  Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
-  if (Wire.endTransmission() == 0){
-    u8x8 = &u8x8_i2c;
-  }
-  if(u8x8){
-    u8x8->begin();
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->drawString(0, 1, "Basestation");
-    u8x8->drawString(0, 2, "booting...");
-    
-  }
+  display_init = display.init();
 }
 
 void OLED_write(char* text, short x, short y, bool clear)
 {
-  if (u8x8) {
+  if(display_init){
+    display.displayOn();
     if(clear){
-      u8x8->clear();
+      display.clear();
     }
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->drawString(x, y, text);
+    display.drawString(x, y, text);
+    display.display();
   }
-  return;
+
 }
 
 void OLED_clear()
 {
-  for( int c = 1; c < u8x8->getCols(); c++ ){
-    OLED_bar(c, 1);
-    OLED_bar(c-1, 0);
+  if(display_init){
+   display.clear(); 
   }
-  u8x8->clear();
-}
-
-void OLED_bar(uint8_t c, uint8_t is_inverse)
-{ 
-  uint8_t r;
-  u8x8->setInverseFont(is_inverse);
-  for( r = 0; r < u8x8->getRows(); r++ )
-  {
-    u8x8->setCursor(c, r);
-    u8x8->print(" ");
-  }
-}
-
-void OLED_fini(int reason)
-{
-
 }
 
 void OLED_info(bool ntp)
-{
-  char buf[16];
+{  
+  char buf[20];
   uint32_t disp_value;
   
   
-  
-  if (u8x8) {
+  if (display_init) {
 
-    OLED_clear();
+    display.displayOff();  
+    display.clear();
+
+    display.setFont(ArialMT_Plain_24);
+    display.drawString(85, 0, "RX");
+    display.setFont(ArialMT_Plain_16);
+    snprintf (buf, sizeof(buf), "%d", rx_packets_counter);
+    display.drawString(85, 30, buf);
+    display.setFont(ArialMT_Plain_10);
 
     if(!oled_site){
-      snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
-      u8x8->drawString(0, 0, "ID:");
-      u8x8->drawString(4, 0, buf);
+      snprintf (buf, sizeof(buf), "ID: %06X", ThisAircraft.addr);
+      display.drawString(0, 0, buf);
       
       snprintf (buf, sizeof(buf), "SSID: %s", ogn_ssid);
-      u8x8->drawString(0, 1, buf);
+      display.drawString(0, 9, buf);
       
       snprintf (buf, sizeof(buf), "CS: %s", ogn_callsign);
-      u8x8->drawString(0, 2, buf);
+      display.drawString(0, 18, buf);
   
       snprintf (buf, sizeof(buf), "Band: %s", ISO3166_CC[settings->band]);
-      u8x8->drawString(0, 3, buf); 
+      display.drawString(0, 27, buf); 
       
       //OLED_Protocol_ID[ThisAircraft.protocol]
       snprintf (buf, sizeof(buf), "Prot: %s", OLED_Protocol_ID[ThisAircraft.protocol]);
-      u8x8->drawString(0, 4, buf); 
+      display.drawString(0, 36, buf); 
   
       snprintf (buf, sizeof(buf), "UTC: %02d:%02d", hour(now()), minute(now()));
-      u8x8->drawString(0, 5, buf);
+      display.drawString(0, 45, buf);
   
       if(ntp){
-        u8x8->drawString(0, 6, "NTP: True");
+        display.drawString(0, 54, "NTP: True");
       }
       else{
         disp_value = gnss.satellites.value();
         itoa(disp_value, buf, 10);
-        u8x8->drawString(0, 6, "GNSS:");
-        u8x8->drawString(7, 6, buf);
+        snprintf (buf, sizeof(buf), "GNSS: %s", buf);
+        display.drawString(0, 54, buf);
       }
   
        disp_value = settings->range;
        itoa(disp_value, buf, 10);
-       u8x8->drawString(0, 7, "Range:");
-       u8x8->drawString(7, 7, buf);
+       snprintf (buf, sizeof(buf), "Range: %s", buf);
+       display.drawString(0, 63, buf);
        oled_site = 1;
+       display.display();
+       display.displayOn(); 
+       return;
     }
-    else{
-      snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
-      u8x8->drawString(0, 0, "ID:");
-      u8x8->drawString(4, 0, buf);
-      
+    if(oled_site == 1){
+     
       disp_value = RF_last_rssi;
-      itoa(disp_value, buf, 10);
-      u8x8->drawString(0, 1, "RSSI:");
-      u8x8->drawString(7, 1, buf);
+      snprintf (buf, sizeof(buf), "RSSI: %d", disp_value);
+      display.drawString(0, 0, buf);
 
       //ogndebug
       disp_value = settings->ogndebug;
-      itoa(disp_value, buf, 10);
-      u8x8->drawString(0, 2, "DEBUG:");
-      u8x8->drawString(7, 2, buf);
+      snprintf (buf, sizeof(buf), "Debug: %d", disp_value);
+      display.drawString(0, 9, buf);
 
       //ogndebugp
       disp_value = settings->ogndebugp;
-      itoa(disp_value, buf, 10);
-      u8x8->drawString(0, 3, "DEBP:");
-      u8x8->drawString(7, 3, buf);
+      snprintf (buf, sizeof(buf), "DebugP: %d", disp_value);
+      display.drawString(0, 18, buf);
 
       //bool ignore_stealth;
       disp_value = settings->ignore_stealth;
-      itoa(disp_value, buf, 10);
-      u8x8->drawString(0, 4, "ISTEALTH:");
-      u8x8->drawString(10, 4, buf);
+      snprintf (buf, sizeof(buf), "IStealth: %d", disp_value);
+      display.drawString(0, 27, buf);
+
 
       //bool ignore_no_track;
       disp_value = settings->ignore_no_track;
-      itoa(disp_value, buf, 10);
-      u8x8->drawString(0, 5, "ITRACK:");
-      u8x8->drawString(8, 5, buf);
+      snprintf (buf, sizeof(buf), "ITrack: %d", disp_value);
+      display.drawString(0, 36, buf);
+
 
       //zabbix_en
       disp_value = settings->zabbix_en;
-      itoa(disp_value, buf, 10);
-      u8x8->drawString(0, 6, "ZABBIX:");
-      u8x8->drawString(8, 6, buf);
+      snprintf (buf, sizeof(buf), "Zabbix: %d", disp_value);
+      display.drawString(0, 45, buf);
 
+      //version
+      snprintf (buf, sizeof(buf), "Version: %s", _VERSION);
+      display.drawString(0, 54, buf);
 
+      
+      display.display();
       oled_site = 0;
+      display.displayOn(); 
+      return;
     }
   }
 }
 
 void OLED_status(){
   
-}
-
-
-void OLED_Next_Page()
-{
-  if (u8x8) {
-    OLED_current_page = (OLED_current_page + 1) % OLED_PAGE_COUNT;
-    OLED_display_titles = false;
-  }
 }

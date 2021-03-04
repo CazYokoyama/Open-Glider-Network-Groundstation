@@ -22,6 +22,8 @@
 #include "GNSS.h"
 #include "Web.h"
 #include "Protocol_Legacy.h"
+#include "OLED.h"
+
 
 unsigned long UpdateTrafficTimeMarker = 0;
 
@@ -137,6 +139,8 @@ void ParseData()
     size_t rx_size = RF_Payload_Size(settings->rf_protocol);
     rx_size = rx_size > sizeof(fo.raw) ? sizeof(fo.raw) : rx_size;
 
+    char buf[16];
+
 #if DEBUG
     Hex2Bin(TxDataTemplate, RxBuffer);
 #endif
@@ -159,9 +163,6 @@ void ParseData()
         int i;
 
         fo.rssi = RF_last_rssi;
-
-        // for debugging
-        Serial.printf("Pkt: %06x\r\n", fo.addr);
 
         for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
             if (Container[i].addr == fo.addr)

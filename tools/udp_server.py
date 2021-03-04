@@ -6,7 +6,7 @@ from datetime import datetime
 
 from termcolor import colored, cprint
 
-colors =['blue','green','yellow','cyan','magenta','']
+colors =['white','green','yellow','cyan','magenta','']
 
 if len(sys.argv) > 1:
     UDP_PORT_NO = int(sys.argv[1])

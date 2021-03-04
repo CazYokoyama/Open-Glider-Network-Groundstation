@@ -348,14 +348,12 @@ void ground()
    char *disp;
    bool success;
    String msg;
+   char buf[32];
 
    if (!groundstation) {
     //OGN_read_config();
 
-    
-    disp = "setup GND......";
-    OLED_write(disp, 0, 1, true);
-    
+   
     RF_Transmit(RF_Encode(&ThisAircraft), true);
     groundstation = true;
 
@@ -368,13 +366,24 @@ void ground()
     Logger_send_udp(&msg);
   }
 
+  if((WiFi.getMode() == WIFI_AP)){
+    OLED_write("Setup mode..", 0, 9, true);
+    OLED_write("connect to AP", 0, 18, false);
+    snprintf (buf, sizeof(buf), "reboot in %d seconds", 300 - seconds());
+    OLED_write(buf, 0, 27, false);
+    delay(1000);
+    if(300 < seconds()){
+      SoC->reset();
+      }
+    }
+
+  
   GNSS_loop(groundstation);
 
   success = RF_Receive();
   if (success && isValidFix() || success && ntp_in_use){
     ParseData();
     ExportTimeSleep = seconds();
-    delay(1000);
   }
 
   if (isValidFix() && ogn_lat == 0 && ogn_lon == 0 && ogn_alt == 0) {
@@ -405,7 +414,7 @@ void ground()
 
   ThisAircraft.timestamp = now();
 
-  if ((TimeToRegisterOGN() && (isValidFix() || ntp_in_use)) || (ground_registred == 0 ) && (isValidFix() || ntp_in_use))
+  if ((TimeToRegisterOGN() && (isValidFix() || ntp_in_use)) && WiFi.getMode() != WIFI_AP || (ground_registred == 0 ) && (isValidFix() || ntp_in_use) && WiFi.getMode() != WIFI_AP)
   {  
     ground_registred = OGN_APRS_Register(&ThisAircraft);
     ExportTimeRegisterOGN = seconds();
@@ -415,13 +424,14 @@ void ground()
   {
     OGN_APRS_Export();
     ClearExpired();
+    OLED_info(ntp_in_use);
     ExportTimeOGN = seconds();
   }
 
   if (TimeToKeepAliveOGN() && ground_registred == 1)
   {
     disp = "keepalive OGN...";
-    OLED_write(disp, 0, 4, true);
+    OLED_write(disp, 0, 24, true);
     
     OGN_APRS_KeepAlive();
     ExportTimeKeepAliveOGN = seconds();
@@ -431,7 +441,7 @@ void ground()
   {
 
     disp = "status OGN...";
-    OLED_write(disp, 0, 4, true);
+    OLED_write(disp, 0, 24, true);
     
     OGN_APRS_Status(&ThisAircraft);
 
@@ -468,7 +478,7 @@ void ground()
   if(ground_registred == 1 && TimeToExportFanetService()){
 
     disp = "export FANET service...";
-    OLED_write(disp, 0, 4, true);
+    OLED_write(disp, 0, 24, true);
       
     if( fanet_transmitter ){
       RSM_receiver();
@@ -486,10 +496,11 @@ void ground()
     ground_registred = OGN_APRS_check_messages();
     ExportTimeCheckKeepAliveOGN = seconds();
     MONIT_send_trap();
-    OLED_info(ntp_in_use);
   }
   
   if( TimeToCheckWifi() ){
+    disp = "checking Wifi...";
+    OLED_write(disp, 0, 24, true);
     OGN_APRS_check_Wifi();
     ExportTimeCheckWifi = seconds();
   }
@@ -497,13 +508,6 @@ void ground()
   // Handle Air Connect
   NMEA_loop();
   ClearExpired();
-  /*
-  if (WiFi.getMode() != WIFI_STA && TimeToRegisterOGN()){
-      disp = "setup MODE......";
-      OLED_write(disp, 0, 1, true);
-      disp = "please connect to AP......";
-      OLED_write(disp, 0, 2, false); 
-  }*/
 }
 
 void watchout()
