@@ -26,6 +26,7 @@
 #include "Traffic.h"
 #include "EEPROM.h"
 #include "RF.h"
+#include "global.h"
 
 static unsigned long MAVLinkTimeSyncMarker = 0;
 static bool          MAVLinkAPisArmed      = false;
@@ -77,7 +78,7 @@ void MAVLinkShareTraffic()
                           Container[i].course,
                           Container[i].speed * _GPS_MPS_PER_KNOT,         /* m/s */
                           Container[i].vs / (_GPS_FEET_PER_METER * 60.0), /* m/s */
-                          (settings->band == RF_BAND_US ? 1200 : 7000),
+                          (ogn_band == RF_BAND_US ? 1200 : 7000),
                           callsign,
                           AT_TO_GDL90(Container[i].aircraft_type));
         }

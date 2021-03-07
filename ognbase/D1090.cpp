@@ -25,6 +25,7 @@
 #include "GDL90.h"
 #include "EEPROM.h"
 #include "Traffic.h"
+#include "global.h"
 
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))
 
@@ -75,7 +76,7 @@ void D1090_Export()
             {
                 distance = Container[i].distance;
 
-                if (distance < settings->range)
+                if (distance < ogn_range)
                 {
                     double altitude;
                     /* If the aircraft's data has standard pressure altitude - make use it */

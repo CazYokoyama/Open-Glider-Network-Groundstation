@@ -19,16 +19,17 @@
 #include "SoC.h"
 #include "Log.h"
 #include "EEPROM.h"
+#include "global.h"
 
 
 void Logger_send_udp(String* buf)
 {
-    if (settings->ogndebug)
+    if (ogn_debug)
     {
         int  debug_len = buf->length() + 1;
         byte debug_msg[debug_len];
         buf->getBytes(debug_msg, debug_len);
-        SoC->WiFi_transmit_UDP_debug(settings->ogndebugp, debug_msg, debug_len);
+        SoC->WiFi_transmit_UDP_debug(ogn_debugport, debug_msg, debug_len);
     }
 }
 

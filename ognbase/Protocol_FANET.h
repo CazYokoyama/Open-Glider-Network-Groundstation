@@ -119,8 +119,7 @@ typedef struct
     unsigned int wind_gusts     : 7;
     unsigned int humidity       : 8;
     unsigned int barometic_lsb  : 8;
-    unsigned int barometic_msb  : 8; 
-    
+    unsigned int barometic_msb  : 8;
 } __attribute__((packed)) fanet_packet_s;
 
 #define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)

@@ -94,8 +94,8 @@ void JSON_Export()
                 aircraft["horVelocityCMS"] = (unsigned long) (Container[i].speed * _GPS_MPS_PER_KNOT * 100);
                 /* Vertical velocity in centimeters/sec with positive being up */
                 aircraft["verVelocityCMS"] = (long) (Container[i].vs * 100 / (_GPS_FEET_PER_METER * 60.0));
-                aircraft["squawk"]         = (settings->band == RF_BAND_US ? 1200 : 7000); // VFR Squawk code
-                aircraft["altitudeType"]   = 1;                                            // Altitude Source: 0 = Pressure 1 = Geometric
+                aircraft["squawk"]         = (ogn_band == RF_BAND_US ? 1200 : 7000); // VFR Squawk code
+                aircraft["altitudeType"]   = 1;                                      // Altitude Source: 0 = Pressure 1 = Geometric
                 memcpy(callsign, GDL90_CallSign_Prefix[Container[i].protocol],
                        strlen(GDL90_CallSign_Prefix[Container[i].protocol]));
                 memcpy(callsign + strlen(GDL90_CallSign_Prefix[Container[i].protocol]),
@@ -739,7 +739,7 @@ void parseSettings(JsonObject& root)
                 for (int i=0; i < MAX_TRACKING_OBJECTS; i++)
                     if (memcmp(Container[i].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) != 0)
                     {
-                        size_t size = RF_Payload_Size(settings->rf_protocol);
+                        size_t size = RF_Payload_Size(ogn_protocol_1);
                         size = size > sizeof(Container[i].raw) ? sizeof(Container[i].raw) : size;
                         String str = Bin2Hex(Container[i].raw, size);
                         printf("%s\n", str.c_str());

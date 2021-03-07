@@ -79,12 +79,12 @@ void EEPROM_setup()
 
 void EEPROM_defaults()
 {
-    eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
-    eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
-    eeprom_block.field.settings.mode          = SOFTRF_MODE_GROUND;
-    eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
-    eeprom_block.field.settings.rf_protocol2  = RF_PROTOCOL_LEGACY;
-    eeprom_block.field.settings.band          = RF_BAND_EU;
+    eeprom_block.field.magic         = SOFTRF_EEPROM_MAGIC;
+    eeprom_block.field.version       = SOFTRF_EEPROM_VERSION;
+    eeprom_block.field.settings.mode = SOFTRF_MODE_GROUND;
+    //eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
+    //eeprom_block.field.settings.rf_protocol2  = RF_PROTOCOL_LEGACY;
+    //eeprom_block.field.settings.band          = RF_BAND_EU;
     eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
     eeprom_block.field.settings.txpower       = RF_TX_POWER_FULL;
     eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
@@ -110,22 +110,22 @@ void EEPROM_defaults()
     eeprom_block.field.settings.nmea_out = NMEA_OFF;
 #endif
 
-    eeprom_block.field.settings.gdl90               = GDL90_OFF;
-    eeprom_block.field.settings.d1090               = D1090_OFF;
-    eeprom_block.field.settings.json                = JSON_OFF;
-    eeprom_block.field.settings.stealth             = false;
-    eeprom_block.field.settings.no_track            = false;
-    eeprom_block.field.settings.power_save          = POWER_SAVE_NONE;
-    eeprom_block.field.settings.freq_corr           = 0;
-    eeprom_block.field.settings.range               = 10;
-    eeprom_block.field.settings.sxlna               = true;
-    eeprom_block.field.settings.ogndebug            = false;
-    eeprom_block.field.settings.ogndebugp           = 12000;
-    eeprom_block.field.settings.ignore_stealth      = false;
-    eeprom_block.field.settings.ignore_no_track     = false;
-    eeprom_block.field.settings.sleep_mode          = 0;
-    eeprom_block.field.settings.sleep_after_rx_idle = 3600;
-    eeprom_block.field.settings.wake_up_timer       = 3600;
+    eeprom_block.field.settings.gdl90      = GDL90_OFF;
+    eeprom_block.field.settings.d1090      = D1090_OFF;
+    eeprom_block.field.settings.json       = JSON_OFF;
+    eeprom_block.field.settings.stealth    = false;
+    eeprom_block.field.settings.no_track   = false;
+    eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
+    eeprom_block.field.settings.freq_corr  = 0;
+    //eeprom_block.field.settings.range               = 10;
+    //eeprom_block.field.settings.sxlna               = true;
+    //eeprom_block.field.settings.ogndebug            = false;
+    //eeprom_block.field.settings.ogndebugp           = 12000;
+    //eeprom_block.field.settings.ignore_stealth      = false;
+    //eeprom_block.field.settings.ignore_no_track     = false;
+    //eeprom_block.field.settings.sleep_mode          = 0;
+    //eeprom_block.field.settings.sleep_after_rx_idle = 3600;
+    //eeprom_block.field.settings.wake_up_timer       = 3600;
 }
 
 void EEPROM_store()

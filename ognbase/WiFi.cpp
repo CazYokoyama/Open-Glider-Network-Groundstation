@@ -36,6 +36,7 @@ void WiFi_fini()
 #include "OTA.h"
 #include "GNSS.h"
 #include "EEPROM.h"
+#include "OLED.h"
 #include "WiFi.h"
 #include "Traffic.h"
 #include "RF.h"
@@ -43,8 +44,9 @@ void WiFi_fini()
 #include "NMEA.h"
 #include "Battery.h"
 
-String station_ssid = "ognbase";
-String station_psk  = "123456789";
+#include "config.h"
+#include "global.h"
+#include "logos.h"
 
 String host_name = HOSTNAME;
 
@@ -56,6 +58,10 @@ IPAddress subnet(255, 255, 255, 0);
  * Default WiFi connection information.
  *
  */
+
+String station_ssid = "ognbase";
+String station_psk  = "123456789";
+
 const char* ap_default_psk = "987654321"; ///< Default PSK.
 
 #if defined(USE_DNS_SERVER)
@@ -77,49 +83,6 @@ char UDPpacketBuffer[256]; // buffer to hold incoming and outgoing packets
 static unsigned long WiFi_No_Clients_Time_ms = 0;
 #endif
 
-/**
- * @brief Read WiFi connection information from file system.
- * @param ssid String pointer for storing SSID.
- * @param pass String pointer for storing PSK.
- * @return True or False.
- *
- * The config file have to containt the WiFi SSID in the first line
- * and the WiFi PSK in the second line.
- * Line seperator can be \r\n (CR LF) \r or \n.
- */
-bool loadConfig(String* ssid, String* pass)
-{
-    int line = 0;
-
-    // open file for reading.
-    File configFile = SPIFFS.open("/ogn_conf.txt", "r");
-    if (!configFile)
-    {
-        Serial.println(F("Failed to open ogn_conf.txt."));
-        return false;
-    }
-
-    while (configFile.available() && line < 5)
-    {
-        if (line == 0)
-            *ssid = configFile.readStringUntil('\n').c_str();
-        if (line == 1)
-            *pass = configFile.readStringUntil('\n').c_str();
-        line++;
-    }
-
-    configFile.close();
-
-    if (line < 2)
-        return false;
-
-    ssid->trim();
-    pass->trim();
-
-
-    return true;
-} // loadConfig
-
 size_t Raw_Receive_UDP(uint8_t* buf)
 {
     int noBytes = Uni_Udp.parsePacket();
@@ -139,7 +102,7 @@ size_t Raw_Receive_UDP(uint8_t* buf)
 
 void Raw_Transmit_UDP()
 {
-    size_t rx_size = RF_Payload_Size(settings->rf_protocol);
+    size_t rx_size = RF_Payload_Size(ogn_protocol_1);
     rx_size = rx_size > sizeof(fo.raw) ? sizeof(fo.raw) : rx_size;
     String str = Bin2Hex(fo.raw, rx_size);
     size_t len = str.length();
@@ -154,82 +117,87 @@ void Raw_Transmit_UDP()
  */
 void WiFi_setup()
 {
-#if 1
-    // Initialize file system.
-    if (!SPIFFS.begin(true))
-    {
-        Serial.println(F("Failed to mount file system"));
-        return;
-    }
+    char buf[32];
 
-    // Load wifi connection information.
-    if (!loadConfig(&station_ssid, &station_psk))
-    {
-        station_ssid = MY_ACCESSPOINT_SSID;
-        station_psk  = MY_ACCESSPOINT_PSK;
-
-        Serial.println(F("No WiFi connection information available."));
-    }
-#endif
-
-    // Check WiFi connection
-    // ... check mode
     if (WiFi.getMode() != WIFI_STA)
     {
         WiFi.mode(WIFI_STA);
         delay(10);
     }
 
-    // ... Compare file config with sdk config.
-    if (WiFi.SSID() != station_ssid || WiFi.psk() != station_psk)
+    if (OGN_read_config())
     {
         Serial.println(F("WiFi config changed."));
 
-        // ... Try to connect to WiFi station.
-        WiFi.begin(station_ssid.c_str(), station_psk.c_str());
+        delay(1500);
 
-        // ... Pritn new SSID
-        Serial.print(F("new SSID: "));
-        Serial.println(WiFi.SSID());
+        for (int i=0; i < 5; i++) {
+            if (ogn_ssid[i] != "")
+            {
+                OLED_draw_Bitmap(85, 20, 1, true);
+                snprintf(buf, sizeof(buf), "try connecting");
+                OLED_write(buf, 0, 15, false);
+                snprintf(buf, sizeof(buf), "%s", ogn_ssid[i].c_str());
+                OLED_write(buf, 0, 26, false);
 
-        // ... Uncomment this for debugging output.
-        //WiFi.printDiag(Serial);
+                WiFi.begin(ogn_ssid[i].c_str(), ogn_wpass[i].c_str());
+                ssid_index = i;
+
+                //
+                unsigned long startTime = millis();
+
+                while (WiFi.status() != WL_CONNECTED && millis() - startTime < 15000)
+                {
+                    Serial.write('.');
+                    Serial.print(WiFi.status());
+                    delay(500);
+                }
+            }
+
+            // Check connection
+            if (WiFi.status() == WL_CONNECTED)
+            {
+                // ... print IP Address
+                Serial.print(F("IP address: "));
+                Serial.println(WiFi.localIP());
+                snprintf(buf, sizeof(buf), "success..");
+                OLED_write(buf, 0, 44, false);
+                host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
+                SoC->WiFi_hostname(host_name);
+
+                // Print hostname.
+                Serial.println("Hostname: " + host_name);
+                break;
+            }
+            if (WiFi.status() != WL_CONNECTED)
+            {
+                Serial.println();
+                Serial.println(F("Can not connect to WiFi station"));
+                snprintf(buf, sizeof(buf), "failed..");
+                OLED_write(buf, 0, 44, false);
+            }
+        }
     }
     else
-        // ... Begin with sdk config.
+    {
+        station_ssid = MY_ACCESSPOINT_SSID;
+        station_psk  = MY_ACCESSPOINT_PSK;
+        Serial.println(F("No WiFi connection information available."));
+        snprintf(buf, sizeof(buf), "no config file found..");
+        OLED_write(buf, 0, 25, false);
         WiFi.begin();
-
-    // Set Hostname.
-    host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
-    SoC->WiFi_hostname(host_name);
-
-    // Print hostname.
-    Serial.println("Hostname: " + host_name);
-
-    Serial.println(F("Wait for WiFi connection."));
-
-    // ... Give ESP 10 seconds to connect to station.
-    unsigned long startTime = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startTime < 20000)
-    {
-        Serial.write('.');
-        //Serial.print(WiFi.status());
-        delay(500);
+        delay(1000);
     }
-    Serial.println();
 
-    // Check connection
-    if (WiFi.status() == WL_CONNECTED)
+    if (WiFi.status() != WL_CONNECTED)
     {
-        // ... print IP Address
-        Serial.print(F("IP address: "));
-        Serial.println(WiFi.localIP());
-    }
-    else
-    {
-        Serial.println(F("Can not connect to WiFi station. Go into AP mode.")); // if (WiFi.status() != WL_CONNECTED) Connect();
+        host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
+        SoC->WiFi_hostname(host_name);
 
-        // Go into software AP mode.
+        // Print hostname.
+        Serial.println("Hostname: " + host_name);
+        Serial.println(F("Wait for WiFi connection."));
+
         WiFi.mode(WIFI_AP);
         SoC->WiFi_setOutputPower(WIFI_TX_POWER_MED); // 10 dB
         // WiFi.setOutputPower(0); // 0 dB
@@ -243,15 +211,10 @@ void WiFi_setup()
         Serial.print(F("Setting soft-AP ... "));
         Serial.println(WiFi.softAP(host_name.c_str(), ap_default_psk) ?
                        F("Ready") : F("Failed!"));
-#if defined(USE_DNS_SERVER)
-        // if DNSServer is started with "*" for domain name, it will reply with
-        // provided IP to all DNS request
-        dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
-        dns_active = true;
-#endif
         Serial.print(F("IP address: "));
         Serial.println(WiFi.softAPIP());
     }
+
 
     Uni_Udp.begin(RFlocalPort);
     Serial.print(F("UDP server has started at port: "));

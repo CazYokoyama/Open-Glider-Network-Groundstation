@@ -24,10 +24,16 @@
 #define SSD1306_OLED_I2C_ADDR   0x3C
 
 byte OLED_setup(void);
-void OLED_write(char*, short, short, bool);
+
+void OLED_write(char *, short, short, bool);
+
 void OLED_clear(void);
+
 void OLED_bar(uint8_t, uint8_t);
 void OLED_info(bool);
+
 void OLED_update(void);
+
+void OLED_draw_Bitmap(int16_t, int16_t, uint8_t, bool);
 
 #endif /* OLEDHELPER_H */

@@ -125,7 +125,7 @@ void make_key(uint32_t key[4], uint32_t timestamp, uint32_t address)
 bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
 {
     String msg;
-  
+
     legacy_packet_t* pkt = (legacy_packet_t *) legacy_pkt;
 
     float    ref_lat   = this_aircraft->latitude;
@@ -150,7 +150,7 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
             msg = "bad parity of decoded legacy packet";
             Logger_send_udp(&msg);
             msg = "decoding failed";
-            Logger_send_udp(&msg);          
+            Logger_send_udp(&msg);
         }
         return false;
     }

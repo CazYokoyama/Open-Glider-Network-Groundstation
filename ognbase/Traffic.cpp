@@ -23,6 +23,7 @@
 #include "Web.h"
 #include "Protocol_Legacy.h"
 #include "OLED.h"
+#include "global.h"
 
 
 unsigned long UpdateTrafficTimeMarker = 0;
@@ -136,7 +137,7 @@ void Traffic_Update(int ndx)
 
 void ParseData()
 {
-    size_t rx_size = RF_Payload_Size(settings->rf_protocol);
+    size_t rx_size = RF_Payload_Size(ogn_protocol_1);
     rx_size = rx_size > sizeof(fo.raw) ? sizeof(fo.raw) : rx_size;
 
     char buf[16];

@@ -79,50 +79,50 @@ void RSM_receiver()
 
 
                 if (message.receiverConfiguration.has_maxrange)
-                    settings->range = message.receiverConfiguration.maxrange;
+                    ogn_range = message.receiverConfiguration.maxrange;
                 if (message.receiverConfiguration.has_band)
                 {
-                    settings->band = message.receiverConfiguration.band;
+                    ogn_band = message.receiverConfiguration.band;
                     Serial.println("setting band");
                 }
                 if (message.receiverConfiguration.has_protocol)
                 {
-                    settings->rf_protocol = message.receiverConfiguration.protocol;
+                    ogn_protocol_1 = message.receiverConfiguration.protocol;
                     Serial.println("setting protocol");
                 }
                 if (message.receiverConfiguration.has_aprsd)
                 {
-                    settings->ogndebug = message.receiverConfiguration.aprsd;
+                    ogn_debug= message.receiverConfiguration.aprsd;
                     Serial.println("enable aprs debugging");
                 }
                 if (message.receiverConfiguration.has_aprsp)
                 {
-                    settings->ogndebugp = message.receiverConfiguration.aprsp;
+                    ogn_debugport = message.receiverConfiguration.aprsp;
                     Serial.println("change aprs debug port");
                 }
                 if (message.receiverConfiguration.has_itrackb)
                 {
-                    settings->ignore_no_track = message.receiverConfiguration.itrackb;
+                    ogn_itrackbit= message.receiverConfiguration.itrackb;
                     Serial.println("ignore track bit set");
                 }
                 if (message.receiverConfiguration.has_istealthb)
                 {
-                    settings->ignore_stealth = message.receiverConfiguration.istealthb;
+                    ogn_istealthbit= message.receiverConfiguration.istealthb;
                     Serial.println("ignore stealth bit set");
                 }
                 if (message.receiverConfiguration.has_sleepm)
                 {
-                    settings->sleep_mode = message.receiverConfiguration.sleepm;
+                    ogn_sleepmode = message.receiverConfiguration.sleepm;
                     Serial.println("enabling sleep mode");
                 }
                 if (message.receiverConfiguration.has_rxidle)
                 {
-                    settings->sleep_after_rx_idle = message.receiverConfiguration.rxidle;
+                    ogn_rxidle = message.receiverConfiguration.rxidle;
                     Serial.println("enable sleep after rx idle");
                 }
                 if (message.receiverConfiguration.has_wakeup)
                 {
-                    settings->wake_up_timer = message.receiverConfiguration.wakeup;
+                    ogn_wakeuptimer= message.receiverConfiguration.wakeup;
                     Serial.println("setting wakeup timer value");
                 }
                 if (message.receiverConfiguration.has_reset)

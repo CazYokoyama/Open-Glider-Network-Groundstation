@@ -599,10 +599,9 @@ void GNSS_loop(bool TimeSync)
 {
     PickGNSSFix();
 
-    if(!TimeSync){
-      GNSSTimeSync();
-    }
-   
+    if (!TimeSync)
+        GNSSTimeSync();
+
 #if defined(USE_GNSS_PSM)
     if (settings->power_save & POWER_SAVE_GNSS)
         if (hw_info.model == SOFTRF_MODEL_UNI)
@@ -831,8 +830,8 @@ void PickGNSSFix()
 
                     snprintf_P(psrfc_buf, sizeof(psrfc_buf),
                                PSTR("$PSRFC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d*"),
-                               PSRFC_VERSION, settings->mode, settings->rf_protocol,
-                               settings->band, settings->aircraft_type, settings->alarm,
+                               PSRFC_VERSION, settings->mode, ogn_protocol_1,
+                               ogn_band, settings->aircraft_type, settings->alarm,
                                settings->txpower, settings->volume, settings->pointer,
                                settings->nmea_g, settings->nmea_p, settings->nmea_l,
                                settings->nmea_s, settings->nmea_out, settings->gdl90,
@@ -855,16 +854,16 @@ void PickGNSSFix()
                     }
                     if (C_Protocol.isUpdated())
                     {
-                        settings->rf_protocol = atoi(C_Protocol.value());
+                        ogn_protocol_1 = atoi(C_Protocol.value());
                         Serial.print(F("Protocol = "));
-                        Serial.println(settings->rf_protocol);
+                        Serial.println(ogn_protocol_1);
                         cfg_is_updated = true;
                     }
                     if (C_Band.isUpdated())
                     {
-                        settings->band = atoi(C_Band.value());
+                        ogn_band = atoi(C_Band.value());
                         Serial.print(F("Region = "));
-                        Serial.println(settings->band);
+                        Serial.println(ogn_band);
                         cfg_is_updated = true;
                     }
                     if (C_AcftType.isUpdated())

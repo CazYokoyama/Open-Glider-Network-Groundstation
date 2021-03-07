@@ -120,7 +120,7 @@
 #define APRS_CHECK_KEEPALIVE_TIME 20
 #define TimeToCheckKeepAliveOGN() (seconds() - ExportTimeCheckKeepAliveOGN >= APRS_CHECK_KEEPALIVE_TIME)
 
-#define APRS_CHECK_WIFI_TIME 300
+#define APRS_CHECK_WIFI_TIME 600
 #define TimeToCheckWifi() (seconds() - ExportTimeCheckWifi >= APRS_CHECK_WIFI_TIME)
 
 #define APRS_STATUS_REC 1800
@@ -134,10 +134,10 @@
 
 //testing
 #define TIME_TO_SLEEP  60
-#define TimeToSleep() (seconds() - ExportTimeSleep >= settings->sleep_after_rx_idle)
+#define TimeToSleep() (seconds() - ExportTimeSleep >= ogn_rxidle)
 
 /*Testing FANET service messages*/
-#define TIME_TO_EXPORT_FANET_SERVICE 20 /*every 40 sec 10 for testing*/
+#define TIME_TO_EXPORT_FANET_SERVICE 40 /*every 40 sec 10 for testing*/
 #define TimeToExportFanetService() (seconds() - ExportTimeFanetService >= TIME_TO_EXPORT_FANET_SERVICE)
 
 
@@ -255,7 +255,7 @@ void setup()
     hw_info.gnss = GNSS_setup();
     ThisAircraft.aircraft_type = settings->aircraft_type;
   }
-  ThisAircraft.protocol = settings->rf_protocol;
+  ThisAircraft.protocol = ogn_protocol_1;
   ThisAircraft.stealth  = settings->stealth;
   ThisAircraft.no_track = settings->no_track;
 
@@ -368,9 +368,12 @@ void ground()
 
   if((WiFi.getMode() == WIFI_AP)){
     OLED_write("Setup mode..", 0, 9, true);
-    OLED_write("connect to AP", 0, 18, false);
-    snprintf (buf, sizeof(buf), "reboot in %d seconds", 300 - seconds());
+    snprintf (buf, sizeof(buf), "SSID: %s", host_name);
+    OLED_write(buf, 0, 18, false);
+    snprintf (buf, sizeof(buf), "ip: %s", "192.168.1.1");
     OLED_write(buf, 0, 27, false);
+    snprintf (buf, sizeof(buf), "reboot in %d seconds", 300 - seconds());
+    OLED_write(buf, 0, 36, false);
     delay(1000);
     if(300 < seconds()){
       SoC->reset();
@@ -420,6 +423,18 @@ void ground()
     ExportTimeRegisterOGN = seconds();
   }
 
+  if(ground_registred ==  -1){
+    OLED_write("server registration failed!", 0, 18, true);
+    OLED_write("please check json file!", 0, 27, false);
+    snprintf (buf, sizeof(buf), "%s : %d", ogn_server.c_str(), ogn_port);
+    OLED_write(buf, 0, 36, false);
+    ground_registred = -2; 
+  }
+
+  if(ground_registred == -2){
+    //
+  }
+
   if (TimeToExportOGN() && ground_registred == 1)
   {
     OGN_APRS_Export();
@@ -458,16 +473,16 @@ void ground()
   }
 
   
-  if ( TimeToSleep() && settings->sleep_mode )
+  if ( TimeToSleep() && ogn_sleepmode )
   {
     msg = "entering sleep mode for ";
-    msg += String(settings->wake_up_timer); 
+    msg += String(ogn_wakeuptimer); 
     msg += " seconds - good night";
     Logger_send_udp(&msg);
     
-    esp_sleep_enable_timer_wakeup(settings->wake_up_timer*1000000LL);
+    esp_sleep_enable_timer_wakeup(ogn_wakeuptimer*1000000LL);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_26,1);
-    if (settings->sleep_mode == 1){
+    if (ogn_sleepmode == 1){
       GNSS_sleep(); 
     }
     ground_registred = 0;
@@ -477,14 +492,14 @@ void ground()
 
   if(ground_registred == 1 && TimeToExportFanetService()){
 
-    disp = "export FANET service...";
-    OLED_write(disp, 0, 24, true);
+    
+    OLED_draw_Bitmap(14, 0, 2 , true);
       
     if( fanet_transmitter ){
       RSM_receiver();
     }
     else{
-      fanet_transmitter = RSM_Setup(settings->ogndebugp+1);
+      fanet_transmitter = RSM_Setup(ogn_debugport+1);
     }
     ExportTimeFanetService = seconds();
     msg = "current system time  ";
@@ -499,9 +514,14 @@ void ground()
   }
   
   if( TimeToCheckWifi() ){
-    disp = "checking Wifi...";
-    OLED_write(disp, 0, 24, true);
-    OGN_APRS_check_Wifi();
+    OLED_draw_Bitmap(39, 5, 3 , true);
+    OLED_write("check connections..", 15, 45, false);
+    if(OGN_APRS_check_Wifi()){
+      OLED_write("success", 35, 54, false);
+    }
+    else{
+      OLED_write("error", 35, 54, false);
+    }
     ExportTimeCheckWifi = seconds();
   }
 
@@ -517,7 +537,7 @@ void watchout()
   success = RF_Receive();
 
   if (success) {
-    size_t rx_size = RF_Payload_Size(settings->rf_protocol);
+    size_t rx_size = RF_Payload_Size(ogn_protocol_1);
     rx_size = rx_size > sizeof(fo.raw) ? sizeof(fo.raw) : rx_size;
 
     memset(fo.raw, 0, sizeof(fo.raw));

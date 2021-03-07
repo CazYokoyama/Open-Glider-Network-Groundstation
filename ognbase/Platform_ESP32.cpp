@@ -101,7 +101,7 @@ extern bool     loopTaskWDTEnabled;
     [RF_PROTOCOL_ADSB_1090] = "A",
     [RF_PROTOCOL_ADSB_UAT]  = "U",
     [RF_PROTOCOL_FANET]     = "F"
-};*/
+   };*/
 
 const char SoftRF_text[]   = "SoftRF";
 const char ID_text[]       = "ID";
@@ -701,10 +701,11 @@ static int ESP32_WiFi_connect_TCP(const char* host, int port)
 
     if (ret)
     {
-        if (!client.connect(host, port))
+        if (!client.connect(host, port, 5000))
             return 0;
         return 1;
     }
+    return 0;
 }
 
 static int ESP32_WiFi_disconnect_TCP()

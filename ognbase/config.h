@@ -23,8 +23,8 @@
 #ifndef CONFIGHELPER_H
 #define CONFIGHELPER_H
 
-static bool OGN_save_config();
+bool OGN_save_config(void);
 
-bool OGN_read_config();
+bool OGN_read_config(void);
 
 #endif /* CONFIGHELPER_H */

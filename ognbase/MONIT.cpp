@@ -29,58 +29,17 @@
 
 WiFiClient zclient;
 
-String zabbix_server;
-int    zabbix_port;
-String zabbix_host;
-bool   config_status;
-
-static bool loadConfig()
-{
-    int line = 0;
-
-    if (!SPIFFS.begin(true))
-        return false;
-
-    File configFile = SPIFFS.open("/zabbix.txt", "r");
-    if (!configFile)
-        return false;
-
-    while (configFile.available() && line < 7)
-    {
-        if (line == 0)
-            zabbix_server = configFile.readStringUntil('\n').c_str();
-        if (line == 1)
-            zabbix_port = configFile.readStringUntil('\n').toInt();
-        if (line == 2)
-            zabbix_host = configFile.readStringUntil('\n').c_str();
-        line++;
-    }
-
-    configFile.close();
-
-    if (line < 2)
-        return false;
-
-    zabbix_server.trim();
-    return true;
-}
-
-static bool MONIT_setup()
-{
-    if (!config_status)
-        config_status = loadConfig();
-    return config_status;
-}
+bool config_status;
 
 void MONIT_send_trap()
 {
     int timeout = 5;
-    if (MONIT_setup())
+    if (zabbix_enable)
     {
         ZabbixSender zs;
         String       jsonPayload;
 
-        jsonPayload = zs.createPayload(zabbix_host.c_str(), Battery_voltage(), RF_last_rssi, int(hours()), gnss.satellites.value(), ThisAircraft.timestamp, largest_range);
+        jsonPayload = zs.createPayload(zabbix_server.c_str(), Battery_voltage(), RF_last_rssi, int(hours()), gnss.satellites.value(), ThisAircraft.timestamp, largest_range);
 
         String msg = zs.createMessage(jsonPayload);
 

@@ -31,8 +31,8 @@
 typedef struct Settings
 {
     uint8_t mode;
-    uint8_t rf_protocol;
-    uint8_t band;
+    //uint8_t rf_protocol;
+    //uint8_t band;
     uint8_t aircraft_type;
     uint8_t txpower;
     uint8_t volume;
@@ -57,17 +57,17 @@ typedef struct Settings
 
     uint8_t power_save;
     int8_t freq_corr;   /* +/-, kHz */
-    int16_t range;      /*OGN Basestation max Range*/
-    bool sxlna;         /*SX1276 agcref settings*/
-    bool ogndebug;      /*debug on*/
-    uint16_t ogndebugp; /*debug port*/
-    bool ignore_stealth;
-    bool ignore_no_track;
-    uint8_t rf_protocol2;
-    uint8_t sleep_mode;
-    uint16_t sleep_after_rx_idle;
-    uint16_t wake_up_timer;
-    bool zabbix_en;
+    //int16_t range;      /*OGN Basestation max Range*/
+    //bool sxlna;         /*SX1276 agcref settings*/
+    //bool ogndebug;      /*debug on*/
+    //uint16_t ogndebugp; /*debug port*/
+    //bool ignore_stealth;
+    //bool ignore_no_track;
+    //uint8_t rf_protocol2;
+    //uint8_t sleep_mode;
+    //uint16_t sleep_after_rx_idle;
+    //uint16_t wake_up_timer;
+    //bool zabbix_en;
 } settings_t;
 
 typedef struct EEPROM_S

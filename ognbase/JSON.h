@@ -78,7 +78,7 @@ typedef  struct dump1090_aircraft_struct dump1090_aircraft_t;
 typedef  struct ping_aircraft_struct ping_aircraft_t;
 
 extern StaticJsonDocument<JSON_BUFFER_SIZE> jsonBuffer;
-extern bool hasValidGPSDFix;
+extern bool                                 hasValidGPSDFix;
 
 extern void JSON_Export();
 

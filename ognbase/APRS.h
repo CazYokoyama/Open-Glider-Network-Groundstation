@@ -109,5 +109,4 @@ static int OGN_APRS_check_reg(String *);
 
 int OGN_APRS_check_messages();
 
-extern String ogn_callsign;
 #endif /* OGNHELPER_H */

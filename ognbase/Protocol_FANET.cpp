@@ -405,9 +405,8 @@ size_t fanet_encode(void* fanet_pkt, ufo_t* this_aircraft)
 
 size_t fanet_encode_sp(void* fanet_pkt_s, ufo_t* this_aircraft)
 {
+    // SPB + 0 -> Gateway Temp Wind Humid Barom TBD TBD E-Header
 
-  // SPB + 0 -> Gateway Temp Wind Humid Barom TBD TBD E-Header
-  
     uint32_t id  = this_aircraft->addr;
     float    lat = this_aircraft->latitude;
     float    lon = this_aircraft->longitude;
@@ -424,7 +423,7 @@ size_t fanet_encode_sp(void* fanet_pkt_s, ufo_t* this_aircraft)
 
     coord2payload_absolut(lat, lon, ((uint8_t *) spkt) + FANET_HEADER_SIZE);
 
-    spkt->header   = 0b01000000; //bit 6 Temp
+    spkt->header      = 0b01000000; //bit 6 Temp
     spkt->temperature = 0x25;       //37 degrees
 
 
