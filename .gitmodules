@@ -4,3 +4,6 @@
 [submodule "libraries/ESP32Ping"]
 	path = libraries/ESP32Ping
 	url = https://github.com/marian-craciunescu/ESP32Ping.git
+[submodule "libraries/esp8266-oled-ssd1306"]
+	path = libraries/esp8266-oled-ssd1306
+	url = https://github.com/ThingPulse/esp8266-oled-ssd1306.git
