@@ -302,6 +302,11 @@ void Web_setup(ufo_t* this_aircraft)
         request->send(200, "text/html", upload_html);
     });
 
+    wserver.on("/reboot", HTTP_GET, [](AsyncWebServerRequest* request){
+        request->redirect("/");
+        SoC->reset();
+    });    
+
     wserver.on("/doUpload", HTTP_POST, [](AsyncWebServerRequest* request) {}, handleUpload);
 
 

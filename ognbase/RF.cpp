@@ -30,6 +30,7 @@
 #include "Web.h"
 #include "MAVLink.h"
 #include "global.h"
+#include "Log.h"
 #include <fec.h>
 
 #if LOGGER_IS_ENABLED
@@ -998,6 +999,9 @@ static void sx12xx_setup()
 
     // range test.
     LMIC.agcref = 0x00;
+
+    Serial.println("setting rf protocol");
+    Serial.println(ogn_protocol_1);
 
 
     switch (ogn_protocol_1)

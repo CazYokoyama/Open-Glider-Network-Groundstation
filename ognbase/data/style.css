@@ -54,7 +54,7 @@ p{
   cursor: pointer;
 }
 
-.button_reset {
+.button_reboot {
   display: inline-block;
   background-color:red;
   border: none;

@@ -147,6 +147,7 @@ bool OGN_read_config(void)
             ogn_sleepmode   = obj["aprs"]["sleepmode"];
             ogn_rxidle      = obj["aprs"]["rxidle"];
             ogn_wakeuptimer = obj["aprs"]["wakeuptimer"];
+            ogn_range       = obj["aprs"]["range"];
         }
     }
 
@@ -250,6 +251,7 @@ bool OGN_save_config(void)
     obj["aprs"]["sleepmode"]   = ogn_sleepmode;
     obj["aprs"]["rxidle"]      = ogn_rxidle;
     obj["aprs"]["wakeuptimer"] = ogn_wakeuptimer;
+    obj["aprs"]["range"]       = ogn_range;
 
     //wifi config
     obj["wifi"]["ssid"][0] =  ogn_ssid[0];

@@ -1,14 +1,14 @@
 {
    "wifi":{
       "ssid":[
-         "ssid1",
+         "ssid",
          "",
          "",
          "",
          ""
       ],
       "pass":[
-         "pass1",
+         "pass",
          "",
          "",
          "",
@@ -33,7 +33,7 @@
       "server":"aprs.glidernet.org",
       "port":14580,
       "band":1,
-      "protocol_1":0,
+      "protocol_1":3,
       "protocol_2":1,
       "debug":false,
       "debugport":12000,

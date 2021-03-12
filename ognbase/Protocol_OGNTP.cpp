@@ -105,6 +105,8 @@ bool ogntp_decode(void* pkt, ufo_t* this_aircraft, ufo_t* fop)
     fop->vs                = (ogn_rx_pkt.Packet.DecodeClimbRate() * 0.1) * (_GPS_FEET_PER_METER * 60.0);
     fop->hdop              = (ogn_rx_pkt.Packet.DecodeDOP() + 10) * 10;
 
+    
+
     fop->addr_type = ogn_rx_pkt.Packet.Header.AddrType;
     fop->timestamp = this_aircraft->timestamp;
 

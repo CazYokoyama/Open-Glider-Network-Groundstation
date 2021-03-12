@@ -224,6 +224,8 @@ void setup()
 
   EEPROM_setup();
   OLED_setup();
+  WiFi_setup();
+
 
   SoC->Button_setup();
 
@@ -255,16 +257,16 @@ void setup()
     hw_info.gnss = GNSS_setup();
     ThisAircraft.aircraft_type = settings->aircraft_type;
   }
-  ThisAircraft.protocol = ogn_protocol_1;
-  ThisAircraft.stealth  = settings->stealth;
-  ThisAircraft.no_track = settings->no_track;
+  //ThisAircraft.protocol = ogn_protocol_1;
+  //ThisAircraft.stealth  = settings->stealth;
+  //ThisAircraft.no_track = settings->no_track;
 
   Battery_setup();
   Traffic_setup();
 
   SoC->swSer_enableRx(false);
 
-  WiFi_setup();
+  //WiFi_setup();
 
   if (SoC->Bluetooth) {
     SoC->Bluetooth->setup();
@@ -351,7 +353,6 @@ void ground()
    char buf[32];
 
    if (!groundstation) {
-    //OGN_read_config();
 
    
     RF_Transmit(RF_Encode(&ThisAircraft), true);
@@ -385,6 +386,10 @@ void ground()
 
   success = RF_Receive();
   if (success && isValidFix() || success && ntp_in_use){
+    
+    msg += String("receiving data..");
+    Logger_send_udp(&msg);
+    
     ParseData();
     ExportTimeSleep = seconds();
   }

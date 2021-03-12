@@ -165,7 +165,7 @@ void OLED_info(bool ntp)
             display.drawString(0, 27, buf);
 
             //OLED_Protocol_ID[ThisAircraft.protocol]
-            snprintf(buf, sizeof(buf), "Prot: %s", OLED_Protocol_ID[ThisAircraft.protocol]);
+            snprintf(buf, sizeof(buf), "Prot: %s", OLED_Protocol_ID[ogn_protocol_1]);
             display.drawString(0, 36, buf);
 
             snprintf(buf, sizeof(buf), "UTC: %02d:%02d", hour(now()), minute(now()));
