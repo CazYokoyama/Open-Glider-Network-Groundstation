@@ -245,7 +245,6 @@ void OLED_info(bool ntp)
                 if (ogn_ssid[i] != "")
                 {
                     snprintf(buf, sizeof(buf), "%s", ogn_ssid[i].c_str());
-                    Serial.println(buf);
                     display.drawString(0, (i + 1) * 9, buf);
                 }
 

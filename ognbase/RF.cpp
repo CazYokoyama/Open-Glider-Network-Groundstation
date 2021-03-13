@@ -1000,10 +1000,6 @@ static void sx12xx_setup()
     // range test.
     LMIC.agcref = 0x00;
 
-    Serial.println("setting rf protocol");
-    Serial.println(ogn_protocol_1);
-
-
     switch (ogn_protocol_1)
     {
         case RF_PROTOCOL_OGNTP:

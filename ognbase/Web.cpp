@@ -91,6 +91,7 @@ void handleUpdate(AsyncWebServerRequest* request)
 void handleUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final)
 {
     if (!index)
+        SPIFFS.remove("/" + filename);
         request->_tempFile = SPIFFS.open("/" + filename, "w");
     if (len)
         // stream the incoming chunk to the opened file

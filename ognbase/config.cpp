@@ -21,7 +21,10 @@
 #include "EEPROM.h"
 #include "global.h"
 #include "config.h"
+
+#define ARDUINOJSON_USE_DOUBLE 0
 #include <ArduinoJson.h>
+
 
 //wifi
 String ogn_ssid[5];
@@ -66,7 +69,7 @@ bool beers_show = false;
 
 bool OGN_read_config(void)
 {
-    const size_t        capacity = 1024;
+    const size_t        capacity = 2048;
     DynamicJsonDocument baseConfig(capacity);
     JsonObject          obj;
 
@@ -91,6 +94,7 @@ bool OGN_read_config(void)
     if (error)
     {
         Serial.println(F("Failed to read file, using default configuration"));
+        Serial.println(error.f_str());
         configFile.close();
         return false;
     }

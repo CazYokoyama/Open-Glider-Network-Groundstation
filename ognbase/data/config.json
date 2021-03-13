@@ -1,18 +1,18 @@
 {
    "wifi":{
       "ssid":[
-         "ssid",
-         "",
-         "",
-         "",
-         ""
+         "mobile",
+         "xxxxxxx",
+         "xxxxxxx",
+         "xxxxxxx",
+         "xxxxxxx"
       ],
       "pass":[
-         "pass",
-         "",
-         "",
-         "",
-         ""
+         "Melly2020%",
+         "xxxxxxx",
+         "xxxxxxx",
+         "xxxxxxx",
+         "xxxxxxx"
       ],
       "timeout":12000
    },
