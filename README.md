@@ -9,14 +9,17 @@ The aim of this project is to create a simple base station for the OGN network. 
 
 A TTGO T-Beam (SoftRF Prime Edition MkII) is used as hardware, which has Wifi, Bluetooth, U-Blox GPS and a LoraWan chip.
 
-[TTGO T-Beam Aliexpress](https://s.click.aliexpress.com/e/_dTnxWSv)
-
 The TT-Beam does not need another computer (Raspberry) and sends the APRS messages directly into the Open Glider network.
 Only WiFi and callsign have to be configured, the position is determined via gps.
 
 Since the T-Beam is very energy-saving, it can be operated very easily on a battery with solar panels.
 
 There are also a few drawbacks to the traditional OGN receivers. Several protocols cannot be decoded at the same time (at the moment - second protocol has no function).
+
+## Harwdare
+* LILYGO TTGO T-Beam (Lora, GPS, Bluetooth, Wifi, OLED)
+	* [TTGO T-Beam Aliexpress](https://s.click.aliexpress.com/e/_dTnxWSv)
+* TTGO LoRa32 (**in progress** - Lora, Bluetooth, Wifi, OLED)
 
 ## Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode  
@@ -82,6 +85,73 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * You can also upload a file called <ogn_conf.txt> with Wifi and Callsign configuration
 * Reset and connect again
 
+## Configuration File - config.json
+
+**The groundstation is configured via a json file. All other text files (zabbix.txt, ogn_conf.txt) are no longer required.**
+
+```json
+{
+   "wifi":{
+      "ssid":[
+         "ssid",
+         "xxxxxxx",
+         "xxxxxxx",
+         "xxxxxxx",
+         "xxxxxxx"
+      ],
+      "pass":[
+         "pass",
+         "xxxxxxx",
+         "xxxxxxx",
+         "xxxxxxx",
+         "xxxxxxx"
+      ],
+      "timeout":12000
+   },
+   "coordinates":{
+      "lat":46.90929623063438,
+      "lon":6.8723000923436715,
+      "alt":550,
+      "geoidsep":55
+   },
+   "zabbix":{
+      "enable":false,
+      "server":"127.0.0.1",
+      "port":10051,
+      "key":"ogn_base"
+   },
+   "fanet":{
+      "enc":false,
+      "aeskey":"password"
+   },
+   "aprs":{
+      "callsign":"Neuenburg",
+      "server":"aprs.glidernet.org",
+      "port":14580,
+      "band":1,
+      "protocol_1":3,
+      "protocol_2":1,
+      "debug":true,
+      "debugport":12000,
+      "itrackbit":false,
+      "istealthbit":false,
+      "sleepmode":false,
+      "rxidle":3600,
+      "wakeuptimer":3600,
+      "range":100
+   },
+   "fanetservice":{
+      "enable":1
+   },
+   "testmode":{
+      "enable":false
+   },   
+   "beers":{
+      "show":0
+   }
+}
+```
+
 ### Installation problems
 * Bootloop - erase flash with
 	- **esptool.py  erase_flash**
@@ -100,28 +170,6 @@ File uploader can be reached at http://you-ogn-ground-ip/upload
 
 During the first start-up you will be automatically directed to the file upload page.  
 After the html and css files have been uploaded, the T-Beam can be restarted.   After that, the surface should be visible like the picture.  
-
-### ogn_conf.txt example
-
-| Line    | Example    |
-| ------- |:----------:|
-| ssid    | myNetwork  |
-| pass    | myPassword |
-| origin  | LSZX       |
-| Lat			| 46.12345	 |
-| Lon     | 7.123456	 |
-| Alt     | 550        |
-| geoid   | 45         |
-
-```
-myNetwork
-myPassword
-LSZX
-46.123456
-7.123456
-550
-45
-```
 
 
 ## UDP Debugging
@@ -315,13 +363,8 @@ Please note that pictures are not necessarily up to date!
 
 ## Simple monitoring with zabbix trapper
 
-Example of zabbix.txt configuration file. Very rudimentary. Some parameters will be added in the future.
+Very rudimentary. Some parameters will be added in the future.
 
-```
-xxx.xxx.xxx.xxx
-10051
-ogn_base
-```
 
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/12/zabbix_1-1024x535.png)
 
