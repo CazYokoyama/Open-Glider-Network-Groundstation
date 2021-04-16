@@ -1,14 +1,14 @@
 {
    "wifi":{
       "ssid":[
-         "mobile",
+         "ssid",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx"
       ],
       "pass":[
-         "Melly2020%",
+         "password",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
@@ -28,6 +28,14 @@
       "port":10051,
       "key":"ogn_base"
    },
+   "testmode":{
+      "enable":false
+   },
+   "remotelogs":{
+      "enable":false,
+      "server":"5.150.254.37",
+      "port":12000
+   },      
    "aprs":{
       "callsign":"Neuenburg",
       "server":"aprs.glidernet.org",
@@ -35,7 +43,7 @@
       "band":1,
       "protocol_1":3,
       "protocol_2":1,
-      "debug":false,
+      "debug":true,
       "debugport":12000,
       "itrackbit":false,
       "istealthbit":false,
@@ -51,4 +59,3 @@
       "show":0
    }
 }
-

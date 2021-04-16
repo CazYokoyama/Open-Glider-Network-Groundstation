@@ -91,7 +91,6 @@ void handleUpdate(AsyncWebServerRequest* request)
 void handleUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final)
 {
     if (!index)
-        SPIFFS.remove("/" + filename);
         request->_tempFile = SPIFFS.open("/" + filename, "w");
     if (len)
         // stream the incoming chunk to the opened file
@@ -110,6 +109,9 @@ void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size
     if (!index)
     {
         Serial.println("Update");
+
+       SPIFFS.format();
+        
         content_len = request->contentLength();
         // if filename includes spiffs, update the spiffs partition
         int cmd = (filename.indexOf("spiffs") > -1) ? U_PART : U_FLASH;
@@ -273,6 +275,7 @@ void Web_setup(ufo_t* this_aircraft)
              (zabbix_enable == 0 ? "selected" : ""), "Disabled",
              (zabbix_enable == 1 ? "selected" : ""), "Enabled"
              );
+            
 
     size_t len  = strlen(offset);
     String html = String(offset);
@@ -400,14 +403,14 @@ void Web_setup(ufo_t* this_aircraft)
             {
                 SPIFFS.format();
                 RF_Shutdown();
-                delay(1000);
+                delay(200);
                 SoC->reset();
             }
 
         EEPROM_store();
         OGN_save_config();
         RF_Shutdown();
-        delay(1000);
+        delay(200);
         SoC->reset();
     });
 

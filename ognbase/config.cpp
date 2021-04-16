@@ -58,22 +58,28 @@ uint8_t largest_range        = 0;
 bool fanet_enable = false;
 
 //zabbix
-bool   zabbix_enable = false;
-String zabbix_server = "127.0.0.1";
-int    zabbix_port   = 10051;
-String zabbix_key    = "ogn_base";
+bool      zabbix_enable = false;
+String    zabbix_server = "127.0.0.1";
+uint16_t  zabbix_port   = 10051;
+String    zabbix_key    = "ogn_base";
 
 //supporters
 bool beers_show = false;
 
+//remote logs
+bool      remotelogs_enable = false;
+String    remotelogs_server = "127.0.0.1";
+uint16_t  remotelogs_port = 12000;
+
+//tesmode for new functions
+bool  testmode_enable = false;
 
 bool OGN_read_config(void)
 {
     const size_t        capacity = 2048;
     DynamicJsonDocument baseConfig(capacity);
     JsonObject          obj;
-
-    const char* kerror;
+    File configFile;
 
     if (!SPIFFS.begin(true))
     {
@@ -82,18 +88,24 @@ bool OGN_read_config(void)
     }
 
 
-    File configFile = SPIFFS.open("/config.json", "r");
-    if (!configFile)
-    {
-        Serial.println(F("Failed to open config.json."));
-        return false;
+    if (SPIFFS.exists("/config.json")){
+      configFile = SPIFFS.open("/config.json");
+      if (!configFile)
+      {
+          Serial.println(F("Failed to open config.json."));
+          return false;
+      }      
+    }
+    else{
+      Serial.println(F("config.json doesnt exist, please upload config.json"));
+      return(false);
     }
 
     DeserializationError error = deserializeJson(baseConfig, configFile);
 
     if (error)
     {
-        Serial.println(F("Failed to read file, using default configuration"));
+        Serial.println(F("Failed to parse json file, using default configuration"));
         Serial.println(error.f_str());
         configFile.close();
         return false;
@@ -104,8 +116,11 @@ bool OGN_read_config(void)
         configFile.close();
     }
 
-    if (!obj.containsKey(F("wifi")))
+    if (!obj.containsKey(F("wifi"))){
+        Serial.println("no wifi confgiuration found, return setup mode");
+        configFile.close();        
         return false;
+    }
     else
     {
         Serial.println(F("found wifi config!"));
@@ -116,9 +131,7 @@ bool OGN_read_config(void)
             }
     }
 
-    if (!obj.containsKey(F("coordinates")))
-        return false;
-    else
+    if (obj.containsKey(F("coordinates")))
     {
         Serial.println(F("found coordinates config!"));
         if (1)
@@ -130,9 +143,7 @@ bool OGN_read_config(void)
         }
     }
 
-    if (!obj.containsKey(F("aprs")))
-        return false;
-    else
+    if (obj.containsKey(F("aprs")))
     {
         Serial.println(F("found aprs config!"));
         if (1)
@@ -156,9 +167,7 @@ bool OGN_read_config(void)
     }
 
 
-    if (!obj.containsKey(F("zabbix")))
-        return false;
-    else
+    if (obj.containsKey(F("zabbix")))
     {
         Serial.println(F("found zabbix config!"));
         if (1)
@@ -172,21 +181,35 @@ bool OGN_read_config(void)
         }
     }
 
-    if (!obj.containsKey(F("fanetservice")))
-        return false;
-    else
+    if (obj.containsKey(F("remotelogs")))
+    {
+        Serial.println(F("found remotelogs config!"));
+        if (1)
+        {
+            remotelogs_enable = obj["remotelogs"]["enable"];
+            remotelogs_server = obj["remotelogs"]["server"].as<String>();
+            remotelogs_port = obj["remotelogs"]["port"];
+        }
+    }
+
+    if (obj.containsKey(F("testmode")))
+    {
+        Serial.println(F("found testmode config!"));
+        if (1)
+        {
+            testmode_enable = obj["testmode"]["enable"];
+        }
+    }      
+
+    if (obj.containsKey(F("fanetservice")))
     {
         Serial.println(F("found fanetservice config!"));
         if (1)
             fanet_enable = obj["fanetservice"]["enable"];
     }
 
-    if (!obj.containsKey(F("beers")))
-    {}
-    else if (1)
+    if (obj.containsKey(F("beers")))
         beers_show = obj["beers"]["show"];
-
-
 
     return true;
 }
@@ -196,8 +219,6 @@ bool OGN_save_config(void)
     const size_t        capacity = 1024;
     DynamicJsonDocument baseConfig(capacity);
     JsonObject          obj;
-
-    const char* kerror;
 
     if (!SPIFFS.begin(true))
     {
@@ -217,8 +238,9 @@ bool OGN_save_config(void)
 
     if (error)
     {
-        Serial.println(F("Failed to read file, using default configuration"));
+        Serial.println(F("Failed to read file, using default configuration, format spiffs"));
         configFile.close();
+        SPIFFS.format();
         return false;
     }
     else

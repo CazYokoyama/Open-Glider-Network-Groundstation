@@ -23,7 +23,6 @@
 #include <esp_bt.h>
 #include <soc/rtc_cntl_reg.h>
 #include <soc/efuse_reg.h>
-#include <Wire.h>
 #include <rom/rtc.h>
 #include <rom/spi_flash.h>
 #include <flashchips.h>
@@ -43,6 +42,8 @@
 
 #include "Battery.h"
 
+#include "global.h"
+
 #include <battery.h>
 #include <U8x8lib.h>
 
@@ -59,18 +60,9 @@ lmic_pinmap lmic_pins = {
 
 WebServer server(80);
 
-U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ttgo(TTGO_V2_OLED_PIN_RST,
-                                                TTGO_V2_OLED_PIN_SCL,
-                                                TTGO_V2_OLED_PIN_SDA);
-
-U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
-                                                  HELTEC_OLED_PIN_SCL,
-                                                  HELTEC_OLED_PIN_SDA);
-
 AXP20X_Class axp;
 WiFiClient   client;
 
-static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C* u8x8 = NULL;
 static TFT_eSPI*                              tft  = NULL;
 
 static int esp32_board = ESP32_DEVKIT; /* default */
@@ -636,19 +628,21 @@ static void ESP32_WiFi_transmit_UDP_debug(int port, byte* buf, size_t size)
     switch (mode)
     {
         case WIFI_STA:
+            if(remotelogs_enable){
+              IPAddress rem_logger;
+              if (rem_logger.fromString(remotelogs_server)) {
+                Uni_Udp.begin(localPort);
+                Uni_Udp.beginPacket(rem_logger, remotelogs_port);
+                Uni_Udp.write(buf, size);
+                Uni_Udp.endPacket();  
+              } 
+            }
             ClientIP    = WiFi.gatewayIP();
-            ClientIP[3] = 200;
+            ClientIP[3] = 200;          
             Uni_Udp.begin(localPort);
             Uni_Udp.beginPacket(ClientIP, port);
             Uni_Udp.write(buf, size);
-            Uni_Udp.endPacket();
-
-            ClientIP[3] = 199;
-            Uni_Udp.begin(localPort);
-            Uni_Udp.beginPacket(ClientIP, port);
-            Uni_Udp.write(buf, size);
-            Uni_Udp.endPacket();
-
+            Uni_Udp.endPacket();  
             break;
         case WIFI_AP:
             break;
@@ -833,306 +827,6 @@ static void ESP32_swSer_begin(unsigned long baud)
 static void ESP32_swSer_enableRx(boolean arg)
 {}
 
-/*static byte ESP32_Display_setup()
-   {
-   byte rval = DISPLAY_NONE;
-
-   if (esp32_board != ESP32_TTGO_T_WATCH) {
-
-    if (GPIO_21_22_are_busy) {
-      Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
-      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-      if (Wire1.endTransmission() == 0) {
-        u8x8 = &u8x8_heltec;
-        esp32_board = ESP32_HELTEC_OLED;
-        rval = DISPLAY_OLED_HELTEC;
-      }
-    } else {
-      Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
-      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-      if (Wire1.endTransmission() == 0) {
-        u8x8 = &u8x8_ttgo;
-        esp32_board = ESP32_TTGO_V2_OLED;
-
-        if (hw_info.model == SOFTRF_MODEL_STANDALONE) {
-          if (RF_SX12XX_RST_is_connected) {
-            hw_info.revision = 16;
-          } else {
-            hw_info.revision = 11;
-          }
-        }
-
-        rval = DISPLAY_OLED_TTGO;
-      } else {
-        if (!(hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-              hw_info.revision == 8)) {
-          Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
-          Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-          if (Wire1.endTransmission() == 0) {
-            u8x8 = &u8x8_heltec;
-            esp32_board = ESP32_HELTEC_OLED;
-            rval = DISPLAY_OLED_HELTEC;
-          }
-        }
-      }
-    }
-
-    if (u8x8) {
-      u8x8->begin();
-      u8x8->setFont(u8x8_font_chroma48medium8_r);
-      u8x8->clear();
-      u8x8->draw2x2String(2, 3, SoftRF_text);
-    }
-
-   } else {
-
-    ESP32_SPI_begin();
-
-    tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
-    tft->init();
-    tft->setRotation(0);
-    tft->fillScreen(TFT_NAVY);
-
-    ledcAttachPin(SOC_GPIO_PIN_TWATCH_TFT_BL, 1);
-    ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
-
-    for (int level = 0; level < 255; level += 25) {
-      ledcWrite(BACKLIGHT_CHANNEL, level);
-      delay(100);
-    }
-
-    tft->setTextFont(4);
-    tft->setTextSize(2);
-    tft->setTextColor(TFT_WHITE, TFT_NAVY);
-
-    uint16_t tbw = tft->textWidth(SoftRF_text);
-    uint16_t tbh = tft->fontHeight();
-    tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
-    tft->println(SoftRF_text);
-
-    rval = DISPLAY_TFT_TTGO;
-   }
-
-   return rval;
-   }*/
-
-/*static void ESP32_Display_loop()
-   {
-   char buf[16];
-   uint32_t disp_value;
-
-   uint16_t tbw;
-   uint16_t tbh;
-
-   switch (hw_info.display)
-   {
-   case DISPLAY_TFT_TTGO:
-    if (tft) {
-      if (!OLED_display_frontpage) {
-        tft->fillScreen(TFT_NAVY);
-
-        tft->setTextFont(2);
-        tft->setTextSize(2);
-        tft->setTextColor(TFT_WHITE, TFT_NAVY);
-
-        tbw = tft->textWidth(ID_text);
-        tbh = tft->fontHeight();
-
-        tft->setCursor(tft->textWidth(" "), tft->height()/6 - tbh);
-        tft->print(ID_text);
-
-        tbw = tft->textWidth(PROTOCOL_text);
-
-        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
-                       tft->height()/6 - tbh);
-        tft->print(PROTOCOL_text);
-
-        tbw = tft->textWidth(RX_text);
-        tbh = tft->fontHeight();
-
-        tft->setCursor(tft->textWidth("   "), tft->height()/2 - tbh);
-        tft->print(RX_text);
-
-        tbw = tft->textWidth(TX_text);
-
-        tft->setCursor(tft->width()/2 + tft->textWidth("   "),
-                       tft->height()/2 - tbh);
-        tft->print(TX_text);
-
-        tft->setTextFont(4);
-        tft->setTextSize(2);
-
-        itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
-
-        tbw = tft->textWidth(buf);
-        tbh = tft->fontHeight();
-
-        tft->setCursor(tft->textWidth(" "), tft->height()/6);
-        tft->print(buf);
-
-        tbw = tft->textWidth(OLED_Protocol_ID[ThisAircraft.protocol]);
-
-        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
-                       tft->height()/6);
-        tft->print(OLED_Protocol_ID[ThisAircraft.protocol]);
-
-        itoa(rx_packets_counter % 1000, buf, 10);
-        tft->setCursor(tft->textWidth(" "), tft->height()/2);
-        tft->print(buf);
-
-        itoa(tx_packets_counter % 1000, buf, 10);
-        tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
-        tft->print(buf);
-
-        OLED_display_frontpage = true;
-
-      } else {
-
-        if (rx_packets_counter > prev_rx_packets_counter) {
-          disp_value = rx_packets_counter % 1000;
-          itoa(disp_value, buf, 10);
-
-          if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
-          } else {
-            if (disp_value < 100) {
-              strcat_P(buf,PSTR(" "));
-            };
-          }
-
-          tft->setTextFont(4);
-          tft->setTextSize(2);
-
-          tft->setCursor(tft->textWidth(" "), tft->height()/2);
-          tft->print(buf);
-
-          prev_rx_packets_counter = rx_packets_counter;
-        }
-        if (tx_packets_counter > prev_tx_packets_counter) {
-          disp_value = tx_packets_counter % 1000;
-          itoa(disp_value, buf, 10);
-
-          if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
-          } else {
-            if (disp_value < 100) {
-              strcat_P(buf,PSTR(" "));
-            };
-          }
-
-          tft->setTextFont(4);
-          tft->setTextSize(2);
-
-          tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
-          tft->print(buf);
-
-          prev_tx_packets_counter = tx_packets_counter;
-        }
-      }
-    }
-
-    break;
-
-   case DISPLAY_OLED_TTGO:
-   case DISPLAY_OLED_HELTEC:
-    if (u8x8) {
-      if (!OLED_display_probe_status) {
-        u8x8->clear();
-
-        u8x8->draw2x2String(0, 0, "RADIO");
-        u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-        u8x8->draw2x2String(0, 2, "GNSS");
-        u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-        u8x8->draw2x2String(0, 4, "OLED");
-        u8x8->draw2x2String(0, 6, "BARO");
-        u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
-
-        delay(3000);
-
-        if (loopTaskWDTEnabled) {
-          feedLoopWDT();
-        }
-
-        OLED_display_probe_status = true;
-      } else if (!OLED_display_frontpage) {
-
-        u8x8->clear();
-
-        u8x8->drawString(1, 1, ID_text);
-
-        itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
-        u8x8->draw2x2String(0, 2, buf);
-
-        u8x8->drawString(8, 1, PROTOCOL_text);
-
-        u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
-
-        u8x8->drawString(1, 5, RX_text);
-
-        itoa(rx_packets_counter % 1000, buf, 10);
-        u8x8->draw2x2String(0, 6, buf);
-
-        u8x8->drawString(9, 5, TX_text);
-
-        if (settings->txpower == RF_TX_POWER_OFF ) {
-          strcpy(buf, "OFF");
-        } else {
-          itoa(tx_packets_counter % 1000, buf, 10);
-        }
-        u8x8->draw2x2String(8, 6, buf);
-
-        OLED_display_frontpage = true;
-
-      } else {
-
-        if (rx_packets_counter > prev_rx_packets_counter) {
-          disp_value = rx_packets_counter % 1000;
-          itoa(disp_value, buf, 10);
-
-          if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
-          } else {
-            if (disp_value < 100) {
-              strcat_P(buf,PSTR(" "));
-            };
-          }
-
-          u8x8->draw2x2String(0, 6, buf);
-          prev_rx_packets_counter = rx_packets_counter;
-        }
-        if (tx_packets_counter > prev_tx_packets_counter) {
-          disp_value = tx_packets_counter % 1000;
-          itoa(disp_value, buf, 10);
-
-          if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
-          } else {
-            if (disp_value < 100) {
-              strcat_P(buf,PSTR(" "));
-            };
-          }
-
-          u8x8->draw2x2String(8, 6, buf);
-          prev_tx_packets_counter = tx_packets_counter;
-        }
-      }
-    }
-
-    break;
-   }
-   }*/
-
-static void ESP32_Display_fini(const char* msg)
-{
-    if (u8x8)
-    {
-        u8x8->setFont(u8x8_font_chroma48medium8_r);
-        u8x8->clear();
-        u8x8->draw2x2String(1, 3, msg);
-//    u8x8->noDisplay();
-    }
-}
-
 static void ESP32_Battery_setup()
 {
     if ((hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
@@ -1189,47 +883,6 @@ static unsigned long ESP32_get_PPS_TimeMarker()
     portEXIT_CRITICAL_ISR(&GNSS_PPS_mutex);
     return rval;
 }
-
-/*static bool ESP32_Baro_setup()
-   {
-   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
-
-    return false;
-
-   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
-
-    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
-        RF_SX12XX_RST_is_connected) {
-      return false;
-    }
-
- #if DEBUG
-    Serial.println(F("INFO: RESET pin of SX12xx radio is not connected to MCU."));
- #endif
-
-
-    Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
-
-   } else {
-
-
-    Wire.begin(SOC_GPIO_PIN_TBEAM_SDA, SOC_GPIO_PIN_TBEAM_SCL);
-
-    if (hw_info.revision == 2)
-      return false;
-
- #if !defined(ENABLE_AHRS)
-
-    Wire.begin(TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
-
-    GPIO_21_22_are_busy = true;
- #else
-    return false;
- #endif
-   }
-
-   return true;
-   }*/
 
 static void ESP32_UATSerial_begin(unsigned long baud)
 {

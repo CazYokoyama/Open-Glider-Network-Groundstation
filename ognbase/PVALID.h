@@ -1,5 +1,5 @@
 /*
- * Web.h
+ * PVALID.h
  * Copyright (C) 2020 Manuel Rösel
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,42 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBHELPER_H
-#define WEBHELPER_H
-
+#include <string.h>
 #include "SoC.h"
 
-#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
-#include <WiFiClient.h>
-#endif /* ARDUINO */
 
-#include <TinyGPS++.h>
+#ifndef PVALIDHELPER_H
+#define PVALIDHELPER_H
 
-#include "EEPROM.h"
-#include "RF.h"
+bool isPacketValid(uint32_t, double, double, double, time_t);
 
-#define BOOL_STR(x) (x ? "true":"false")
-#define JS_MAX_CHUNK_SIZE 4096
+static int distance(double, double, double, double);
+static double deg2rad(double);
+static double rad2deg(double);
+static void cleanUpPacket(uint8_t);
+static void shiftPackets(void);
+static bool appendPacket(uint32_t, double, double, time_t);
+static int calcMaxDistance(double, time_t);
 
-void Web_setup(ufo_t* this_aircraft);
+typedef struct aircrafts
+{
+    time_t timestamp;
+    uint32_t addr;
+    float latitude;
+    float longitude;
+    float altitude;
+    float course;
+    float speed;
+} aircrafts_t;
 
-void Web_loop(void);
-
-void Web_fini(void);
-
-void Web_start(void);
-
-void Web_stop(void);
-
-
-extern uint32_t tx_packets_counter, rx_packets_counter;
-//extern byte TxBuffer[PKT_SIZE];
-extern String TxDataTemplate;
-
-#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
-extern WiFiClient client;
-#endif /* ARDUINO */
-
-extern TinyGPSPlus gps;
-
-#endif /* WEBHELPER_H */
+#endif /* PVALIDHELPER_H */

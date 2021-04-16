@@ -31,7 +31,7 @@
 #include "version.h"
 #include "logos.h"
 
-SSD1306Wire display(SSD1306_OLED_I2C_ADDR, SDA, SCL);  // ADDRESS, SDA, SCL
+SSD1306Wire display(SSD1306_OLED_I2C_ADDR, SDA, SCL, GEOMETRY_128_64, I2C_TWO, 400000);  // ADDRESS, SDA, SCL
 bool        display_init = false;
 
 int rssi      = 0;

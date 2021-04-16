@@ -56,14 +56,10 @@ typedef struct SoC_ops_struct
     void (* swSer_begin)(unsigned long);
     void (* swSer_enableRx)(boolean);
     Bluetooth_ops_t* Bluetooth;
-    //byte (*Display_setup)();
-    //void (*Display_loop)();
-    //void (*Display_fini)(const char *);
     void (* Battery_setup)();
     float (* Battery_voltage)();
     void (* GNSS_PPS_handler)();
     unsigned long (* get_PPS_TimeMarker)();
-    //bool (*Baro_setup)();
     void (* UATSerial_begin)(unsigned long);
     void (* UATModule_restart)();
     void (* WDT_setup)();

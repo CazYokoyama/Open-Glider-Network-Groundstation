@@ -29,7 +29,13 @@ extern uint8_t  ogn_range;
 extern bool   fanet_enable;
 extern bool   zabbix_enable;
 extern String zabbix_server;
-extern int    zabbix_port;
+extern uint16_t    zabbix_port;
 extern String zabbix_key;
 
 extern bool beers_show;
+
+extern bool      remotelogs_enable;
+extern String    remotelogs_server;
+extern uint16_t  remotelogs_port;
+
+extern bool  testmode_enable;
