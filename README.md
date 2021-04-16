@@ -19,7 +19,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 ## Harwdare
 * LILYGO TTGO T-Beam (Lora, GPS, Bluetooth, Wifi, OLED)
 	* [TTGO T-Beam Aliexpress](https://s.click.aliexpress.com/e/_dTnxWSv)
-* TTGO LoRa32 (**in progress** - Lora, Bluetooth, Wifi, OLED)
+* TTGO LoRa32 (**TESTING** - Lora, Bluetooth, Wifi, OLED)
 
 ## Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode  
@@ -76,14 +76,17 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * You can update you installation http://you-ogn-ground-ip/update
 * You can upload new .html .css files http://you-ogn-ground-ip/upload
 
-## Easy Installation
+## Easy Installation / Upgrade
 
 * Download [binary image](https://github.com/roema/Open-Glider-Network-Groundstation/releases) and install it with web-updater
 * Connect to Wifi OGN-XXXXXX with password 987654321
 * Type 192.168.1.1 in you browser and you will see a file-upload page (only on first startup)
 * Upload index.html, update.html and style.css
-* You can also upload a file called <ogn_conf.txt> with Wifi and Callsign configuration
+* **new config.json is required!**
 * Reset and connect again
+
+### Upgrade
+**Since there were more and more faulty files during an update, the SPIFFS memory is formatted during a firmware update.**
 
 ## Configuration File - config.json
 
@@ -100,7 +103,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
          "xxxxxxx"
       ],
       "pass":[
-         "pass",
+         "password",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
@@ -120,10 +123,14 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
       "port":10051,
       "key":"ogn_base"
    },
-   "fanet":{
-      "enc":false,
-      "aeskey":"password"
+   "testmode":{
+      "enable":false
    },
+   "remotelogs":{
+      "enable":false,
+      "server":"xxx.xxxx.xxxx.xxxx",
+      "port":12000
+   },      
    "aprs":{
       "callsign":"Neuenburg",
       "server":"aprs.glidernet.org",
@@ -143,9 +150,6 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
    "fanetservice":{
       "enable":1
    },
-   "testmode":{
-      "enable":false
-   },   
    "beers":{
       "show":0
    }
@@ -191,6 +195,18 @@ The destination port can be freely selected in the web interface. 12000 is used 
 If you have several ESP32 running, they will be displayed with different colors.
 
 **Please note that no core dumps are shown here! A serial connection is necessary for this.**
+
+A new section in config.json enables remote log server.
+
+**I guarantee that no sensitive WiFi data will be transmitted!!**
+
+```json
+"remotelogs":{
+	 "enable":false,
+	 "server":"xxx.xxxx.xxxx.xxxx",
+	 "port":12000
+},
+```
 
 
 ```python
