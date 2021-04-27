@@ -51,7 +51,7 @@ uint8_t  ogn_range       = 100;
 float   ogn_lat              = 0;
 float   ogn_lon              = 0;
 int     ogn_alt              = 0;
-uint8_t ogn_geoid_separation = 0;
+int16_t ogn_geoid_separation = 0;
 uint8_t largest_range        = 0;
 
 //fanet service
