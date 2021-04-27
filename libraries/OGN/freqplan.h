@@ -8,14 +8,16 @@
 enum
 {
   RF_BAND_AUTO = 0,
-  RF_BAND_EU   = 1, /* 868.4 MHz band */
-  RF_BAND_US   = 2, /* 915 MHz band */
-  RF_BAND_AU   = 3, /* 921 MHz band */
-  RF_BAND_NZ   = 4, /* 869.250 MHz band */
-  RF_BAND_RU   = 5, /* 868.8 MHz band */
-  RF_BAND_CN   = 6, /* 470 MHz band */
-  RF_BAND_UK   = 7, /* 869.52 MHz band */
-  RF_BAND_IN   = 8  /* 866.0 MHz band */
+  RF_BAND_EU   = 1,  /* 868.2 MHz band */
+  RF_BAND_US   = 2,  /* 915 MHz band */
+  RF_BAND_AU   = 3,  /* 921 MHz band */
+  RF_BAND_NZ   = 4,  /* 869.250 MHz band */
+  RF_BAND_RU   = 5,  /* 868.8 MHz band */
+  RF_BAND_CN   = 6,  /* 470 MHz band */
+  RF_BAND_UK   = 7,  /* 869.52 MHz band */
+  RF_BAND_IN   = 8,  /* 866.0 MHz band */
+  RF_BAND_IL   = 9,  /* 916.2 MHz band */
+  RF_BAND_KR   = 10  /* 920.9 MHz band */
 };
 
 class FreqPlan
@@ -58,6 +60,12 @@ class FreqPlan
         case RF_BAND_IN:
           { BaseFreq=866000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // India
           break;
+        case RF_BAND_IL:
+          { BaseFreq=916200000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // Israel
+          break;
+        case RF_BAND_KR:
+          { BaseFreq=920900000; ChanSepar=200000; Channels= 1; MaxTxPower = 23; } // South Korea
+          break;
         case RF_BAND_EU:
         default:
           { BaseFreq=868200000; ChanSepar=200000; Channels= 2; MaxTxPower = 14; } // Europe
@@ -71,10 +79,10 @@ class FreqPlan
    const char *getPlanName(void) { return getPlanName(Plan); }
 
    static const char *getPlanName(uint8_t Plan)
-   { static const char *Name[9] = { "Default", "Europe/Africa",
+   { static const char *Name[11] = { "Default", "Europe/Africa",
        "USA/Canada", "Australia/South America", "New Zealand",
-       "Russia", "China", "PilotAware (UK)", "India" } ;
-     if(Plan>RF_BAND_IN) return 0;
+       "Russia", "China", "PilotAware (UK)", "India", "Israel", "South Korea" } ;
+     if(Plan>RF_BAND_KR) return 0;
      return Name[Plan]; }
 
    uint8_t getChannel  (uint32_t Time, uint8_t Slot=0, uint8_t OGN=1) const // OGN-tracker or legacy, UTC time, slot: 0 or 1
@@ -82,12 +90,12 @@ class FreqPlan
      if(Plan>=2)                                                       // if USA/Canada or Australia/South America
      { uint8_t Channel = FreqHopHash((Time<<1)+Slot) % Channels;       // legacy hopping channel
        if(OGN)                                                         // for OGN tracker
-       { if(Slot) { uint8_t Channel1=FreqHopHash((Time<<1)) % Channels; // for 2nd slot choose a channel close to the 1st slot
-                            Channel1++; if(Channel1>=Channels) Channel1-=2; // 
-                    uint8_t Channel2=Channel1+1; if(Channel2>=Channels) Channel2-=2;
-                    if(Channel2==Channel) Channel=Channel1;            // avoid being on same chanel as legacy
-                                    else  Channel=Channel2; }
-             else { Channel++; if(Channel>=Channels) Channel-=2; }     // for 1st slot choose a higher channel (unless already highest, then choose a lower one)
+       { if(Slot) 
+         { uint8_t Channel2 = FreqHopHash((Time<<1)) % Channels;            // use same as legacy in the 1st slot
+           if(Channel2==Channel) { Channel++; if(Channel>=Channels) Channel-=2; } // but if same then legacy in the 2nd slot
+                            else Channel=Channel2;
+         }
+         else { Channel++; if(Channel>=Channels) Channel-=2; }              // for 1st slot choose a higher channel (unless already highest, then choose a lower one)
        }
        return Channel; }                                               // return 0..Channels-1 for USA/CA or Australia.
      return Slot^OGN; }                                                // if Europe/South Africa: return 0 or 1 for EU freq. plan

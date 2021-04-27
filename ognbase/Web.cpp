@@ -234,6 +234,8 @@ void Web_setup(ufo_t* this_aircraft)
              (ogn_band == RF_BAND_UK ? "selected" : ""), RF_BAND_UK,
              (ogn_band == RF_BAND_AU ? "selected" : ""), RF_BAND_AU,
              (ogn_band == RF_BAND_IN ? "selected" : ""), RF_BAND_IN,
+             (ogn_band == RF_BAND_IL ? "selected" : ""), RF_BAND_IL,
+             (ogn_band == RF_BAND_KR ? "selected" : ""), RF_BAND_KR,
              (ogn_protocol_1 == RF_PROTOCOL_LEGACY ? "selected" : ""),
              RF_PROTOCOL_LEGACY, legacy_proto_desc.name,
              (ogn_protocol_1 == RF_PROTOCOL_OGNTP ? "selected" : ""),
