@@ -216,7 +216,7 @@ bool OGN_read_config(void)
 
 bool OGN_save_config(void)
 {
-    const size_t        capacity = 1024;
+    const size_t        capacity = 2048;
     DynamicJsonDocument baseConfig(capacity);
     JsonObject          obj;
 
