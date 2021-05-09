@@ -82,7 +82,7 @@
         <p id = "largest_range">connecting</p>
       </div>
       <div class="circle__lower-text">
-          Largest RX
+          Longest Range
       </div>
   </div>
 </td>
@@ -96,7 +96,7 @@
    <tr>
     <td>OGN Callsign</td>
     <td><input id=callsign type="text" name="callsign" value="%s" size="8"></td>
-    <td>Lat:</td>
+    <td>Lat</td>
     <td><input id=lat type="number" name="ogn_lat" step="0.000001" value="%s" size="8"></td>
   </tr>
   <tr>
@@ -106,7 +106,7 @@
     <td><input id=alt type="number" name="ogn_alt" value="%s" size="8"></td>
    </tr>
    <tr>
-     <td>GeoID</td>
+     <td>Geoid [m]</td>
      <td><input id=geoid type="number" name="ogn_geoid" value="%s" size="8"></td>
      <td>Range [km]</td>
      <td><input id=range type="number" name="ogn_range" value="%s" size="8"></td>
@@ -123,6 +123,8 @@
     <option %s value='%d'>UK (869.52 MHz)</option>
     <option %s value='%d'>AU (921 MHz)</option>
     <option %s value='%d'>IN (866 MHz)</option>
+    <option %s value='%d'>IL (916.2 MHz)</option>
+    <option %s value='%d'>KR (920.9 MHz)</option>
   </select>
  </td>
  </tr>
@@ -194,10 +196,10 @@
   </td>
 </tr>
 <tr>
-  <td>RESET:</td>
+  <td>RESET</td>
   <td><INPUT type="checkbox" name="ogn_reset_all"></td>
 </tr>
-<td><p><button class="button_save">SAVE</button></a></p></td>
+<td><p><button class="button_save">Save</button></a></p></td>
 <td><a href="reboot" class="button_reboot" >Reboot</a></td>
 <td><a href="upload" class="upload" >Upload Files</a></td>
 <td><a href="update" class="update" >Update Firmware</a></td>

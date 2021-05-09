@@ -7,7 +7,7 @@ extern int ssid_index;
 extern float   ogn_lat;
 extern float   ogn_lon;
 extern int     ogn_alt;
-extern uint8_t ogn_geoid_separation;
+extern int16_t ogn_geoid_separation;
 extern uint8_t largest_range;
 
 extern String   ogn_callsign;
