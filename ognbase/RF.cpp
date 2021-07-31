@@ -309,24 +309,25 @@ byte RF_setup(void)
         return RF_IC_NONE;
 }
 
-/*
- #define DELAY_PPS_GPSTIME 200  // approx msec between PPS and time in NMEA sentence
- #define SLOT1_START       400  // slot1 start msec after PPS
- #define SLOT1_ADVANCE     100  // advance slot1 to mid of dead time between slots
- #define SLOT2_START       800  // slot2 start msec after PPS
- #define SLOT_DURATION     400  // slot msec duration
-
-   extern int status_LED;  // LEDHelper
-
-   static long TimeReference   =   0;// Hop reference timing
-   static long TimeReference_2 = 0;
-   static long Now_millis      =      0;
-   static long prev_TimeCommit = 0;
-   uint8_t     Slot            = 0;
-   time_t      slotTime        = 0;
 
 
-   void RF_SetChannel(void)
+#define DELAY_PPS_GPSTIME 200  // approx msec between PPS and time in NMEA sentence
+#define SLOT1_START       400  // slot1 start msec after PPS
+#define SLOT1_ADVANCE     100  // advance slot1 to mid of dead time between slots
+#define SLOT2_START       800  // slot2 start msec after PPS
+#define SLOT_DURATION     400  // slot msec duration
+
+extern int status_LED;  // LEDHelper
+
+static long TimeReference   =   0;// Hop reference timing
+static long TimeReference_2 = 0;
+static long Now_millis      =      0;
+static long prev_TimeCommit = 0;
+uint8_t     Slot            = 0;
+time_t      slotTime        = 0;
+
+
+void RF_SetChannel(void)
    {
     tmElements_t tm;
     time_t       Time;
@@ -373,46 +374,48 @@ byte RF_setup(void)
             else // no PPS, approximate reference delay
                 time_corr_neg = DELAY_PPS_GPSTIME;
 
-            // only frequency hop with legacy and OGN protocols
-            switch (ogn_protocol_1)
-            {
-                case RF_PROTOCOL_LEGACY:
-                case RF_PROTOCOL_OGNTP:
-                    if ((Now_millis - TimeReference) >= 1000)
-                    {
-                        if (pps_btime_ms)
-                        {
-                            TimeReference = pps_btime_ms + SLOT1_START - SLOT1_ADVANCE - 0; // allow for latency ?
-                        }
-                        else
-                            TimeReference = lastCommitTime - time_corr_neg + SLOT1_START - SLOT1_ADVANCE;
-                        Slot = 0;
-                        if ((Now_millis - TimeReference) >= 1000) // has PPS stopped ?
-                        {
-                            TxTimeMarker = Now_millis; // if so no Tx
-                            return;
-                        }
-                        else
-                            TxTimeMarker = TimeReference;
-                        TxRandomValue = SoC->random(0, SLOT_DURATION - 10) + SLOT1_ADVANCE; // allow some margin
-                    }
-                    else
-                    {
-                        if ((Now_millis - TimeReference_2) >= 1000)
-                        {
-                            TimeReference_2 = TimeReference + SLOT_DURATION + SLOT1_ADVANCE;
-                            Slot            = 1;
-                            TxTimeMarker    = TimeReference_2;
-                            TxRandomValue   = SoC->random(10, SLOT_DURATION - 0); //  allow some margin
-                        }
-                        else
-                            return;
-                    }
-                    break;
-                default:
-                    // FANET uses 868.2 MHz. Bandwidth is 250kHz
-                    Slot = 0;
-                    break;
+            // only frequency hop with legacy and OGN protocols and gps fix
+            if (isValidFix()){
+              switch (ogn_protocol_1)
+              {
+                  case RF_PROTOCOL_LEGACY:
+                  case RF_PROTOCOL_OGNTP:
+                      if ((Now_millis - TimeReference) >= 1000)
+                      {
+                          if (pps_btime_ms)
+                          {
+                              TimeReference = pps_btime_ms + SLOT1_START - SLOT1_ADVANCE - 0; // allow for latency ?
+                          }
+                          else
+                              TimeReference = lastCommitTime - time_corr_neg + SLOT1_START - SLOT1_ADVANCE;
+                          Slot = 0;
+                          if ((Now_millis - TimeReference) >= 1000) // has PPS stopped ?
+                          {
+                              TxTimeMarker = Now_millis; // if so no Tx
+                              return;
+                          }
+                          else
+                              TxTimeMarker = TimeReference;
+                          TxRandomValue = SoC->random(0, SLOT_DURATION - 10) + SLOT1_ADVANCE; // allow some margin
+                      }
+                      else
+                      {
+                          if ((Now_millis - TimeReference_2) >= 1000)
+                          {
+                              TimeReference_2 = TimeReference + SLOT_DURATION + SLOT1_ADVANCE;
+                              Slot            = 1;
+                              TxTimeMarker    = TimeReference_2;
+                              TxRandomValue   = SoC->random(10, SLOT_DURATION - 0); //  allow some margin
+                          }
+                          else
+                              return;
+                      }
+                      break;
+                  default:
+                      // FANET uses 868.2 MHz. Bandwidth is 250kHz
+                      Slot = 0;
+                      break;
+              }
             }
 
             // HOP Testing - slot timing 400 and 800 msec after PPS
@@ -442,7 +445,9 @@ byte RF_setup(void)
 
     // HOP Testing - time and channel
     //Serial.printf("Time: %d, %d\r\n", Time,chan);
- #if DEBUG
+#if DEBUG
+    Serial.print("GSP Fix: ");
+    Serial.println(isValidFix());
     Serial.print("Plan: ");
     Serial.println(RF_FreqPlan.Plan);
     Serial.print("Slot: ");
@@ -452,68 +457,10 @@ byte RF_setup(void)
     Serial.print("Channel: ");
     Serial.println(chan);
  #endif
-
+ 
     if (RF_ready && rf_chip)
         rf_chip->channel(chan);
-   }*/
-
-void RF_SetChannel(void)
-{
-    tmElements_t tm;
-    time_t       Time;
-
-    switch (settings->mode)
-    {
-        case SOFTRF_MODE_TXRX_TEST:
-            Time = now();
-            break;
-        case SOFTRF_MODE_UAV:
-            Time = the_aircraft.location.gps_time_stamp / 1000000;
-            break;
-        case SOFTRF_MODE_GROUND:
-        default:
-            unsigned long pps_btime_ms  = SoC->get_PPS_TimeMarker();
-            unsigned long time_corr_pos = 0;
-            unsigned long time_corr_neg = 0;
-
-            if (pps_btime_ms)
-            {
-                unsigned long lastCommitTime = millis() - gnss.time.age();
-                if (pps_btime_ms <= lastCommitTime)
-                    time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
-                else
-                    time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
-                time_corr_pos = 400; /* 400 ms after PPS for V6, 350 ms - for OGNTP */
-            }
-
-            int yr = gnss.date.year();
-            if (yr > 99)
-                yr = yr - 1970;
-            else
-                yr += 30;
-            tm.Year   = yr;
-            tm.Month  = gnss.date.month();
-            tm.Day    = gnss.date.day();
-            tm.Hour   = gnss.time.hour();
-            tm.Minute = gnss.time.minute();
-            tm.Second = gnss.time.second();
-
-            Time = makeTime(tm) + (gnss.time.age() - time_corr_neg + time_corr_pos) / 1000;
-            break;
-    }
-
-    uint8_t Slot = 0; /* only #0 "400ms" timeslot is currently in use */
-    uint8_t OGN  = (ogn_protocol_1 == RF_PROTOCOL_OGNTP ? 1 : 0);
-
-    /* FANET uses 868.2 MHz. Bandwidth is 250kHz  */
-    if (ogn_protocol_1 == RF_PROTOCOL_FANET)
-        Slot = 0;
-
-    uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
-
-    if (RF_ready && rf_chip)
-        rf_chip->channel(chan);
-}
+   }
 
 void RF_loop()
 {
@@ -532,8 +479,9 @@ void RF_loop()
             RF_ready = true;
     }
 
-    if (RF_ready)
+    if (RF_ready){
         RF_SetChannel();
+    }
 }
 
 size_t RF_Encode(ufo_t* fop)
@@ -661,7 +609,7 @@ static bool nrf905_probe()
 
     SPI.end();
 
-#if 0
+#if DEBUG
     delay(3000);
     Serial.print("NRF905 probe: ");
     Serial.print(addr[0], HEX);

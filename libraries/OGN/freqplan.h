@@ -52,7 +52,7 @@ class FreqPlan
           break;
         case RF_BAND_UK:
 #if !defined(TEST_PAW_ON_NICERF_SV610_FW466)
-          { BaseFreq=869525000; ChanSepar=200000; Channels= 1; MaxTxPower = 27; } // PilotAware (UK)0
+          { BaseFreq=869525000; ChanSepar=200000; Channels= 1; MaxTxPower = 27; } // PilotAware (UK)
 #else
           { BaseFreq=869920000; ChanSepar=200000; Channels= 1; MaxTxPower = 27; } // Test PAW on NiceRF SV6X0
 #endif
@@ -85,14 +85,14 @@ class FreqPlan
      if(Plan>RF_BAND_KR) return 0;
      return Name[Plan]; }
 
-   uint8_t getChannel  (uint32_t Time, uint8_t Slot=0, uint8_t OGN=1) const // OGN-tracker or legacy, UTC time, slot: 0 or 1
+   uint8_t getChannel  (uint32_t Time, uint8_t Slot=0, uint8_t OGN=1) const // OGN-tracker or FLARM, UTC time, slot: 0 or 1
    { if(Channels<=1) return 0;                                         // if single channel (New Zealand) return channel #0
      if(Plan>=2)                                                       // if USA/Canada or Australia/South America
-     { uint8_t Channel = FreqHopHash((Time<<1)+Slot) % Channels;       // legacy hopping channel
-       if(OGN)                                                         // for OGN tracker
-       { if(Slot) 
-         { uint8_t Channel2 = FreqHopHash((Time<<1)) % Channels;            // use same as legacy in the 1st slot
-           if(Channel2==Channel) { Channel++; if(Channel>=Channels) Channel-=2; } // but if same then legacy in the 2nd slot
+     { uint8_t Channel = FreqHopHash((Time<<1)+Slot) % Channels;       // Flarm hopping channel
+       if(OGN)                                                              // OGN Tracker
+       { if(Slot)                                                           // for 2nd slot
+         { uint8_t Channel2 = FreqHopHash((Time<<1)) % Channels;            // use same as Flarm in the 1st slot
+           if(Channel2==Channel) { Channel++; if(Channel>=Channels) Channel-=2; } // but if same then Flarm in the 2nd slot
                             else Channel=Channel2;
          }
          else { Channel++; if(Channel>=Channels) Channel-=2; }              // for 1st slot choose a higher channel (unless already highest, then choose a lower one)
@@ -124,3 +124,4 @@ class FreqPlan
 } ;
 
 #endif // __FREQPLAN_H__
+

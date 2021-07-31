@@ -198,15 +198,6 @@ void setup()
 
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-  /* Let host's USB and console drivers to warm-up */
-  delay(2000);
-#endif
-
-#if LOGGER_IS_ENABLED
-  Logger_setup();
-#endif /* LOGGER_IS_ENABLED */
-
   Serial.println();
   Serial.print(F(SOFTRF_IDENT));
   Serial.print(SoC->name);
@@ -242,31 +233,13 @@ void setup()
 
   delay(100);
 
-#if defined(ENABLE_AHRS)
-  hw_info.ahrs = AHRS_setup();
-#endif /* ENABLE_AHRS */
-
-#if !defined(EXCLUDE_MAVLINK)
-  if (settings->mode == SOFTRF_MODE_UAV) {
-    Serial.begin(57600);
-    MAVLink_setup();
-    ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;
-  }  else
-#endif /* EXCLUDE_MAVLINK */
-  {
-    hw_info.gnss = GNSS_setup();
-    ThisAircraft.aircraft_type = settings->aircraft_type;
-  }
-  //ThisAircraft.protocol = ogn_protocol_1;
-  //ThisAircraft.stealth  = settings->stealth;
-  //ThisAircraft.no_track = settings->no_track;
-
+  hw_info.gnss = GNSS_setup();
+  ThisAircraft.aircraft_type = settings->aircraft_type;
   Battery_setup();
   Traffic_setup();
 
   SoC->swSer_enableRx(false);
 
-  //WiFi_setup();
 
   if (SoC->Bluetooth) {
     SoC->Bluetooth->setup();
@@ -275,15 +248,10 @@ void setup()
   OTA_setup();
   NMEA_setup();
 
-#if defined(ENABLE_TTN)
-  TTN_setup();
-#endif
-
   delay(2000);
 
   Web_setup(&ThisAircraft);
   Time_setup();
-
   SoC->WDT_setup();
 }
 
@@ -306,10 +274,6 @@ void loop()
 
   // Handle OTA update.
   OTA_loop();
-
-#if LOGGER_IS_ENABLED
-  Logger_loop();
-#endif /* LOGGER_IS_ENABLED */
 
   SoC->loop();
 
@@ -358,7 +322,7 @@ void ground()
     RF_Transmit(RF_Encode(&ThisAircraft), true);
     groundstation = true;
 
-   
+ 
     msg = "good morning, startup esp32 groundstation ";
     msg += "version ";
     msg += String(_VERSION);
@@ -369,12 +333,14 @@ void ground()
 
   if((WiFi.getMode() == WIFI_AP)){
     OLED_write("Setup mode..", 0, 9, true);
-    snprintf (buf, sizeof(buf), "SSID: %s", host_name);
+    snprintf (buf, sizeof(buf), "SSID: %s", host_name.c_str());
     OLED_write(buf, 0, 18, false);
     snprintf (buf, sizeof(buf), "ip: %s", "192.168.1.1");
     OLED_write(buf, 0, 27, false);
     snprintf (buf, sizeof(buf), "reboot in %d seconds", 300 - seconds());
     OLED_write(buf, 0, 36, false);
+    snprintf (buf, sizeof(buf), "Version: %s ", _VERSION);
+    OLED_write(buf, 0, 45, false);    
     delay(1000);
     if(300 < seconds()){
       SoC->reset();
@@ -557,141 +523,3 @@ void watchout()
   }
 
 }
-
-#if !defined(EXCLUDE_TEST_MODE)
-
-unsigned int pos_ndx = 0;
-unsigned long TxPosUpdMarker = 0;
-
-void txrx_test()
-{
-  bool success = false;
-#if DEBUG_TIMING
-  unsigned long baro_start_ms, baro_end_ms;
-  unsigned long tx_start_ms, tx_end_ms, rx_start_ms, rx_end_ms;
-  unsigned long parse_start_ms, parse_end_ms, led_start_ms, led_end_ms;
-  unsigned long export_start_ms, export_end_ms;
-  unsigned long oled_start_ms, oled_end_ms;
-#endif
-  ThisAircraft.timestamp = now();
-
-  if (TxPosUpdMarker == 0 || (millis() - TxPosUpdMarker) > 4000 ) {
-    ThisAircraft.latitude =  pgm_read_float( &txrx_test_positions[pos_ndx][0]);
-    ThisAircraft.longitude =  pgm_read_float( &txrx_test_positions[pos_ndx][1]);
-    pos_ndx = (pos_ndx + 1) % TXRX_TEST_NUM_POSITIONS;
-    TxPosUpdMarker = millis();
-  }
-  ThisAircraft.altitude = TXRX_TEST_ALTITUDE;
-  ThisAircraft.course = TXRX_TEST_COURSE;
-  ThisAircraft.speed = TXRX_TEST_SPEED;
-  ThisAircraft.vs = TXRX_TEST_VS;
-
-
-#if defined(ENABLE_AHRS)
-  AHRS_loop();
-#endif /* ENABLE_AHRS */
-
-#if DEBUG_TIMING
-  tx_start_ms = millis();
-#endif
-  RF_Transmit(RF_Encode(&ThisAircraft), true);
-#if DEBUG_TIMING
-  tx_end_ms = millis();
-  rx_start_ms = millis();
-#endif
-  success = RF_Receive();
-#if DEBUG_TIMING
-  rx_end_ms = millis();
-#endif
-
-#if DEBUG_TIMING
-  parse_start_ms = millis();
-#endif
-  if (success) ParseData();
-#if DEBUG_TIMING
-  parse_end_ms = millis();
-#endif
-
-#if defined(ENABLE_TTN)
-  TTN_loop();
-#endif
-
-  Traffic_loop();
-
-
-#if DEBUG_TIMING
-  export_start_ms = millis();
-#endif
-  if (isTimeToExport()) {
-#if defined(USE_NMEALIB)
-    NMEA_Position();
-#endif
-    NMEA_Export();
-    GDL90_Export();
-    D1090_Export();
-    ExportTimeMarker = millis();
-  }
-#if DEBUG_TIMING
-  export_end_ms = millis();
-#endif
-
-#if DEBUG_TIMING
-  oled_start_ms = millis();
-#endif
-  //  SoC->Display_loop();
-#if DEBUG_TIMING
-  oled_end_ms = millis();
-#endif
-
-#if DEBUG_TIMING
-  if (baro_start_ms - baro_end_ms) {
-    Serial.print(F("Baro start: "));
-    Serial.print(baro_start_ms);
-    Serial.print(F(" Baro stop: "));
-    Serial.println(baro_end_ms);
-  }
-  if (tx_end_ms - tx_start_ms) {
-    Serial.print(F("TX start: "));
-    Serial.print(tx_start_ms);
-    Serial.print(F(" TX stop: "));
-    Serial.println(tx_end_ms);
-  }
-  if (rx_end_ms - rx_start_ms) {
-    Serial.print(F("RX start: "));
-    Serial.print(rx_start_ms);
-    Serial.print(F(" RX stop: "));
-    Serial.println(rx_end_ms);
-  }
-  if (parse_end_ms - parse_start_ms) {
-    Serial.print(F("Parse start: "));
-    Serial.print(parse_start_ms);
-    Serial.print(F(" Parse stop: "));
-    Serial.println(parse_end_ms);
-  }
-  if (led_end_ms - led_start_ms) {
-    Serial.print(F("LED start: "));
-    Serial.print(led_start_ms);
-    Serial.print(F(" LED stop: "));
-    Serial.println(led_end_ms);
-  }
-  if (export_end_ms - export_start_ms) {
-    Serial.print(F("Export start: "));
-    Serial.print(export_start_ms);
-    Serial.print(F(" Export stop: "));
-    Serial.println(export_end_ms);
-  }
-  if (oled_end_ms - oled_start_ms) {
-    Serial.print(F("OLED start: "));
-    Serial.print(oled_start_ms);
-    Serial.print(F(" OLED stop: "));
-    Serial.println(oled_end_ms);
-  }
-#endif
-
-  // Handle Air Connect
-  NMEA_loop();
-
-  ClearExpired();
-}
-
-#endif /* EXCLUDE_TEST_MODE */

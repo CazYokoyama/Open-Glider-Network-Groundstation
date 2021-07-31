@@ -62,9 +62,7 @@ const char* ISO3166_CC[] = {
     [RF_BAND_RU]   = "RU",
     [RF_BAND_CN]   = "CN",
     [RF_BAND_UK]   = "UK",
-    [RF_BAND_IN]   = "IN",
-    //[RF_BAND_IL]   = "IL",
-    //[RF_BAND_KR]   = "KR"
+    [RF_BAND_IN]   = "IN"
 };
 
 byte OLED_setup()

@@ -81,6 +81,8 @@ bool OGN_read_config(void)
     JsonObject          obj;
     File configFile;
 
+    Serial.println("start reading json config file");
+
     if (!SPIFFS.begin(true))
     {
         Serial.println("An Error has occurred while mounting SPIFFS");
