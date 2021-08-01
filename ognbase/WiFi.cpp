@@ -137,7 +137,7 @@ void WiFi_setup()
                 OLED_draw_Bitmap(85, 20, 1, true);
                 snprintf(buf, sizeof(buf), "try connecting");
                 OLED_write(buf, 0, 15, false);
-                snprintf(buf, sizeof(buf), "%s", ogn_ssid[i].c_str());
+                snprintf(buf, sizeof(buf), "%d: %s", i, ogn_ssid[i].c_str());
                 OLED_write(buf, 0, 26, false);
 
                 WiFi.begin(ogn_ssid[i].c_str(), ogn_wpass[i].c_str());

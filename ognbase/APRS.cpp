@@ -437,8 +437,12 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     APRS_STAT.callsign = String(this_aircraft->addr, HEX);
     APRS_STAT.callsign.toUpperCase();
     APRS_STAT.timestamp      = zeroPadding(String(hour()), 2) + zeroPadding(String(minute()), 2) + zeroPadding(String(second()), 2) + "h";
-    APRS_STAT.platform       = SOFTRF_FIRMWARE_VERSION;
-    APRS_STAT.platform      += "_ESP32";
+
+    /*issue17*/ /*v0.1.0.20-ESP32*/
+    APRS_STAT.platform      = "v";
+    APRS_STAT.platform      += SOFTRF_FIRMWARE_VERSION;
+    APRS_STAT.platform      += "-ESP32";
+    
     APRS_STAT.realtime_clock = String(0.0);
     APRS_STAT.board_voltage  = String(Battery_voltage()) + "V";
 

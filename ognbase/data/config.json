@@ -1,14 +1,14 @@
 {
    "wifi":{
       "ssid":[
-         "mobile",
+         "ssid",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx"
       ],
       "pass":[
-         "Melly2020%",
+         "password",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
@@ -54,7 +54,10 @@
    },
    "fanetservice":{
       "enable":1
-   },
+   }, 
+   "oled":{
+      "disable":60
+   },    
    "beers":{
       "show":0
    }

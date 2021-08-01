@@ -32,7 +32,9 @@
 #include "logos.h"
 
 SSD1306Wire display(SSD1306_OLED_I2C_ADDR, SDA, SCL, GEOMETRY_128_64, I2C_TWO, 400000);  // ADDRESS, SDA, SCL
-bool        display_init = false;
+
+bool display_init = false;
+bool display_enabled = true;
 
 int rssi      = 0;
 int oled_site = 0;
@@ -83,14 +85,22 @@ void OLED_write(char* text, short x, short y, bool clear)
     }
 }
 
-void OLED_clear()
+void OLED_disable()
 {
-    if (display_init)
-        display.clear();
+  display.clear();
+  display.displayOff();
+  display_enabled = false;
+}
+
+void OLED_enable()
+{
+  display_enabled = true;
 }
 
 void OLED_draw_Bitmap(int16_t x, int16_t y, uint8_t bm, bool clear)
 {
+    if (!display_enabled){return;}
+    
     display.displayOn();
     if (clear)
         display.clear();
@@ -109,6 +119,8 @@ void OLED_draw_Bitmap(int16_t x, int16_t y, uint8_t bm, bool clear)
 
 void OLED_info(bool ntp)
 {
+    if (!display_enabled){return;}
+    
     char     buf[64];
     uint32_t disp_value;
 
@@ -253,16 +265,42 @@ void OLED_info(bool ntp)
             display.drawString(0, 54, buf);
 
             display.display();
+            display.displayOn();
+            oled_site = 3;
+            return;
+        }
+
+        if (oled_site == 3)
+        {
+            display.clear();
+            snprintf(buf, sizeof(buf), "POSITION DATA");
+            display.drawString(0, 0, buf);
+
+            snprintf(buf, sizeof(buf), "LAT: %.4f", ThisAircraft.latitude);
+            display.drawString(0, 9, buf);
+
+            snprintf(buf, sizeof(buf), "LON:: %.4f", ThisAircraft.longitude);
+            display.drawString(0, 18, buf);
+
+            snprintf(buf, sizeof(buf), "ALT: %.2f", ThisAircraft.altitude);
+            display.drawString(0, 27, buf);
+
+            snprintf(buf, sizeof(buf), "GEOID: %.2f", ThisAircraft.geoid_separation);
+            display.drawString(0, 36, buf);
+
+            snprintf(buf, sizeof(buf), "GPS-FIX: %s", isValidFix() ? "true" : "false");
+            display.drawString(0, 45, buf);                                                                
+
+            display.display();
             if (beers_show)
-                oled_site = 3;
+                oled_site = 4;
             else
                 oled_site = 0;
             display.displayOn();
             return;
-        }
+        }  
 
-
-        if (oled_site == 3)
+        if (oled_site == 4)
         {
             String beer_supporters[] = {"guy", "jozef", "camille"};
             display.clear();

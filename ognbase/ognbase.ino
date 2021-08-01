@@ -136,9 +136,14 @@
 #define TIME_TO_SLEEP  60
 #define TimeToSleep() (seconds() - ExportTimeSleep >= ogn_rxidle)
 
+//testing
+#define TimeToDisableOled() (seconds() - ExportTimeOledDisable >= oled_disable)
+
 /*Testing FANET service messages*/
 #define TIME_TO_EXPORT_FANET_SERVICE 40 /*every 40 sec 10 for testing*/
 #define TimeToExportFanetService() (seconds() - ExportTimeFanetService >= TIME_TO_EXPORT_FANET_SERVICE)
+
+#define BUTTON 38
 
 
 ufo_t ThisAircraft;
@@ -170,6 +175,7 @@ unsigned long ExportTimeWebRefresh = 0;
 unsigned long ExportTimeFanetService = 0;
 unsigned long ExportTimeCheckKeepAliveOGN = 0;
 unsigned long ExportTimeCheckWifi = 0;
+unsigned long ExportTimeOledDisable = 0;
 
 /*
 void print_wakeup_reason(){
@@ -253,6 +259,9 @@ void setup()
   Web_setup(&ThisAircraft);
   Time_setup();
   SoC->WDT_setup();
+
+  /*T-BEAM only*/
+  //pinMode(BUTTON, INPUT);
 }
 
 void loop()
@@ -499,27 +508,17 @@ void ground()
   // Handle Air Connect
   NMEA_loop();
   ClearExpired();
-}
 
-void watchout()
-{
-  bool success;
-
-  success = RF_Receive();
-
-  if (success) {
-    size_t rx_size = RF_Payload_Size(ogn_protocol_1);
-    rx_size = rx_size > sizeof(fo.raw) ? sizeof(fo.raw) : rx_size;
-
-    memset(fo.raw, 0, sizeof(fo.raw));
-    memcpy(fo.raw, RxBuffer, rx_size);
-
-    if (settings->nmea_p) {
-      StdOut.print(F("$PSRFI,"));
-      StdOut.print((unsigned long) now());    StdOut.print(F(","));
-      StdOut.print(Bin2Hex(fo.raw, rx_size)); StdOut.print(F(","));
-      StdOut.println(RF_last_rssi);
+  if( TimeToDisableOled() ){
+    if (oled_disable > 0){
+     OLED_disable(); 
     }
   }
-
+  /*
+  if (!digitalRead(BUTTON)){
+    while(!digitalRead(BUTTON)){delay(100);}
+    OLED_enable();
+    ExportTimeOledDisable = seconds();
+  }
+  */
 }

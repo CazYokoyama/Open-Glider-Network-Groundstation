@@ -216,14 +216,26 @@ void Web_setup(ufo_t* this_aircraft)
     String station_addr = String(this_aircraft->addr, HEX);
     station_addr.toUpperCase();
 
+    /*Bugfix Issue 20*/
+    String pos_lat = "";
+    String pos_lon = "";    
+    String pos_alt = "";
+    String pos_geo = "";
+
+    pos_lat.concat(ogn_lat);
+    pos_lon.concat(ogn_lon);
+    pos_alt.concat(ogn_alt);
+    pos_geo.concat(ogn_geoid_separation);
+    /*END  Bugfix*/ 
+
     snprintf(offset, size, index_html,
              station_addr,
              SOFTRF_FIRMWARE_VERSION,
              ogn_callsign,
-             String(ogn_lat, 5),
-             String(ogn_lon, 5),
-             String(ogn_alt),
-             String(ogn_geoid_separation),
+             pos_lat,
+             pos_lon,
+             pos_alt,
+             pos_geo,
              String(ogn_range),
              (ogn_band == RF_BAND_AUTO ? "selected" : ""), RF_BAND_AUTO,
              (ogn_band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
@@ -263,7 +275,9 @@ void Web_setup(ufo_t* this_aircraft)
              (ogn_istealthbit == false ? "selected" : ""), "False",
 
              ogn_ssid[0].c_str(),
-             ogn_wpass[0].c_str(),
+             
+             /*Hide Wifi Password*/
+             "hidepass",
 
              (ogn_sleepmode == 0 ? "selected" : ""), "Disabled",
              (ogn_sleepmode == 1 ? "selected" : ""), "Full",
@@ -317,7 +331,7 @@ void Web_setup(ufo_t* this_aircraft)
     // Send a GET request to <ESP_IP>/get?inputString=<inputMessage>
     wserver.on("/get", HTTP_GET, [](AsyncWebServerRequest* request) {
         if (request->hasParam("callsign"))
-            ogn_callsign = request->getParam("callsign")->value();
+            ogn_callsign = request->getParam("callsign")->value().c_str();
         if (request->hasParam("ogn_lat"))
             ogn_lat = request->getParam("ogn_lat")->value().toFloat();
 
@@ -364,10 +378,14 @@ void Web_setup(ufo_t* this_aircraft)
         //    settings->sxlna = request->getParam("ogn_agc")->value().toInt();
 
         if (request->hasParam("ogn_ssid"))
-            ogn_ssid[0] = request->getParam("ogn_ssid")->value();
+            ogn_ssid[0] = request->getParam("ogn_ssid")->value().c_str();
 
-        if (request->hasParam("ogn_wifi_password"))
-            ogn_wpass[0] = request->getParam("ogn_wifi_password")->value();
+        if (request->hasParam("ogn_wifi_password")){
+            if (request->getParam("ogn_wifi_password")->value() != "hidepass"){
+              ogn_wpass[0] = request->getParam("ogn_wifi_password")->value().c_str();
+            }
+        }
+            
         //geoid_separation
         if (request->hasParam("ogn_geoid"))
             ogn_geoid_separation = request->getParam("ogn_geoid")->value().toInt();

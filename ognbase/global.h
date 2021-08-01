@@ -38,4 +38,6 @@ extern bool      remotelogs_enable;
 extern String    remotelogs_server;
 extern uint16_t  remotelogs_port;
 
+extern unsigned long   oled_disable;
+
 extern bool  testmode_enable;

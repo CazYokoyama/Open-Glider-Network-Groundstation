@@ -71,6 +71,9 @@ bool      remotelogs_enable = false;
 String    remotelogs_server = "127.0.0.1";
 uint16_t  remotelogs_port = 12000;
 
+//oled 
+unsigned long  oled_disable = 0;
+
 //tesmode for new functions
 bool  testmode_enable = false;
 
@@ -209,6 +212,14 @@ bool OGN_read_config(void)
         if (1)
             fanet_enable = obj["fanetservice"]["enable"];
     }
+
+    /*oled_disable*/
+    if (obj.containsKey(F("oled")))
+    {
+        Serial.println(F("found oled config!"));
+        if (1)
+            oled_disable = obj["oled"]["disable"];
+    }    
 
     if (obj.containsKey(F("beers")))
         beers_show = obj["beers"]["show"];
