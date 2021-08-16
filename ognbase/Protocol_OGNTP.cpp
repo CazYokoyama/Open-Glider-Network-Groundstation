@@ -26,6 +26,7 @@
 #include "SoftRF.h"
 #include "Protocol_OGNTP.h"
 #include "Protocol_Legacy.h"
+#include "GNSS.h"
 #include "RF.h"
 
 const rf_proto_desc_t ogntp_proto_desc = {

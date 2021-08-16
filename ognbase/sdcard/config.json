@@ -8,7 +8,7 @@
          "xxxxxxx"
       ],
       "pass":[
-         "pass",
+         "password",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
@@ -31,9 +31,17 @@
    "testmode":{
       "enable":false
    },
+   "newprot":{
+      "enable":0,
+      "server":"10.0.1.2",
+      "port":12006	
+   },
+   "private":{
+      "enable":0
+   },      
    "remotelogs":{
       "enable":false,
-      "server":"5.150.254.37",
+      "server":"127.0.0.1",
       "port":12000
    },      
    "aprs":{
@@ -53,24 +61,11 @@
       "range":100
    },
    "fanetservice":{
-      "enable":1
-   },
-   "newprot":{
-      "enable":1,
-      "server":"192.168.1.1",
-      "port":12012
-   },    
-   "private":{
-      "enable":1,
-      "key":"MySecretKey",
-      "iv":"MySecretPassword"
-   },   
+      "enable":0
+   }, 
    "oled":{
       "disable":0
-   },
-   "testmode":{
-   		"enable":1
-   },   
+   },    
    "beers":{
       "show":0
    }

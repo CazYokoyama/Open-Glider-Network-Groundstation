@@ -439,8 +439,6 @@ static void GDL90_Out(byte* buf, size_t size)
                 break;
             case GDL90_BLUETOOTH:
                 {
-                    if (SoC->Bluetooth)
-                        SoC->Bluetooth->write(buf, size);
                 }
                 break;
             case GDL90_TCP:

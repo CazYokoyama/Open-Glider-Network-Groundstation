@@ -29,7 +29,6 @@ void EEPROM_store()
 #include "RF.h"
 
 
-#include "Bluetooth.h"
 #include "Traffic.h"
 #include "NMEA.h"
 #include "GDL90.h"
@@ -83,7 +82,6 @@ void EEPROM_defaults()
     eeprom_block.field.settings.mode = SOFTRF_MODE_GROUND;
     eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
     eeprom_block.field.settings.txpower       = RF_TX_POWER_FULL;
-    eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
     eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
     eeprom_block.field.settings.nmea_g = false;
     eeprom_block.field.settings.nmea_p = false;

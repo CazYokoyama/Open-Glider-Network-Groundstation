@@ -34,12 +34,12 @@
 #include <protocol.h>
 #include <freqplan.h>
 
-#include "GNSS.h"
 #include "Protocol_Legacy.h"
 #include "Protocol_OGNTP.h"
 #include "Protocol_P3I.h"
 #include "Protocol_FANET.h"
 #include "Protocol_UAT978.h"
+#include "GNSS.h"
 
 #define maxof2(a, b)       (a > b ? a : b)
 #define maxof3(a, b, c)     maxof2(maxof2(a, b), c)
@@ -57,11 +57,7 @@
 enum
 {
     RF_IC_NONE,
-    RF_IC_NRF905,
     RF_IC_SX1276,
-    RF_IC_UATM,
-    RF_IC_CC13XX,
-    RF_DRV_OGN,
     RF_IC_SX1262
 };
 

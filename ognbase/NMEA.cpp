@@ -235,12 +235,6 @@ void NMEA_Out(byte* buf, size_t size, bool nl)
             break;
         case NMEA_BLUETOOTH:
             {
-                if (SoC->Bluetooth)
-                {
-                    SoC->Bluetooth->write(buf, size);
-                    if (nl)
-                        SoC->Bluetooth->write((byte *) "\n", 1);
-                }
             }
             break;
         case NMEA_OFF:

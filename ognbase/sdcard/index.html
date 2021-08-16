@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>OGN Groundstation</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script type = "text/javascript">
+  var ws = new WebSocket('ws://' + location.hostname + '/ws', ['arduino']);
+
+  ws.onopen = function() {
+   };
+   ws.onmessage = function(evt) {
+      var daten = evt.data.split("_")
+      document.getElementById("power").innerHTML  = daten[0]  + " V";
+      document.getElementById("rssi").innerHTML  = daten[1];
+      document.getElementById("hours").innerHTML  = daten[2] + " h";
+      document.getElementById("satfix").innerHTML  = daten[3];
+      document.getElementById("timestamp").innerHTML  = daten[4];
+      document.getElementById("largest_range").innerHTML  = daten[5];
+    };
+  </script>
+</head>
+<body>
+  <h1>OGN Ground Station - %s</h1>
+  <h3>Version %s</h3>
+  <table cellspacing="4" align="center" cellpadding="5">
+  <class="circle-container">
+    <td>
+      <div class="power">
+          <div class="circle__content">
+            <p id = "power">connecting</p>
+          </div>
+          <div class="circle__lower-text">
+              Power
+          </div>
+      </div>
+    </td>
+    <td>
+      <div class="rssi">
+          <div class="circle__content">
+            <p id = "rssi">connecting</p>
+          </div>
+          <div class="circle__lower-text">
+              RSSI
+          </div>
+      </div>
+    </td>
+    <td>
+      <div class="hours">
+          <div class="circle__content">
+            <p id = "hours">connecting</p>
+          </div>
+          <div class="circle__lower-text">
+              Uptime
+          </div>
+      </div>
+  </td>
+  <td>
+    <div class="satfix">
+        <div class="circle__content">
+          <p id = "satfix">connecting</p>
+        </div>
+        <div class="circle__lower-text">
+            GNSS
+        </div>
+    </div>
+</td>
+<td>
+  <div class="timestamp">
+      <div class="circle__content">
+        <p id = "timestamp">connecting</p>
+      </div>
+      <div class="circle__lower-text">
+          Timestamp
+      </div>
+  </div>
+</td>
+<td>
+  <div class="largest_range">
+      <div class="circle__content">
+        <p id = "largest_range">connecting</p>
+      </div>
+      <div class="circle__lower-text">
+          Longest Range
+      </div>
+  </div>
+</td>
+</table>
+  <form action="/get" method="get">
+  <table cellspacing="4" align="center" cellpadding="5">
+    <colgroup>
+    <col width="250">
+    <col height="65">
+    </colgroup>
+   <tr>
+    <td>OGN Callsign</td>
+    <td><input id=callsign type="text" name="callsign" value="%s" size="8"></td>
+    <td>Lat</td>
+    <td><input id=lat type="number" name="ogn_lat" step="0.000001" value="%s" size="8"></td>
+  </tr>
+  <tr>
+    <td>Lon</td>
+    <td><input id=lon type="number" name="ogn_lon" step="0.000001" value="%s" size="8"></td>
+    <td>Alt [m]</td>
+    <td><input id=alt type="number" name="ogn_alt" value="%s" size="8"></td>
+   </tr>
+   <tr>
+     <td>Geoid [m]</td>
+     <td><input id=geoid type="number" name="ogn_geoid" value="%s" size="8"></td>
+     <td>Range [km]</td>
+     <td><input id=range type="number" name="ogn_range" value="%s" size="8"></td>
+   </tr>
+   <tr>
+  <td>Band</td>
+  <td><select id="band" name="ogn_freq">
+    <option %s value='%d'>AUTO</option>
+    <option %s value='%d'>EU (868.2 MHz)</option>
+    <option %s value='%d'>RU (868.8 MHz)</option>
+    <option %s value='%d'>CN (470 MHz)</option>
+    <option %s value='%d'>US/CA (915 MHz)</option>
+    <option %s value='%d'>NZ (869.25 MHz)</option>
+    <option %s value='%d'>UK (869.52 MHz)</option>
+    <option %s value='%d'>AU (921 MHz)</option>
+    <option %s value='%d'>IN (866 MHz)</option>
+  </select>
+ </td>
+ </tr>
+ <td>Protocol 1</td>
+ <td><select id="protocol" name="ogn_proto">
+   <option %s value='%d'>%s</option>
+   <option %s value='%d'>%s</option>
+   <option %s value='%d'>%s</option>
+   <option %s value='%d'>%s</option>
+ </select>
+ <td>Protocol 2</td>
+ <td><select id="protocol2" name="ogn_proto2">
+   <option %s value='%d'>%s</option>
+   <option %s value='%d'>%s</option>
+   <option %s value='%d'>%s</option>
+   <option %s value='%d'>%s</option>
+ </select>
+</td>
+<tr>
+<td>APRS Debug</td>
+<td><select id="apr_debug" name="ogn_aprs_debug">
+ <option %s value="1">UDP</option>
+ <option %s value="0">off</option>
+</select>
+</td>
+<td>APRS D-Port</td>
+<td><INPUT type='number' name='aprs_debug_port' value='%s' size="8" ></td>
+</td>
+</tr>
+<tr>
+<td>ignore Track bit</td>
+<td><select id="ogn_no_track" name="ogn_ignore_track">
+ <option %s value="1">%s</option>
+ <option %s value="0">%s</option>
+</select>
+</td>
+<td>ignore Stealth bit</td>
+<td><select id="ogn_stealth" name="ogn_ignore_stealth">
+  <option %s value="1">%s</option>
+  <option %s value="0">%s</option>
+</select>
+</td>
+</tr>
+<tr>
+  <td>Wifi SSID</td>
+  <td><INPUT type='text' name='ogn_ssid' maxlength='45' value='%s' size="8" ></td>
+  <td>Wifi PASS</td>
+  <td><INPUT type='password' name='ogn_wifi_password' value='%s' size="8" ></td>
+</tr>
+<tr>
+  <td>Sleep Mode</td>
+  <td><select id="ogn_sleep" name="ogn_deep_sleep">
+    <option %s value="0">%s</option>
+    <option %s value="1">%s</option>
+    <option %s value="2">%s</option>
+  </select>
+  </td>
+  <td>RX idle [sec]</td>
+  <td><INPUT type='number' name='ogn_sleep_time' placeholder="3600" value='%s' size="8" ></td>
+</tr>
+<tr>
+  <td>Wake up Timer [sec]</td>
+  <td><INPUT type='number' name='ogn_wakeup_time' placeholder="3600" value='%s' size="8" ></td>
+  <td>Zabbix Trapper</td>
+  <td><select id="zabbix_trap_en" name="zabbix_trap_en">
+    <option %s value="0">%s</option>
+    <option %s value="1">%s</option>
+  </select>
+  </td>
+</tr>
+<tr>
+  <td>RESET</td>
+  <td><INPUT type="checkbox" name="ogn_reset_all"></td>
+</tr>
+<td><p><button class="button_save">Save</button></a></p></td>
+<td><a href="reboot" class="button_reboot" >Reboot</a></td>
+<td><a href="upload" class="upload" >Upload Files</a></td>
+<td><a href="update" class="update" >Update Firmware</a></td>
+</td>
+</form>
+</table>
+</body>
+</html>

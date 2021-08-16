@@ -23,7 +23,6 @@
 
 #include "SoftRF.h"
 #include "Platform_ESP32.h"
-#include "Bluetooth.h"
 
 typedef struct SoC_ops_struct
 {
@@ -55,7 +54,6 @@ typedef struct SoC_ops_struct
     void (* SPI_begin)();
     void (* swSer_begin)(unsigned long);
     void (* swSer_enableRx)(boolean);
-    Bluetooth_ops_t* Bluetooth;
     void (* Battery_setup)();
     float (* Battery_voltage)();
     void (* GNSS_PPS_handler)();

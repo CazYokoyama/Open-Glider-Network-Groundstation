@@ -246,11 +246,6 @@ void setup()
 
   SoC->swSer_enableRx(false);
 
-
-  if (SoC->Bluetooth) {
-    SoC->Bluetooth->setup();
-  }
-
   OTA_setup();
   NMEA_setup();
 

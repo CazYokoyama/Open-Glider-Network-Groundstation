@@ -31,6 +31,7 @@
 #include "SoftRF.h"
 #include "Protocol_FANET.h"
 #include "Protocol_Legacy.h"
+#include "GNSS.h"
 #include "RF.h"
 
 #include "Log.h"

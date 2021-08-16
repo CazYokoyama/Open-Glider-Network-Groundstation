@@ -48,8 +48,7 @@ static void D1090_Out(byte* buf, size_t size)
             break;
         case D1090_BLUETOOTH:
             {
-                if (SoC->Bluetooth)
-                    SoC->Bluetooth->write(buf, size);
+
             }
             break;
         case D1090_OFF:

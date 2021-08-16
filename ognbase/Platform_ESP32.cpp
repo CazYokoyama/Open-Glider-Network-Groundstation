@@ -35,7 +35,6 @@
 #include "EEPROM.h"
 #include "RF.h"
 #include "WiFi.h"
-#include "Bluetooth.h"
 
 #include "Log.h"
 #include <ESP32Ping.h>
@@ -963,7 +962,6 @@ const SoC_ops_t ESP32_ops = {
     ESP32_SPI_begin,
     ESP32_swSer_begin,
     ESP32_swSer_enableRx,
-    &ESP32_Bluetooth_ops,
     ESP32_Battery_setup,
     ESP32_Battery_voltage,
     ESP32_GNSS_PPS_Interrupt_handler,

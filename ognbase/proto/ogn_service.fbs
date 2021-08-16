@@ -1,0 +1,41 @@
+ 
+namespace ogn;
+ 
+
+struct AircraftPos {
+  callsign:int32;
+  timestamp:int32;
+  type:int8;
+  stealth:bool;
+  notrack:bool;
+  heading:int32;
+  speed:int32;
+  lat:int32;
+  lon:int32;
+  alt:int32;
+}
+
+struct GroundPos {
+  callsign:int32;
+  timestamp:int32;
+  lat:int32;
+  lon:int32;
+  alt:int32;
+}
+
+struct GroundStat {
+  callsign:int32;
+  timestamp:int32;
+  lat:int32;
+  lon:int32;
+  alt:int32;
+}
+ 
+table OneMessage {
+  airc_pos:AircraftPos;
+  grou_pos:GroundPos;
+  grou_sta:GroundStat;
+}
+
+root_type OneMessage;
+
