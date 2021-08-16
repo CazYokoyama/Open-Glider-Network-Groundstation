@@ -41,7 +41,7 @@ void WiFi_fini()
 #include "Traffic.h"
 #include "RF.h"
 #include "Web.h"
-#include "NMEA.h"
+//#include "NMEA.h"
 #include "Battery.h"
 
 #include "config.h"
@@ -248,7 +248,7 @@ void WiFi_loop()
         {
             if ((millis() - WiFi_No_Clients_Time_ms) > POWER_SAVING_WIFI_TIMEOUT)
             {
-                NMEA_fini();
+                //NMEA_fini();
                 Web_fini();
                 WiFi_fini();
 

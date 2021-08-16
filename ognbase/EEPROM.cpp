@@ -30,9 +30,7 @@ void EEPROM_store()
 
 
 #include "Traffic.h"
-#include "NMEA.h"
-#include "GDL90.h"
-#include "D1090.h"
+//#include "NMEA.h"
 #include "Battery.h"
 
 // start reading from the first byte (address 0) of the EEPROM
@@ -91,11 +89,9 @@ void EEPROM_defaults()
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
     eeprom_block.field.settings.nmea_out = NMEA_BLUETOOTH;  /* STM32 USB */
 #else
-    eeprom_block.field.settings.nmea_out = NMEA_OFF;
+//    eeprom_block.field.settings.nmea_out = NMEA_OFF;
 #endif
 
-    eeprom_block.field.settings.gdl90      = GDL90_OFF;
-    eeprom_block.field.settings.d1090      = D1090_OFF;
     eeprom_block.field.settings.stealth    = false;
     eeprom_block.field.settings.no_track   = false;
     eeprom_block.field.settings.power_save = POWER_SAVE_NONE;

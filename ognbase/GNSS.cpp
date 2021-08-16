@@ -23,7 +23,7 @@
 
 #include "GNSS.h"
 #include "EEPROM.h"
-#include "NMEA.h"
+//#include "NMEA.h"
 #include "SoC.h"
 #include "WiFi.h"
 #include "RF.h"

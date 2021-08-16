@@ -69,10 +69,7 @@
 
 #include "EEPROM.h"
 #include "Battery.h"
-#include "MAVLink.h"
-#include "GDL90.h"
-#include "NMEA.h"
-#include "D1090.h"
+//#include "NMEA.h"
 #include "SoC.h"
 #include "WiFi.h"
 #include "Web.h"
@@ -247,7 +244,7 @@ void setup()
   SoC->swSer_enableRx(false);
 
   OTA_setup();
-  NMEA_setup();
+  //NMEA_setup();
 
   delay(2000);
 
@@ -294,7 +291,7 @@ void shutdown(const char *msg)
 
   SoC->swSer_enableRx(false);
 
-  NMEA_fini();
+  //NMEA_fini();
 
   Web_fini();
 
@@ -501,7 +498,7 @@ void ground()
   }
 
   // Handle Air Connect
-  NMEA_loop();
+  //NMEA_loop();
   ClearExpired();
 
   if( TimeToDisableOled() ){

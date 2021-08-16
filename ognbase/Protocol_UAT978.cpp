@@ -25,7 +25,6 @@
 #include "SoftRF.h"
 #include "Protocol_UAT978.h"
 #include "RF.h"
-#include "GDL90.h"
 
 const rf_proto_desc_t uat978_proto_desc = {
     "UAT",
@@ -72,7 +71,7 @@ bool uat978_decode(void* pkt, ufo_t* this_aircraft, ufo_t* fop)
         fop->pressure_altitude = mdb.altitude / _GPS_FEET_PER_METER; /* TBD */
     }
 
-    fop->aircraft_type = GDL90_TO_AT(mdb.emitter_category);
+    //fop->aircraft_type = GDL90_TO_AT(mdb.emitter_category);
     fop->course        = mdb.track;
     fop->speed         = mdb.speed;
     fop->vs            = mdb.vert_rate;
