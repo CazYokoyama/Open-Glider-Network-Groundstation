@@ -15,27 +15,25 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "ogn_service.pb.h"
-#include "pb_common.h"
-#include "pb.h"
-#include "pb_encode.h"
-#include "pb_decode.h"
 
 #include "SoftRF.h"
 #include "WiFi.h"
+#include "Traffic.h"
 #include "AsyncUDP.h"
 #include "EEPROM.h"
 #include "RF.h"
 #include "global.h"
 #include "Web.h"
 #include "Log.h"
+#include "PNET.h"
+
+
+#include "ogn_service_generated.h"
 
 WiFiUDP udp;
 
-static bool RSM_transmit(uint8_t* msg_buffer, size_t msg_size)
-{
-//in progress
-}
+using namespace ogn;
+
 
 bool RSM_Setup(int port)
 {
@@ -50,105 +48,65 @@ bool RSM_Setup(int port)
     return false;
 }
 
+// AircraftPos(int32_t _callsign, int32_t _timestamp, int8_t _type, bool _stealth, bool _notrack, int32_t _heading, int32_t _speed, int32_t _lat, int32_t _lon, int32_t _alt)
+
+void RSM_ExportAircraftPosition() {
+  
+    flatbuffers::FlatBufferBuilder builder;
+
+     time_t this_moment = now();
+    
+    for (int i = 0; i < MAX_TRACKING_OBJECTS; i++)
+        if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME && Container[i].distance < ogn_range * 1000)
+        {    
+          auto AircPosition = AircraftPos( Container[i].addr,
+                                           Container[i].timestamp,
+                                           Container[i].aircraft_type,
+                                           Container[i].stealth,
+                                           Container[i].no_track,
+                                           Container[i].course,
+                                           Container[i].speed,
+                                           Container[i].latitude,
+                                           Container[i].longitude,
+                                           Container[i].altitude);
+                                           
+          auto message = CreateOneMessage(builder, &AircPosition);                                                                                                                                                                 
+          builder.Finish(message);
+          
+          auto ptr = builder.GetBufferPointer();
+          auto size = builder.GetSize();
+          /*
+          Serial.println();
+          for(size_t i=0;i<size;i++){
+            Serial.print(ptr[i], HEX);  
+          }
+          Serial.println();
+          */
+          
+          if(private_network){
+            
+            char *encrypted;
+            size_t encrypted_len;
+            
+            PNETencrypt(ptr, size, &encrypted, &encrypted_len);
+            SoC->WiFi_transmit_UDP(new_protocol_server.c_str(), new_protocol_port, (byte*)encrypted, encrypted_len); 
+
+             /*
+            Serial.println();
+            for(size_t i=0;i<size;i++){
+              Serial.print(encrypted[i], HEX);  
+            }
+            Serial.println();
+            */          
+          }
+      
+          else{
+           SoC->WiFi_transmit_UDP(new_protocol_server.c_str(), new_protocol_port, ptr, size);  
+          }                   
+        }
+}
+
 void RSM_receiver()
 {
-    int packetSize = udp.parsePacket();
-    int msgSize    = 0;
-
-    if (packetSize)
-    {
-        uint8_t buffer[packetSize];
-        udp.read(buffer, packetSize);
-
-        while (packetSize) {
-            uint8_t msg_buffer[buffer[msgSize]];
-
-            for (int i = 0; i < buffer[msgSize]; i++)
-                msg_buffer[i] = buffer[i + msgSize + 1];
-
-            OneMessage   message = OneMessage_init_zero;
-            pb_istream_t stream  = pb_istream_from_buffer(msg_buffer, buffer[msgSize]);
-            int          status  = pb_decode(&stream, OneMessage_fields, &message);
-
-            //RSM_transmit(msg_buffer, buffer[msgSize]);
-            if (message.has_fanetService)
-                Serial.println("found fanet service");
-            if (message.has_receiverConfiguration)
-            {
-                Serial.println("found receiver configuration");
-
-
-                if (message.receiverConfiguration.has_maxrange)
-                    ogn_range = message.receiverConfiguration.maxrange;
-                if (message.receiverConfiguration.has_band)
-                {
-                    ogn_band = message.receiverConfiguration.band;
-                    Serial.println("setting band");
-                }
-                if (message.receiverConfiguration.has_protocol)
-                {
-                    ogn_protocol_1 = message.receiverConfiguration.protocol;
-                    Serial.println("setting protocol");
-                }
-                if (message.receiverConfiguration.has_aprsd)
-                {
-                    ogn_debug= message.receiverConfiguration.aprsd;
-                    Serial.println("enable aprs debugging");
-                }
-                if (message.receiverConfiguration.has_aprsp)
-                {
-                    ogn_debugport = message.receiverConfiguration.aprsp;
-                    Serial.println("change aprs debug port");
-                }
-                if (message.receiverConfiguration.has_itrackb)
-                {
-                    ogn_itrackbit= message.receiverConfiguration.itrackb;
-                    Serial.println("ignore track bit set");
-                }
-                if (message.receiverConfiguration.has_istealthb)
-                {
-                    ogn_istealthbit= message.receiverConfiguration.istealthb;
-                    Serial.println("ignore stealth bit set");
-                }
-                if (message.receiverConfiguration.has_sleepm)
-                {
-                    ogn_sleepmode = message.receiverConfiguration.sleepm;
-                    Serial.println("enabling sleep mode");
-                }
-                if (message.receiverConfiguration.has_rxidle)
-                {
-                    ogn_rxidle = message.receiverConfiguration.rxidle;
-                    Serial.println("enable sleep after rx idle");
-                }
-                if (message.receiverConfiguration.has_wakeup)
-                {
-                    ogn_wakeuptimer= message.receiverConfiguration.wakeup;
-                    Serial.println("setting wakeup timer value");
-                }
-                if (message.receiverConfiguration.has_reset)
-                    if (message.receiverConfiguration.reset)
-                    {
-                        Serial.println("reset");
-                        SPIFFS.format();
-                        RF_Shutdown();
-                        delay(1000);
-                        SoC->reset();
-                    }
-                if (message.receiverConfiguration.has_reboot)
-                    if (message.receiverConfiguration.reboot)
-                    {
-                        Serial.println("rebooting");
-                        EEPROM_store();
-                        RF_Shutdown();
-                        delay(2000);
-                        SoC->reset();
-                    }
-                Serial.println("store eeprom values");
-                EEPROM_store();
-            }
-
-            msgSize    = msgSize + buffer[msgSize];
-            packetSize = packetSize - msgSize - 1;
-        }
-    }
+//ToDo....
 }

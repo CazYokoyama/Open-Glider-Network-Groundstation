@@ -23,6 +23,7 @@
 #include "EEPROM.h"
 #include "zabbixSender.h"
 #include "global.h"
+#include "GNSS.h"
 
 #define hours() (millis() / 3600000)
 

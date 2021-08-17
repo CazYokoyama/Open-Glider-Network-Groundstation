@@ -1,5 +1,5 @@
 /*
- * RSM.h
+ * PNET.h
  * Copyright (C) 2020 Manuel Rösel
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,11 +19,14 @@
 #include <string.h>
 #include "SoC.h"
 
-#ifndef RSMHELPER_H
-#define RSMHELPER_H
 
-bool RSM_Setup(int);
-void RSM_receiver();
-bool RSM_ExportAircraftPosition();
+#ifndef PNETHELPER_H
+#define PNETHELPER_H
 
-#endif /* RSMHELPER_H */
+void aes_init();
+
+void PNETencrypt(unsigned char msg[],size_t msgLen, char **arr, size_t *arr_len);
+void PNETdecrypt(unsigned char msg[],size_t msgLen, char **arr, size_t *arr_len);
+
+
+#endif /* PNETHELPER_H */

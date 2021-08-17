@@ -109,7 +109,7 @@ void Raw_Transmit_UDP()
     // ASSERT(sizeof(UDPpacketBuffer) > 2 * PKT_SIZE + 1)
     str.toCharArray(UDPpacketBuffer, sizeof(UDPpacketBuffer));
     UDPpacketBuffer[len] = '\n';
-    SoC->WiFi_transmit_UDP(RELAY_DST_PORT, (byte *)UDPpacketBuffer, len + 1);
+    //SoC->WiFi_transmit_UDP(RELAY_DST_PORT, (byte *)UDPpacketBuffer, len + 1);
 }
 
 /**

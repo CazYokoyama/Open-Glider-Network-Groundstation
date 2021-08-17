@@ -31,6 +31,7 @@
 #include "global.h"
 #include "Log.h"
 #include "GNSS.h"
+#include "PNET.h"
 #include <fec.h>
 
 #if LOGGER_IS_ENABLED
@@ -413,175 +414,6 @@ uint8_t RF_Payload_Size(uint8_t protocol)
     }
 }
 
-#if !defined(EXCLUDE_NRF905)
-/*
- * NRF905-specific code
- *
- *
- */
-
-static uint8_t nrf905_channel_prev   = (uint8_t) -1;
-static bool    nrf905_receive_active = false;
-
-static bool nrf905_probe()
-{
-    uint8_t addr[4];
-    uint8_t ref[] = TXADDR;
-
-    digitalWrite(CSN, HIGH);
-    pinMode(CSN, OUTPUT);
-
-    SoC->SPI_begin();
-
-#if defined(ARDUINO)
-    SPI.setClockDivider(SPI_CLOCK_DIV2);
-#endif /* ARDUINO */
-
-    digitalWrite(CSN, LOW);
-
-    SPI.transfer(NRF905_CMD_R_TX_ADDRESS);
-    for (uint8_t i=4; i--;)
-        addr[i] = SPI.transfer(NRF905_CMD_NOP);
-
-    digitalWrite(CSN, HIGH);
-    pinMode(CSN, INPUT);
-
-    SPI.end();
-
-#if DEBUG
-    delay(3000);
-    Serial.print("NRF905 probe: ");
-    Serial.print(addr[0], HEX);
-    Serial.print(" ");
-    Serial.print(addr[1], HEX);
-    Serial.print(" ");
-    Serial.print(addr[2], HEX);
-    Serial.print(" ");
-    Serial.print(addr[3], HEX);
-    Serial.print(" ");
-    Serial.println();
-#endif
-
-    /* Cold start state */
-    if ((addr[0] == 0xE7) && (addr[1] == 0xE7) && (addr[2] == 0xE7) && (addr[3] == 0xE7))
-        return true;
-
-    /* Warm restart state */
-    if ((addr[0] == 0xE7) && (addr[1] == ref[0]) && (addr[2] == ref[1]) && (addr[3] == ref[2]))
-        return true;
-
-    return false;
-}
-
-static void nrf905_channel(uint8_t channel)
-{
-    if (channel != nrf905_channel_prev)
-    {
-        uint32_t      frequency;
-        nRF905_band_t band;
-
-        frequency = RF_FreqPlan.getChanFrequency(channel);
-        band      = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
-
-        nRF905_setFrequency(band, frequency);
-
-        nrf905_channel_prev = channel;
-        /* restart Rx upon a channel switch */
-        nrf905_receive_active = false;
-    }
-}
-
-static void nrf905_setup()
-{
-    SoC->SPI_begin();
-
-    // Start up
-    nRF905_init();
-
-    /* Channel selection is now part of RF_loop() */
-//  nrf905_channel(channel);
-
-    //nRF905_setTransmitPower(NRF905_PWR_10);
-    //nRF905_setTransmitPower(NRF905_PWR_n10);
-
-    switch (settings->txpower)
-    {
-        case RF_TX_POWER_FULL:
-
-            /*
-             * NRF905 is unable to give more than 10 dBm
-             * 10 dBm is legal everywhere in the world
-             */
-
-            nRF905_setTransmitPower((nRF905_pwr_t)NRF905_PWR_10);
-            break;
-        case RF_TX_POWER_OFF:
-        case RF_TX_POWER_LOW:
-        default:
-            nRF905_setTransmitPower((nRF905_pwr_t)NRF905_PWR_n10);
-            break;
-    }
-
-    nRF905_setCRC(NRF905_CRC_16);
-    //nRF905_setCRC(NRF905_CRC_DISABLE);
-
-    // Set address of this device
-    byte addr[] = RXADDR;
-    nRF905_setRXAddress(addr);
-
-    /* Enforce radio settings to follow "Legacy" protocol's RF specs */
-    ogn_protocol_1 = RF_PROTOCOL_LEGACY;
-
-    /* Enforce encoder and decoder to process "Legacy" frames only */
-    protocol_encode = &legacy_encode;
-    protocol_decode = &legacy_decode;
-
-    /* Put IC into receive mode */
-    nRF905_receive();
-}
-
-static bool nrf905_receive()
-{
-    bool success = false;
-
-    // Put into receive mode
-    if (!nrf905_receive_active)
-    {
-        nRF905_receive();
-        nrf905_receive_active = true;
-    }
-
-    success = nRF905_getData(RxBuffer, LEGACY_PAYLOAD_SIZE);
-    if (success) // Got data
-        rx_packets_counter++;
-
-    return success;
-}
-
-static void nrf905_transmit()
-{
-    nrf905_receive_active = false;
-
-    // Set address of device to send to
-    byte addr[] = TXADDR;
-    nRF905_setTXAddress(addr);
-
-    // Set payload data
-    nRF905_setData(&TxBuffer[0], LEGACY_PAYLOAD_SIZE);
-
-    // Send payload (send fails if other transmissions are going on, keep trying until success)
-    while (!nRF905_send()) {
-        yield();
-    };
-}
-
-static void nrf905_shutdown()
-{
-    nRF905_powerDown();
-    SPI.end();
-}
-
-#endif /* EXCLUDE_NRF905 */
 
 #if !defined(EXCLUDE_SX12XX)
 /*
@@ -906,7 +738,6 @@ static bool sx12xx_receive()
     if (sx12xx_receive_complete == false)
         // execute scheduled jobs and events
         os_runstep();
-    ;
 
     if (sx12xx_receive_complete == true)
     {
@@ -915,9 +746,36 @@ static bool sx12xx_receive()
         if (size > sizeof(RxBuffer))
             size = sizeof(RxBuffer);
 
-        for (u1_t i=0; i < size; i++)
+        for (u1_t i=0; i < size; i++){
             RxBuffer[i] = LMIC.frame[i + LMIC.protocol->payload_offset];
+        }
 
+        /*decrypt payload for private network*/
+        /*if packet is bigger , maybe its encryptedr*/
+        if(testmode_enable)
+          if(size > RF_Payload_Size(ogn_protocol_1)){
+            char *decrypted;
+            size_t decrypted_len;
+            switch (ogn_protocol_1)
+              {
+               case RF_PROTOCOL_FANET:
+                    PNETdecrypt(RxBuffer, size, &decrypted, &decrypted_len);
+                    /*after decrypting packet size should be good*/
+                    if(decrypted_len == RF_Payload_Size(ogn_protocol_1)){      
+                      for(size_t i=0; i<decrypted_len;i++){
+                        RxBuffer[i] = decrypted[i];
+                          }
+                        }
+                    break;
+               case RF_PROTOCOL_LEGACY:
+               case RF_PROTOCOL_P3I:
+               case RF_PROTOCOL_OGNTP:
+                    break;
+              }
+            free(decrypted);        
+          }    
+
+        
         RF_last_rssi = LMIC.rssi;
         rx_packets_counter++;
         success = true;

@@ -79,6 +79,7 @@
 
 #include "APRS.h"
 #include "RSM.h"
+#include "PNET.h"
 #include "MONIT.h"
 #include "OLED.h"
 #include "Log.h"
@@ -252,6 +253,10 @@ void setup()
   Time_setup();
   SoC->WDT_setup();
 
+  if(private_network){
+    aes_init();
+  }
+
   /*T-BEAM only*/
   //pinMode(BUTTON, INPUT);
 }
@@ -409,6 +414,9 @@ void ground()
 
   if (TimeToExportOGN() && ground_registred == 1)
   {
+    if(new_protocol_enable){
+      RSM_ExportAircraftPosition();
+    }
     OGN_APRS_Export();
     ClearExpired();
     OLED_info(ntp_in_use);

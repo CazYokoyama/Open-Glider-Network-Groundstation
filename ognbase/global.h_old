@@ -41,7 +41,3 @@ extern uint16_t  remotelogs_port;
 extern unsigned long   oled_disable;
 
 extern bool  testmode_enable;
-extern bool  private_network;
-extern bool  new_protocol_enable;
-extern String new_protocol_server;
-extern uint32_t new_protocol_port;

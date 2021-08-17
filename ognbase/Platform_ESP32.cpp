@@ -651,37 +651,23 @@ static void ESP32_WiFi_transmit_UDP_debug(int port, byte* buf, size_t size)
     }
 }
 
-static void ESP32_WiFi_transmit_UDP(int port, byte* buf, size_t size)
+static void ESP32_WiFi_transmit_UDP(const char* host, int port, byte* buf, size_t size)
 {
-    IPAddress  ClientIP;
     WiFiMode_t mode = WiFi.getMode();
     int        i    = 0;
 
     switch (mode)
     {
         case WIFI_STA:
-            ClientIP = ESP32_WiFi_get_broadcast();
-
-            Uni_Udp.beginPacket(ClientIP, port);
+            Serial.println("Transmitting UDP Packet");
+            Serial.println(host);
+            Serial.println(port);
+            Uni_Udp.beginPacket(host, port);
             Uni_Udp.write(buf, size);
             Uni_Udp.endPacket();
 
             break;
         case WIFI_AP:
-            wifi_sta_list_t stations;
-            ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
-
-            tcpip_adapter_sta_list_t infoList;
-            ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
-
-            while (i < infoList.num) {
-                ClientIP = infoList.sta[i++].ip.addr;
-
-                Uni_Udp.beginPacket(ClientIP, port);
-                Uni_Udp.write(buf, size);
-                Uni_Udp.endPacket();
-            }
-            break;
         case WIFI_OFF:
         default:
             break;

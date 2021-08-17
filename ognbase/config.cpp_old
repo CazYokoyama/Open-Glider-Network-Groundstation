@@ -21,23 +21,9 @@
 #include "EEPROM.h"
 #include "global.h"
 #include "config.h"
-#include "OLED.h"
-
-//START SD
-#include <SD.h>
-#include <FS.h>
-#include "OLED.h"
-
-// SD card
-#define SD_SCK  14
-#define SD_MISO 2
-#define SD_MOSI 15
-#define SD_CS   13
-//END SD
 
 #define ARDUINOJSON_USE_DOUBLE 0
 #include <ArduinoJson.h>
-
 
 
 //wifi
@@ -91,60 +77,6 @@ unsigned long  oled_disable = 0;
 //tesmode for new functions
 bool  testmode_enable = false;
 
-//private network
-bool  private_network = false;
-
-//new protocol
-bool new_protocol_enable;
-String new_protocol_server;
-uint32_t new_protocol_port;
-
-#define TTGO
-
-#ifdef TTGO
-
-void performUpdate(Stream &updateSource, size_t updateSize) {
-
-    char buf[32];
-
-    snprintf(buf, sizeof(buf), "update firmware");
-    OLED_write(buf, 0, 15, true);
-  
-   if (Update.begin(updateSize)) {      
-      size_t written = Update.writeStream(updateSource);
-      if (written == updateSize) {
-         Serial.println("Written : " + String(written) + " successfully");
-      }
-      else {
-        snprintf(buf, sizeof(buf), "update error");
-        OLED_write(buf, 0, 16, true);         
-        }
-      if (Update.end()) {
-         if (Update.isFinished()) {
-            snprintf(buf, sizeof(buf), "update success");
-            OLED_write(buf, 0, 24, false); 
-            delay(1000);               
-         }
-         else {
-            snprintf(buf, sizeof(buf), "update error");
-            OLED_write(buf, 0, 16, true);               
-         }
-      }
-      else {
-         snprintf(buf, sizeof(buf), "update error");
-         OLED_write(buf, 0, 16, true);         
-      }
-
-   }
-   else
-   {
-    snprintf(buf, sizeof(buf), "update error");
-    OLED_write(buf, 0, 16, true);   
-   }
-}
-
-#endif
-
 bool OGN_read_config(void)
 {
     const size_t        capacity = 2048;
@@ -152,12 +84,7 @@ bool OGN_read_config(void)
     JsonObject          obj;
     File configFile;
 
-    const char *config_files[6] = { "/config.json", 
-                                    "/index.html", 
-                                    "/update.html", 
-                                    "/style.css",
-                                    "/key.bin",
-                                    "/iv.bin"};    
+    Serial.println("start reading json config file");
 
     if (!SPIFFS.begin(true))
     {
@@ -165,68 +92,9 @@ bool OGN_read_config(void)
         return false;
     }
 
-#ifdef TTGO    
-    /*READ SD Card - config.json & firmware update*/
 
-    char buf[32];
-
-    SPI.begin(SD_SCK, SD_MISO, SD_MOSI); // TTGO V2
-    if(!SD.begin(SD_CS)){
-      Serial.println("Card Mount Failed");
-    }
-    else{
-      uint8_t cardType = SD.cardType();
-      uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-      Serial.printf("SD Card Size: %lluMB\n", cardSize);
-  
-      delay(500);
-
-      for(size_t i=0;i<6;i++){
-        File file = SD.open(config_files[i], FILE_READ);       
-        File tempFile = SPIFFS.open(config_files[i], FILE_WRITE);
-  
-        size_t config_size = file.size();
-        if (config_size > 0){
-          Serial.print("update config from sd ");
-          Serial.println(config_files[i]);
-          snprintf(buf, sizeof(buf), "found config on sdcard");
-          OLED_write(buf, 0, 16, true); 
-          snprintf(buf, sizeof(buf), config_files[i]);
-          OLED_write(buf, 0, 25, true);           
-          snprintf(buf, sizeof(buf), "updating");
-          OLED_write(buf, 0, 34, false);         
-          while(file.available()){
-            tempFile.write(file.read());
-          }
-        }
-        delay(1000);
-        tempFile.close();
-        file.close();
-      }
-  
-      //checking firmware file
-      File updateBin = SD.open("/firmware/ognbase.bin");
-      size_t updateSize = updateBin.size();
-        
-      if (updateSize > 0) {
-        Serial.println("Try to start update");
-        performUpdate(updateBin, updateSize);
-        updateBin.close();
-        SD.remove("/firmware/ognbase.bin");
-        snprintf(buf, sizeof(buf), "reboot");
-        OLED_write(buf, 0, 33, false);      
-        ESP.restart();         
-      }
-      else {
-         Serial.println("No firmware found");
-      }
-    }
-    SPI.end();
-#endif    
-
-
-    if (SPIFFS.exists(config_files[0])){
-      configFile = SPIFFS.open(config_files[0]);
+    if (SPIFFS.exists("/config.json")){
+      configFile = SPIFFS.open("/config.json");
       if (!configFile)
       {
           Serial.println(F("Failed to open config.json."));
@@ -254,13 +122,13 @@ bool OGN_read_config(void)
     }
 
     if (!obj.containsKey(F("wifi"))){
-        //Serial.println("no wifi confgiuration found, return setup mode");
+        Serial.println("no wifi confgiuration found, return setup mode");
         configFile.close();        
         return false;
     }
     else
     {
-        //Serial.println(F("found wifi config!"));
+        Serial.println(F("found wifi config!"));
         if (1)
             for (int i=0; i < 5; i++) {
                 ogn_ssid[i]  = obj["wifi"]["ssid"][i].as<String>();
@@ -270,7 +138,7 @@ bool OGN_read_config(void)
 
     if (obj.containsKey(F("coordinates")))
     {
-        //Serial.println(F("found coordinates config!"));
+        Serial.println(F("found coordinates config!"));
         if (1)
         {
             ogn_lat              = obj["coordinates"]["lat"];
@@ -282,7 +150,7 @@ bool OGN_read_config(void)
 
     if (obj.containsKey(F("aprs")))
     {
-        //Serial.println(F("found aprs config!"));
+        Serial.println(F("found aprs config!"));
         if (1)
         {
             ogn_callsign = obj["aprs"]["callsign"].as<String>();
@@ -306,7 +174,7 @@ bool OGN_read_config(void)
 
     if (obj.containsKey(F("zabbix")))
     {
-        //Serial.println(F("found zabbix config!"));
+        Serial.println(F("found zabbix config!"));
         if (1)
         {
             zabbix_enable = obj["zabbix"]["enable"];
@@ -320,7 +188,7 @@ bool OGN_read_config(void)
 
     if (obj.containsKey(F("remotelogs")))
     {
-        //Serial.println(F("found remotelogs config!"));
+        Serial.println(F("found remotelogs config!"));
         if (1)
         {
             remotelogs_enable = obj["remotelogs"]["enable"];
@@ -331,7 +199,7 @@ bool OGN_read_config(void)
 
     if (obj.containsKey(F("testmode")))
     {
-        //Serial.println(F("found testmode config!"));
+        Serial.println(F("found testmode config!"));
         if (1)
         {
             testmode_enable = obj["testmode"]["enable"];
@@ -340,7 +208,7 @@ bool OGN_read_config(void)
 
     if (obj.containsKey(F("fanetservice")))
     {
-        //Serial.println(F("found fanetservice config!"));
+        Serial.println(F("found fanetservice config!"));
         if (1)
             fanet_enable = obj["fanetservice"]["enable"];
     }
@@ -348,27 +216,10 @@ bool OGN_read_config(void)
     /*oled_disable*/
     if (obj.containsKey(F("oled")))
     {
-        //Serial.println(F("found oled config!"));
+        Serial.println(F("found oled config!"));
         if (1)
             oled_disable = obj["oled"]["disable"];
     }    
-    
-    /*private network*/
-    if (obj.containsKey(F("private")))
-    {
-        //Serial.println(F("found private network config!"));
-        if (1)
-            private_network = obj["private"]["enable"];
-    }
-
-    /*new binary prot*/
-    if (obj.containsKey(F("newprot")))
-    {
-        if (1)
-            new_protocol_enable = obj["newprot"]["enable"];
-            new_protocol_server = obj["newprot"]["server"].as<String>();
-            new_protocol_port = obj["newprot"]["port"];
-    }        
 
     if (obj.containsKey(F("beers")))
         beers_show = obj["beers"]["show"];
@@ -452,7 +303,6 @@ bool OGN_save_config(void)
     obj["zabbix"]["port"]   = zabbix_port;
     obj["zabbix"]["key"]    = zabbix_key;
 
-    
     if (serializeJson(obj, configFile) == 0)
         Serial.println(F("Failed to write to file"));
 
