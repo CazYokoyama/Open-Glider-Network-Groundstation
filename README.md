@@ -32,17 +32,36 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * No additional computer necessary - only Wifi ;
 * Ideal for solar and battery supply
 * low cost hardware
+* Frequency hopping in legacy mode and ogn (868.2 / 868.4) - Thanks Nick
+	* needs GPS fix
 
 ## Planed Features
 * Protocol hopping - aprs messages are sent every 5 seconds - **in progress**
 	- there should be enough time to decode a second protocol
-* ~~Frequency hopping in legacy mode (868.2 / 868.4)~~ works (Thanks Nick)
 * ADS-B decoder
 	- we still need some hardware  - **in progress**
 * send APRS messages over LoraWan
-* send Fanet service data (google protobuf) - **in testing**
+	* new binary protocol
+* send Fanet service data
+	* new binary protocol
 * Plutonium battery for a life of 100 years
-* configure via remote (google protobuf) - **in progress**
+
+## Features in TESTING
+
+### New binary protocol
+
+APRS is not a particularly good protocol for low data rates. In addition, TCP is used in the OGN network, which makes little sense. Position data from aircraft are real-time data.
+
+For this reason I have implemented a new binary protocol based on flatbuffers. A proxy that converts the binary data into APRS messages and sends them to the OGN is in progress.
+
+
+### Private network
+RF position packets AES128 encrypted  
+*	needs new binary protocol
+* needs modified SoftRF version
+* needs proxy
+
+**Precise instructions and a modified SoftRF version will follow.**
 
 ## Known bugs / Missing features
 * SNR calculation not correct
@@ -128,7 +147,7 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
    },
    "remotelogs":{
       "enable":false,
-      "server":"xxx.xxxx.xxxx.xxxx",
+      "server":"5.150.254.37",
       "port":12000
    },      
    "aprs":{
@@ -150,6 +169,20 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
    "fanetservice":{
       "enable":1
    },
+   "newprot":{
+      "enable":1,
+      "server":"10.0.1.200",
+      "port":12012
+   },      
+   "private":{
+      "enable":0
+   },   
+   "oled":{
+      "disable":0
+   },
+   "testmode":{
+   		"enable":1
+   },   
    "beers":{
       "show":0
    }
@@ -304,74 +337,6 @@ except KeyboardInterrupt:
     print('\nStop ogn gateway')
     client.disconnect()
 ```
-## Configuration example
-
-* MULHBtest
-	- origin
-* Lat / Lon / Alt
-	- if zero, GPS position is used
-* GeoID
-	- if Lat / Lon / Alt is zero - GPS is used
-* APRS Debug
-	- sending UDP messages to xxx.xxx.xxx.200 with port 12000
-	- take a look to udp_client.py
-* Ignore Track / Stealth Bit
-	- if False, Aircrafts with Stealth or No-Track bit set will not be forwarded to OGN
-* Sleep Mode
-	- Full - ESP32 and GPS will go sleep after RX ilde seconds (min. 1800 seconds) ~ 20mA
-		- only SX12xx stay awake
-	- Without GPS ~80mA
-	- Disabled ~120mA
-* Wake up Timer
-	- ESP will wake up after 3600 sec even if no package was received
-		- ***Attention, the T-Beam cannot be brought out of sleep mode remotely!***
-	- to disable enter zero
-
-## Remote control
-
-Remote control is possible using google protobuf. Take a look at proto folder.
-The following command can be used to compile the .proto file.
-
-
-	protoc -I=. --python_out=. ogn_service.proto
-
-
-A short python script for illustration.
-
-```python
-#! /usr/bin/python
-
-import ogn_service_pb2
-import socket
-import time
-
-UDP_IP = "10.0.0.31"
-UDP_PORT = 12001 #always APRS D-Port + 1
-
-def addSize(data):
-    return(len(data).to_bytes(1, byteorder='big') + data)
-
-sock = socket.socket(socket.AF_INET, # Internet
-                     socket.SOCK_DGRAM) # UDP
-
-RSM = ogn_service_pb2.OneMessage()
-values = RSM.receiverConfiguration
-values.band = 1
-values.protocol = 1
-values.aprsd = 0
-values.aprsp = 12000
-values.itrackb = 1
-values.istealthb = 1
-values.sleepm = 0
-values.rxidle = 1601
-values.wakeup = 1601
-values.reset = 0
-values.reboot = 1
-
-msg = addSize(RSM.SerializeToString())
-sock.sendto(msg, (UDP_IP, UDP_PORT))
-```
-
 
 Please note that pictures are not necessarily up to date!
 

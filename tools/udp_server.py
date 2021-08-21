@@ -15,7 +15,7 @@ else:
     sys.exit(1)
 
 
-UDP_IP_ADDRESS = "10.0.0.200"
+UDP_IP_ADDRESS = "10.0.1.200"
 
 serverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 serverSock.bind((UDP_IP_ADDRESS, UDP_PORT_NO))

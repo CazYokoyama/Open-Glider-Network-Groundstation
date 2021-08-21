@@ -149,7 +149,6 @@ bool groundstation = false;
 int ground_registred = 0;
 bool fanet_transmitter = false;
 bool time_synced = false;
-bool ntp_in_use = false;
 int proto_in_use = 0;
 
 hardware_info_t hw_info = {
@@ -175,6 +174,8 @@ unsigned long ExportTimeCheckKeepAliveOGN = 0;
 unsigned long ExportTimeCheckWifi = 0;
 unsigned long ExportTimeOledDisable = 0;
 
+/*set ground position only once*/
+bool position_is_set = false;
 /*
 void print_wakeup_reason(){
   esp_sleep_wakeup_cause_t wakeup_reason;
@@ -245,8 +246,6 @@ void setup()
   SoC->swSer_enableRx(false);
 
   OTA_setup();
-  //NMEA_setup();
-
   delay(2000);
 
   Web_setup(&ThisAircraft);
@@ -296,7 +295,6 @@ void shutdown(const char *msg)
 
   SoC->swSer_enableRx(false);
 
-  //NMEA_fini();
 
   Web_fini();
 
@@ -335,6 +333,10 @@ void ground()
     msg += " after ";
     msg += String(SoC->getResetInfo());
     Logger_send_udp(&msg);
+
+    msg = "current time ";
+    msg += now();
+    Logger_send_udp(&msg);
   }
 
   if((WiFi.getMode() == WIFI_AP)){
@@ -354,10 +356,8 @@ void ground()
     }
 
   
-  GNSS_loop(groundstation);
-
   success = RF_Receive();
-  if (success && isValidFix() || success && ntp_in_use){
+  if (success && isValidFix() || success && position_is_set){
     
     msg += String("receiving data..");
     Logger_send_udp(&msg);
@@ -366,7 +366,29 @@ void ground()
     ExportTimeSleep = seconds();
   }
 
-  if (isValidFix() && ogn_lat == 0 && ogn_lon == 0 && ogn_alt == 0) {
+  if (ogn_lat != 0 && ogn_lon != 0 && !position_is_set) {
+    ThisAircraft.latitude = ogn_lat;
+    ThisAircraft.longitude = ogn_lon;
+    ThisAircraft.altitude = ogn_alt;
+    ThisAircraft.course = 0;
+    ThisAircraft.speed = 0;
+    ThisAircraft.hdop = 0;
+    ThisAircraft.geoid_separation = ogn_geoid_separation;
+    
+    GNSS_sleep();
+
+    msg = "found position data LAT: ";
+    msg += ogn_lat;
+    msg += " LON: ";
+    msg += ogn_lon;
+    msg += " ALT: ";
+    msg += ogn_alt;
+    Logger_send_udp(&msg);
+
+   position_is_set = true;
+  }
+
+  if (isValidFix() && ogn_lat == 0 && ogn_lon == 0 && !position_is_set) {
     
     ThisAircraft.latitude = gnss.location.lat();
     ThisAircraft.longitude = gnss.location.lng();
@@ -376,25 +398,35 @@ void ground()
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
 
+    ogn_lat = gnss.location.lat();
+    ogn_lon = gnss.location.lng();
+    ogn_alt = gnss.altitude.meters();
+    ogn_geoid_separation = gnss.separation.meters();
+
+    msg = "GPS fix LAT: ";
+    msg += gnss.location.lat();
+    msg += " LON: ";
+    msg += gnss.location.lng();
+    msg += " ALT: ";
+    msg += gnss.altitude.meters();
+    Logger_send_udp(&msg);    
+
+    position_is_set = true;    
+
   }
-  if (ogn_lat != 0 && ogn_lon != 0 && ogn_alt != 0) {
-    ThisAircraft.latitude = ogn_lat;
-    ThisAircraft.longitude = ogn_lon;
-    ThisAircraft.altitude = ogn_alt;
-    ThisAircraft.course = 0;
-    ThisAircraft.speed = 0;
-    ThisAircraft.hdop = 0;
-    ThisAircraft.geoid_separation = ogn_geoid_separation;
-    
-    if(!ntp_in_use){
-      //GNSS_sleep(); error in function, do not activate
-      }
-    ntp_in_use = true;
+
+  if(!position_is_set){
+    OLED_write("no position data found", 0, 18, true);
+    delay(1000);
+    OLED_write("waiting for GPS fix", 0, 18, true);
+    delay(1000);
   }
+
+  GNSS_loop();
 
   ThisAircraft.timestamp = now();
 
-  if ((TimeToRegisterOGN() && (isValidFix() || ntp_in_use)) && WiFi.getMode() != WIFI_AP || (ground_registred == 0 ) && (isValidFix() || ntp_in_use) && WiFi.getMode() != WIFI_AP)
+  if ((TimeToRegisterOGN() && (position_is_set) && WiFi.getMode() != WIFI_AP ) || (ground_registred == 0  && (position_is_set) && WiFi.getMode() != WIFI_AP))
   {  
     ground_registred = OGN_APRS_Register(&ThisAircraft);
     ExportTimeRegisterOGN = seconds();
@@ -419,7 +451,7 @@ void ground()
     }
     OGN_APRS_Export();
     ClearExpired();
-    OLED_info(ntp_in_use);
+    OLED_info(position_is_set);
     ExportTimeOGN = seconds();
   }
 
@@ -432,7 +464,7 @@ void ground()
     ExportTimeKeepAliveOGN = seconds();
   }
 
-  if (TimeToStatusOGN() && ground_registred == 1 && (isValidFix() || ntp_in_use))
+  if (TimeToStatusOGN() && ground_registred == 1 && (position_is_set ))
   {
 
     disp = "status OGN...";

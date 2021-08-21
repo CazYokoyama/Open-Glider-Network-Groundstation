@@ -353,14 +353,6 @@ bool RF_Transmit(size_t size, bool wait)
 
             rf_chip->transmit();
 
-            if (settings->nmea_p)
-            {
-                StdOut.print(F("$PSRFO,"));
-                StdOut.print((unsigned long) timestamp);
-                StdOut.print(F(","));
-                StdOut.println(Bin2Hex((byte *) &TxBuffer[0],
-                                       RF_Payload_Size(ogn_protocol_1)));
-            }
             tx_packets_counter++;
             RF_tx_size = 0;
 

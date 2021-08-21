@@ -99,7 +99,7 @@ bool new_protocol_enable;
 String new_protocol_server;
 uint32_t new_protocol_port;
 
-#define TTGO
+//#define TTGO
 
 #ifdef TTGO
 

@@ -149,16 +149,6 @@ void ParseData()
     memset(fo.raw, 0, sizeof(fo.raw));
     memcpy(fo.raw, RxBuffer, rx_size);
 
-    if (settings->nmea_p)
-    {
-        StdOut.print(F("$PSRFI,"));
-        StdOut.print((unsigned long) now());
-        StdOut.print(F(","));
-        StdOut.print(Bin2Hex(fo.raw, rx_size));
-        StdOut.print(F(","));
-        StdOut.println(RF_last_rssi);
-    }
-
     if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo))
     {
         int i;
