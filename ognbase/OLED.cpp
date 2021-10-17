@@ -302,7 +302,7 @@ void OLED_info(bool ntp)
 
         if (oled_site == 4)
         {
-            String beer_supporters[] = {"guy", "jozef", "camille"};
+            String beer_supporters[] = {"guy", "jozef", "camille", "caz", "uwe"};
             display.clear();
             snprintf(buf, sizeof(buf), "Bier supporters");
             display.drawString(0, 0, buf);

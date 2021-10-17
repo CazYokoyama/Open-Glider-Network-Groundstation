@@ -108,21 +108,18 @@ void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size
 
     if (!index)
     {
-        Serial.println("Update");
+        msg = "updating firmware";
+        Logger_send_udp(&msg);
 
-       SPIFFS.format();
+       //SPIFFS.format();
         
         content_len = request->contentLength();
         // if filename includes spiffs, update the spiffs partition
         int cmd = (filename.indexOf("spiffs") > -1) ? U_PART : U_FLASH;
-#ifdef ESP8266
-        Update.runAsync(true);
-        if (!Update.begin(content_len, cmd))
-        {
-#else
+
         if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
         {
-#endif
+
             Update.printError(Serial);
         }
     }
@@ -130,12 +127,6 @@ void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size
     if (Update.write(data, len) != len)
     {
         Update.printError(Serial);
-#ifdef ESP8266
-    }
-    else
-    {
-        Serial.printf("Progress: %d%%\n", (Update.progress() * 100) / Update.size());
-#endif
     }
 
     if (final)
@@ -148,10 +139,7 @@ void handleDoUpdate(AsyncWebServerRequest* request, const String& filename, size
             Update.printError(Serial);
         else
         {
-            Serial.println("Update complete");
-            Serial.flush();
-            msg = "updating firmware";
-            Logger_send_udp(&msg);
+            delay(10000);
             ESP.restart();
         }
     }

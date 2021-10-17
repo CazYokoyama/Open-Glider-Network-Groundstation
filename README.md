@@ -2,9 +2,6 @@
 
 Groundstation for Open Glider Network with ESP32
 
-**I want to highlight that I am a non-professional programmer.**
-**This software is at alpha status.**
-
 The aim of this project is to create a simple base station for the OGN network. The SoftRF project was used as the base. Thanks to Linar Yusupov for this work!
 
 A TTGO T-Beam (SoftRF Prime Edition MkII) is used as hardware, which has Wifi, Bluetooth, U-Blox GPS and a LoraWan chip.
@@ -48,18 +45,29 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 
 ## Features in TESTING
 
-### New binary protocol
+For features in testing set testmode=1 in config.json.
+
+### New binary protocol (NBP) V0.1.0-24
 
 APRS is not a particularly good protocol for low data rates. In addition, TCP is used in the OGN network, which makes little sense. Position data from aircraft are real-time data.
 
-For this reason I have implemented a new binary protocol based on flatbuffers. A proxy that converts the binary data into APRS messages and sends them to the OGN is in progress.
+For this reason I have implemented a new binary protocol based on flatbuffers. A proxy that converts the binary data into APRS messages and sends them to the OGN is in progress. For testing, take a look at tools udp_server_nbp.py.
 
+In the future, the ground station can be controlled using this protocol. This makes it possible to send a mass configuration to several stations.
 
-### Private network
+NBP can also be encrypted. V0.1.0-25
+
+### Packet validation in LEGACY mode V0.1.0-24
+
+It is possible that a legacy packet is marked as valid by the crc check, although it is damaged. This can result in position jumps. A new validation routine was built in, which checks whether a position package can be valid based on the speed of the aircraft.
+
+### Private network - V0.1.0-25
+
 RF position packets AES128 encrypted  
 *	needs new binary protocol
 * needs modified SoftRF version
 * needs proxy
+* only at FANET protocol
 
 **Precise instructions and a modified SoftRF version will follow.**
 
@@ -106,6 +114,8 @@ RF position packets AES128 encrypted
 
 ### Upgrade
 **Since there were more and more faulty files during an update, the SPIFFS memory is formatted during a firmware update.**
+
+TTGO T-Beam supports firmware upgrades via SDCARD. Take a look on ReadMe.txt in SDCARd folder.
 
 ## Configuration File - config.json
 
@@ -223,7 +233,11 @@ As an an example
 
 The destination port can be freely selected in the web interface. 12000 is used as the default port. Change IP and run
 
-	python3 udp_server.py 12000
+```
+python3 -m venv venv
+source venv/bin/activate
+python3 udp_server.py 12000
+```
 
 If you have several ESP32 running, they will be displayed with different colors.
 
@@ -370,6 +384,7 @@ I first had contact with the SoftRF project at the beginning of 2020. The idea o
 * Nick
 * Guy
 * Andreas
+* Uwe
 
 ## Thanks to..
 

@@ -1,4 +1,3 @@
-
 /*
    ognbase(.ino) firmware
    Copyright (C) 2020 Manuel Roesel
@@ -358,10 +357,9 @@ void ground()
   
   success = RF_Receive();
   if (success && isValidFix() || success && position_is_set){
+    Logger_send_udp(&msg);    
     
-    msg += String("receiving data..");
-    Logger_send_udp(&msg);
-    
+   
     ParseData();
     ExportTimeSleep = seconds();
   }
@@ -446,11 +444,10 @@ void ground()
 
   if (TimeToExportOGN() && ground_registred == 1)
   {
-    if(new_protocol_enable){
+    if(new_protocol_enable && testmode_enable){
       RSM_ExportAircraftPosition();
     }
     OGN_APRS_Export();
-    ClearExpired();
     OLED_info(position_is_set);
     ExportTimeOGN = seconds();
   }

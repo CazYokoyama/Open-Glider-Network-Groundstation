@@ -27,8 +27,8 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) AircraftPos FLATBUFFERS_FINAL_CLASS {
   int8_t padding0__;
   int32_t heading_;
   int32_t speed_;
-  int32_t lat_;
-  int32_t lon_;
+  float lat_;
+  float lon_;
   int32_t alt_;
 
  public:
@@ -46,7 +46,7 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) AircraftPos FLATBUFFERS_FINAL_CLASS {
         alt_(0) {
     (void)padding0__;
   }
-  AircraftPos(int32_t _callsign, int32_t _timestamp, int8_t _type, bool _stealth, bool _notrack, int32_t _heading, int32_t _speed, int32_t _lat, int32_t _lon, int32_t _alt)
+  AircraftPos(int32_t _callsign, int32_t _timestamp, int8_t _type, bool _stealth, bool _notrack, int32_t _heading, int32_t _speed, float _lat, float _lon, int32_t _alt)
       : callsign_(flatbuffers::EndianScalar(_callsign)),
         timestamp_(flatbuffers::EndianScalar(_timestamp)),
         type_(flatbuffers::EndianScalar(_type)),
@@ -81,10 +81,10 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) AircraftPos FLATBUFFERS_FINAL_CLASS {
   int32_t speed() const {
     return flatbuffers::EndianScalar(speed_);
   }
-  int32_t lat() const {
+  float lat() const {
     return flatbuffers::EndianScalar(lat_);
   }
-  int32_t lon() const {
+  float lon() const {
     return flatbuffers::EndianScalar(lon_);
   }
   int32_t alt() const {
@@ -97,8 +97,8 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) GroundPos FLATBUFFERS_FINAL_CLASS {
  private:
   int32_t callsign_;
   int32_t timestamp_;
-  int32_t lat_;
-  int32_t lon_;
+  float lat_;
+  float lon_;
   int32_t alt_;
 
  public:
@@ -109,7 +109,7 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) GroundPos FLATBUFFERS_FINAL_CLASS {
         lon_(0),
         alt_(0) {
   }
-  GroundPos(int32_t _callsign, int32_t _timestamp, int32_t _lat, int32_t _lon, int32_t _alt)
+  GroundPos(int32_t _callsign, int32_t _timestamp, float _lat, float _lon, int32_t _alt)
       : callsign_(flatbuffers::EndianScalar(_callsign)),
         timestamp_(flatbuffers::EndianScalar(_timestamp)),
         lat_(flatbuffers::EndianScalar(_lat)),
@@ -122,10 +122,10 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) GroundPos FLATBUFFERS_FINAL_CLASS {
   int32_t timestamp() const {
     return flatbuffers::EndianScalar(timestamp_);
   }
-  int32_t lat() const {
+  float lat() const {
     return flatbuffers::EndianScalar(lat_);
   }
-  int32_t lon() const {
+  float lon() const {
     return flatbuffers::EndianScalar(lon_);
   }
   int32_t alt() const {
@@ -138,8 +138,8 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) GroundStat FLATBUFFERS_FINAL_CLASS {
  private:
   int32_t callsign_;
   int32_t timestamp_;
-  int32_t lat_;
-  int32_t lon_;
+  float lat_;
+  float lon_;
   int32_t alt_;
 
  public:
@@ -150,7 +150,7 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) GroundStat FLATBUFFERS_FINAL_CLASS {
         lon_(0),
         alt_(0) {
   }
-  GroundStat(int32_t _callsign, int32_t _timestamp, int32_t _lat, int32_t _lon, int32_t _alt)
+  GroundStat(int32_t _callsign, int32_t _timestamp, float _lat, float _lon, int32_t _alt)
       : callsign_(flatbuffers::EndianScalar(_callsign)),
         timestamp_(flatbuffers::EndianScalar(_timestamp)),
         lat_(flatbuffers::EndianScalar(_lat)),
@@ -163,10 +163,10 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) GroundStat FLATBUFFERS_FINAL_CLASS {
   int32_t timestamp() const {
     return flatbuffers::EndianScalar(timestamp_);
   }
-  int32_t lat() const {
+  float lat() const {
     return flatbuffers::EndianScalar(lat_);
   }
-  int32_t lon() const {
+  float lon() const {
     return flatbuffers::EndianScalar(lon_);
   }
   int32_t alt() const {
@@ -226,9 +226,9 @@ struct OneMessageBuilder {
 
 inline flatbuffers::Offset<OneMessage> CreateOneMessage(
     flatbuffers::FlatBufferBuilder &_fbb,
-    const ogn::AircraftPos *airc_pos = nullptr,
-    const ogn::GroundPos *grou_pos = nullptr,
-    const ogn::GroundStat *grou_sta = nullptr) {
+    const ogn::AircraftPos *airc_pos = 0,
+    const ogn::GroundPos *grou_pos = 0,
+    const ogn::GroundStat *grou_sta = 0) {
   OneMessageBuilder builder_(_fbb);
   builder_.add_grou_sta(grou_sta);
   builder_.add_grou_pos(grou_pos);

@@ -10,24 +10,24 @@ struct AircraftPos {
   notrack:bool;
   heading:int32;
   speed:int32;
-  lat:int32;
-  lon:int32;
+  lat:float;
+  lon:float;
   alt:int32;
 }
 
 struct GroundPos {
   callsign:int32;
   timestamp:int32;
-  lat:int32;
-  lon:int32;
+  lat:float;
+  lon:float;
   alt:int32;
 }
 
 struct GroundStat {
   callsign:int32;
   timestamp:int32;
-  lat:int32;
-  lon:int32;
+  lat:float;
+  lon:float;
   alt:int32;
 }
  

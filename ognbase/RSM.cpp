@@ -75,29 +75,16 @@ void RSM_ExportAircraftPosition() {
           
           auto ptr = builder.GetBufferPointer();
           auto size = builder.GetSize();
-          /*
-          Serial.println();
-          for(size_t i=0;i<size;i++){
-            Serial.print(ptr[i], HEX);  
-          }
-          Serial.println();
-          */
-          
-          if(private_network){
+
+          //next release
+          if(false){
             
             char *encrypted;
             size_t encrypted_len;
             
             PNETencrypt(ptr, size, &encrypted, &encrypted_len);
             SoC->WiFi_transmit_UDP(new_protocol_server.c_str(), new_protocol_port, (byte*)encrypted, encrypted_len); 
-
-             /*
-            Serial.println();
-            for(size_t i=0;i<size;i++){
-              Serial.print(encrypted[i], HEX);  
-            }
-            Serial.println();
-            */          
+        
           }
       
           else{

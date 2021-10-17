@@ -30,7 +30,7 @@ static double deg2rad(double);
 static double rad2deg(double);
 static void cleanUpPacket(uint8_t);
 static void shiftPackets(void);
-static bool appendPacket(uint32_t, double, double, time_t);
+static bool appendPacket(uint32_t, double, double, time_t, uint8_t cnt);
 static int calcMaxDistance(double, time_t);
 
 typedef struct aircrafts
@@ -41,7 +41,7 @@ typedef struct aircrafts
     float longitude;
     float altitude;
     float course;
-    float speed;
+    uint8_t pkt_counter;
 } aircrafts_t;
 
 #endif /* PVALIDHELPER_H */

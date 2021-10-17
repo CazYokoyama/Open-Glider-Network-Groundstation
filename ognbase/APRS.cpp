@@ -17,6 +17,7 @@
  */
 
 #include "APRS.h"
+#include "PVALID.h"
 #include "SoftRF.h"
 #include "Battery.h"
 #include "Traffic.h"
@@ -219,6 +220,11 @@ void OGN_APRS_Export()
     for (int i = 0; i < MAX_TRACKING_OBJECTS; i++)
         if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME && Container[i].distance < ogn_range * 1000)
         {
+
+            if(!isPacketValid(Container[i].addr, Container[i].latitude, Container[i].longitude, Container[i].speed, Container[i].timestamp) && testmode_enable){
+              break;
+            }
+            
             if (Container[i].distance / 1000 > largest_range)
                 largest_range = Container[i].distance / 1000;
 

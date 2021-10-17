@@ -74,7 +74,6 @@ static void sx12xx_transmit(void);
 static void sx12xx_shutdown(void);
 
 
-#if !defined(EXCLUDE_SX12XX)
 const rfchip_ops_t sx1276_ops = {
     RF_IC_SX1276,
     "SX1276",
@@ -97,8 +96,6 @@ const rfchip_ops_t sx1262_ops = {
     sx12xx_shutdown
 };
 #endif /* USE_BASICMAC */
-
-#endif /* USE_OGN_RF_DRIVER */
 
 String Bin2Hex(byte* buffer, size_t size)
 {
@@ -262,21 +259,23 @@ void RF_SetChannel(void)
             //Serial.printf("Timing: %d, %d, %d, %d, %d, %d, %d\r\n", Now_millis, pps_btime_ms, timeAge, time_corr_neg, TimeReference, TxRandomValue, Slot);
 
             // latest time from GPS
-            int yr = gnss.date.year();
-            if (yr > 99)
-                yr = yr - 1970;
-            else
-                yr += 30;
-            tm.Year   = yr;
-            tm.Month  = gnss.date.month();
-            tm.Day    = gnss.date.day();
-            tm.Hour   = gnss.time.hour();
-            tm.Minute = gnss.time.minute();
-            tm.Second = gnss.time.second();
-
-            // time right now is:
-            slotTime = Time = makeTime(tm) + (timeAge + time_corr_neg) / 1000;
-            break;
+            if (isValidFix()){
+              int yr = gnss.date.year();
+              if (yr > 99)
+                  yr = yr - 1970;
+              else
+                  yr += 30;
+              tm.Year   = yr;
+              tm.Month  = gnss.date.month();
+              tm.Day    = gnss.date.day();
+              tm.Hour   = gnss.time.hour();
+              tm.Minute = gnss.time.minute();
+              tm.Second = gnss.time.second();
+  
+              // time right now is:
+              slotTime = Time = makeTime(tm) + (timeAge + time_corr_neg) / 1000;
+              break;
+            }
     }
 
     uint8_t OGN = (ogn_protocol_1 == RF_PROTOCOL_OGNTP ? 1 : 0);
@@ -406,13 +405,6 @@ uint8_t RF_Payload_Size(uint8_t protocol)
     }
 }
 
-
-#if !defined(EXCLUDE_SX12XX)
-/*
- * SX12XX-specific code
- *
- *
- */
 
 osjob_t sx12xx_txjob;
 osjob_t sx12xx_timeoutjob;
@@ -717,22 +709,28 @@ static void sx12xx_setvars()
 static bool sx12xx_receive()
 {
     bool success = false;
+    String msg;
 
     sx12xx_receive_complete = false;
 
     if (!sx12xx_receive_active)
     {
+        msg = "activating receive...";
+        Logger_send_udp(&msg);    
         sx12xx_setvars();
         sx12xx_rx(sx12xx_rx_func);
         sx12xx_receive_active = true;
     }
 
-    if (sx12xx_receive_complete == false)
-        // execute scheduled jobs and events
+    if (sx12xx_receive_complete == false){
+        // execute scheduled jobs and events        
         os_runstep();
+    }
 
     if (sx12xx_receive_complete == true)
     {
+        msg = "Receive complete...";
+        Logger_send_udp(&msg);    
         u1_t size = LMIC.dataLen - LMIC.protocol->payload_offset - LMIC.protocol->crc_size;
 
         if (size > sizeof(RxBuffer))
@@ -744,7 +742,8 @@ static bool sx12xx_receive()
 
         /*decrypt payload for private network*/
         /*if packet is bigger , maybe its encryptedr*/
-        if(testmode_enable)
+        /*V0.1.0-25*/
+        if(false)
           if(size > RF_Payload_Size(ogn_protocol_1)){
             char *decrypted;
             size_t decrypted_len;
@@ -752,7 +751,6 @@ static bool sx12xx_receive()
               {
                case RF_PROTOCOL_FANET:
                     PNETdecrypt(RxBuffer, size, &decrypted, &decrypted_len);
-                    /*after decrypting packet size should be good*/
                     if(decrypted_len == RF_Payload_Size(ogn_protocol_1)){      
                       for(size_t i=0; i<decrypted_len;i++){
                         RxBuffer[i] = decrypted[i];
@@ -765,8 +763,7 @@ static bool sx12xx_receive()
                     break;
               }
             free(decrypted);        
-          }    
-
+          }
         
         RF_last_rssi = LMIC.rssi;
         rx_packets_counter++;
@@ -1053,7 +1050,6 @@ static void sx12xx_tx(unsigned char* buf, size_t size, osjobcb_t func)
 
     LMIC.osjob.func = func;
     os_radio(RADIO_TX);
-    //Serial.println("TX");
 }
 
 static void sx12xx_txdone_func(osjob_t* job)
@@ -1066,5 +1062,3 @@ static void sx12xx_tx_func(osjob_t* job)
     if (RF_tx_size > 0)
         sx12xx_tx((unsigned char *) &TxBuffer[0], RF_tx_size, sx12xx_txdone_func);
 }
-
-#endif /* EXCLUDE_SX12XX */
