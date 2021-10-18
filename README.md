@@ -94,7 +94,7 @@ RF position packets AES128 encrypted
 
 
 ## Installation
-
+* git clone --recursive https://github.com/roema/Open-Glider-Network-Groundstation.git
 * Install arduino ide
 	- make sure you are using the correct librarys
 * ~~Install ESP32 Filesystem Uploader~~

@@ -9,6 +9,7 @@
 #include "hw.h"
 #include "lmic.h"
 
+
 #if defined(BRD_sx1272_radio) || defined(BRD_sx1276_radio)
 
 // ----------------------------------------
@@ -778,6 +779,9 @@ static void sx127x_radio_starttx (bool txcontinuous) {
 }
 
 static void rxlora (bool rxcontinuous) {
+	
+	debug_printf("running LORA\n");
+
     ostime_t t0 = os_getTime();
     // select LoRa modem (from sleep mode)
     writeReg(RegOpMode, OPMODE_LORA_SLEEP);
