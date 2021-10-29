@@ -24,12 +24,12 @@ extern bool     ogn_istealthbit;
 extern bool     ogn_sleepmode;
 extern uint16_t ogn_rxidle;
 extern uint16_t ogn_wakeuptimer;
-extern uint8_t  ogn_range;
+extern uint16_t ogn_range;
 
-extern bool   fanet_enable;
-extern bool   zabbix_enable;
-extern String zabbix_server;
-extern uint16_t    zabbix_port;
+extern bool     fanet_enable;
+extern bool     zabbix_enable;
+extern String   zabbix_server;
+extern uint16_t zabbix_port;
 extern String zabbix_key;
 
 extern bool beers_show;

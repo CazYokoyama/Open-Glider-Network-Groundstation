@@ -37,6 +37,7 @@
 #define LEGACY_KEY2 0x045d9f3b
 #define LEGACY_KEY3 0x87b562f4
 
+
 /* FTD-12 Version: 7.00 */
 enum
 {

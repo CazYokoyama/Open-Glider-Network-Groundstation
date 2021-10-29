@@ -91,13 +91,13 @@ RF position packets AES128 encrypted
 * install latest Arduino IDE
 * git clone https://github.com/roema/Open-Glider-Network-Groundstation.git --recursive
 * make sure the arduino ide is using the correct libraries.  
+* **take a look at pictures folder for arduino configuration***
 
 
 ## Installation
 * git clone --recursive https://github.com/roema/Open-Glider-Network-Groundstation.git
 * Install arduino ide
 	- make sure you are using the correct librarys
-* ~~Install ESP32 Filesystem Uploader~~
 * Compile and upload Sketch and files (.css and .html)
 * Connect to OGN Wifi AP and configure
 * You can update you installation http://you-ogn-ground-ip/update

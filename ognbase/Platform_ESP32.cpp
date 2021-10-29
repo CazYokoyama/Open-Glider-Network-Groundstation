@@ -33,6 +33,7 @@
 #include "SoC.h"
 
 #include "EEPROM.h"
+#include "PNET.h"
 #include "RF.h"
 #include "WiFi.h"
 
@@ -627,15 +628,6 @@ static void ESP32_WiFi_transmit_UDP_debug(int port, byte* buf, size_t size)
     switch (mode)
     {
         case WIFI_STA:
-            if(remotelogs_enable){
-              IPAddress rem_logger;
-              if (rem_logger.fromString(remotelogs_server)) {
-                Uni_Udp.begin(localPort);
-                Uni_Udp.beginPacket(rem_logger, remotelogs_port);
-                Uni_Udp.write(buf, size);
-                Uni_Udp.endPacket();  
-              } 
-            }
             ClientIP    = WiFi.gatewayIP();
             ClientIP[3] = 200;          
             Uni_Udp.begin(localPort);

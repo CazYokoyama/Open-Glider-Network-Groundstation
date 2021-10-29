@@ -95,34 +95,6 @@ static short AprsPasscode(const char* theCall)
     return hash & 0x7fff;
 }
 
-static long double toRadians(const long double degree)
-{
-    long double one_deg = (M_PI) / 180;
-    return one_deg * degree;
-}
-
-static long double distance(long double lat1, long double long1, long double lat2, long double long2)
-{
-    lat1  = toRadians(lat1);
-    long1 = toRadians(long1);
-    lat2  = toRadians(lat2);
-    long2 = toRadians(long2);
-
-    long double dlong = long2 - long1;
-    long double dlat  = lat2 - lat1;
-
-    long double ans = pow(sin(dlat / 2), 2) +
-                      cos(lat1) * cos(lat2) *
-                      pow(sin(dlong / 2), 2);
-
-    ans = 2 * asin(sqrt(ans));
-
-    long double R = 6371;
-    ans = ans * R;
-
-    return ans * 1000;
-}
-
 static bool OGN_APRS_Connect()
 {
     if (SoC->WiFi_connect_TCP(ogn_server.c_str(), ogn_port))
@@ -221,7 +193,7 @@ void OGN_APRS_Export()
         if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME && Container[i].distance < ogn_range * 1000)
         {
 
-            if(!isPacketValid(Container[i].addr, Container[i].latitude, Container[i].longitude, Container[i].speed, Container[i].timestamp) && testmode_enable){
+            if(!isPacketValid(Container[i].addr, Container[i].latitude, Container[i].longitude, Container[i].speed, Container[i].timestamp)){
               break;
             }
             
@@ -429,7 +401,7 @@ int OGN_APRS_Register(ufo_t* this_aircraft)
 
 void OGN_APRS_KeepAlive()
 {
-    String KeepAlivePacket = "#keepalive\n\n";
+    String KeepAlivePacket = "#keepalive\n";
     Logger_send_udp(&KeepAlivePacket);
     SoC->WiFi_transmit_TCP(KeepAlivePacket);
 }

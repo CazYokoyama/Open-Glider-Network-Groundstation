@@ -56,10 +56,12 @@ bool     ogn_debug       = false;
 uint16_t ogn_debugport   = 12000;
 bool     ogn_itrackbit   = false;
 bool     ogn_istealthbit = false;
+uint16_t  ogn_range       = 100;
+
+//sleep mode
 bool     ogn_sleepmode   = false;
 uint16_t ogn_rxidle      = 3600;
 uint16_t ogn_wakeuptimer = 3600;
-uint8_t  ogn_range       = 100;
 
 //position
 float   ogn_lat              = 0;
@@ -302,6 +304,19 @@ bool OGN_read_config(void)
             ogn_range       = obj["aprs"]["range"];
         }
     }
+
+    if (obj.containsKey(F("sleepmode")))
+    {
+        //Serial.println(F("found aprs config!"));
+        if (1)
+        {
+            ogn_sleepmode   = obj["aprs"]["sleepmode"];
+            ogn_rxidle      = obj["aprs"]["rxidle"];
+            if(ogn_rxidle < 600){ogn_rxidle = 600;}
+            ogn_wakeuptimer = obj["aprs"]["wakeuptimer"];
+            if(ogn_wakeuptimer < 600){ogn_wakeuptimer = 600;}
+        }
+    }    
 
 
     if (obj.containsKey(F("zabbix")))

@@ -136,6 +136,10 @@
 //testing
 #define TimeToDisableOled() (seconds() - ExportTimeOledDisable >= oled_disable)
 
+//time reregister if failed
+#define TIME_TO_REREG 30
+#define TimeToReRegisterOGN() (seconds() - ExportTimeReRegister >= TIME_TO_REREG)
+
 /*Testing FANET service messages*/
 #define TIME_TO_EXPORT_FANET_SERVICE 40 /*every 40 sec 10 for testing*/
 #define TimeToExportFanetService() (seconds() - ExportTimeFanetService >= TIME_TO_EXPORT_FANET_SERVICE)
@@ -172,6 +176,7 @@ unsigned long ExportTimeFanetService = 0;
 unsigned long ExportTimeCheckKeepAliveOGN = 0;
 unsigned long ExportTimeCheckWifi = 0;
 unsigned long ExportTimeOledDisable = 0;
+unsigned long ExportTimeReRegister = 0;
 
 /*set ground position only once*/
 bool position_is_set = false;
@@ -251,7 +256,7 @@ void setup()
   Time_setup();
   SoC->WDT_setup();
 
-  if(private_network){
+  if(private_network || remotelogs_enable){
     aes_init();
   }
 
@@ -439,7 +444,13 @@ void ground()
   }
 
   if(ground_registred == -2){
-    //
+    //lost wifi?
+    OGN_APRS_check_Wifi();
+    ExportTimeReRegister = seconds();
+    while(TimeToReRegisterOGN()){
+      os_runstep();
+    }
+    ground_registred = 0;
   }
 
   if (TimeToExportOGN() && ground_registred == 1)
@@ -491,6 +502,8 @@ void ground()
     
     esp_sleep_enable_timer_wakeup(ogn_wakeuptimer*1000000LL);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_26,1);
+    OLED_disable();
+    
     if (ogn_sleepmode == 1){
       GNSS_sleep(); 
     }

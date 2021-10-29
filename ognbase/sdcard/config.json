@@ -32,9 +32,9 @@
       "enable":false
    },
    "remotelogs":{
-      "enable":false,
-      "server":"5.150.254.37",
-      "port":12000
+      "enable":true,
+      "server":"10.0.1.200",
+      "port":12014
    },      
    "aprs":{
       "callsign":"Neuenburg",
@@ -47,10 +47,12 @@
       "debugport":12000,
       "itrackbit":false,
       "istealthbit":false,
-      "sleepmode":false,
-      "rxidle":3600,
-      "wakeuptimer":3600,
       "range":100
+   },
+   "sleepmode":{
+      "enable":false,
+      "rxidle":3600,
+      "wakeuptimer":3600,   
    },
    "fanetservice":{
       "enable":1
@@ -61,7 +63,7 @@
       "port":12012
    },      
    "private":{
-      "enable":1
+      "enable":0
    },   
    "oled":{
       "disable":0

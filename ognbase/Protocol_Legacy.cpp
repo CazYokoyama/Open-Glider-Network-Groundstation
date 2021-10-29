@@ -140,18 +140,16 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
 
     make_key(key, timestamp, (pkt->addr << 8) & 0xffffff);
     btea((uint32_t *) pkt + 1, -5, key);
+    
 
     for (ndx = 0; ndx < sizeof (legacy_packet_t); ndx++)
         pkt_parity += parity(*(((unsigned char *) pkt) + ndx));
     if (pkt_parity % 2)
     {
-        if (settings->nmea_p)
-        {
-            msg = "bad parity of decoded legacy packet";
-            Logger_send_udp(&msg);
-            msg = "decoding failed";
-            Logger_send_udp(&msg);
-        }
+        msg = "bad parity of decoded legacy packet";
+        Logger_send_udp(&msg);
+        msg = "decoding failed";
+        Logger_send_udp(&msg);
         return false;
     }
 

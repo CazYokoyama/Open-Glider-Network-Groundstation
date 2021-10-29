@@ -1,14 +1,14 @@
 {
    "wifi":{
       "ssid":[
-         "ssid",
+         "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx"
       ],
       "pass":[
-         "password",
+         "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
@@ -32,9 +32,9 @@
       "enable":false
    },
    "remotelogs":{
-      "enable":false,
-      "server":"5.150.254.37",
-      "port":12000
+      "enable":true,
+      "server":"10.0.1.200",
+      "port":12014
    },      
    "aprs":{
       "callsign":"Neuenburg",

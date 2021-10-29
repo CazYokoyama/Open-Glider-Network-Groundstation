@@ -75,18 +75,19 @@ byte OLED_setup()
 
 void OLED_write(char* text, short x, short y, bool clear)
 {
-    if (display_init)
-    {
-        display.displayOn();
-        if (clear)
-            display.clear();
-        display.drawString(x, y, text);
-        display.display();
-    }
+    if (!display_enabled){return;}
+      
+    display.displayOn();
+    if (clear)
+        display.clear();
+    display.drawString(x, y, text);
+    display.display();
 }
 
 void OLED_disable()
 {
+  if (!display_enabled){return;}
+  
   display.clear();
   display.displayOff();
   display_enabled = false;
@@ -322,6 +323,3 @@ void OLED_info(bool ntp)
         }
     }
 }
-
-void OLED_status()
-{}

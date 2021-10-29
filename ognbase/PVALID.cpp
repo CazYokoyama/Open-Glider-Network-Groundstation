@@ -32,38 +32,33 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
 
   /*V0.1.0-24*/
 
-  if (!testmode_enable){
-    return true;
-  }
-
-  
-  for(uint8_t i=0;i<MAX_TRACKING_OBJECTS;i++){
+  for (uint8_t i = 0; i < MAX_TRACKING_OBJECTS; i++) {
     msg = "checking database: ";
     msg += String(ac[i].addr, HEX);
     msg += " CNT: ";
     msg += String(ac[i].pkt_counter);
-    Logger_send_udp(&msg);  
-  } 
-  for(uint8_t i=0; i<MAX_TRACKING_OBJECTS;i++){
+    Logger_send_udp(&msg);
+  }
+  for (uint8_t i = 0; i < MAX_TRACKING_OBJECTS; i++) {
 
-    if(addr == ac[i].addr){
-      
+    if (addr == ac[i].addr) {
+
       msg = "ADDR found in database..";
       Logger_send_udp(&msg);
-      
+
       int dist = distance(lat1, lon1, ac[i].latitude, ac[i].longitude);
-      
+
       msg = "Transmitted distance: ";
       msg += dist;
       Logger_send_udp(&msg);
-      
+
       int calcdist = calcMaxDistance(speed, timestamp - ac[i].timestamp);
-      if(dist > calcdist){
+      if (dist > calcdist) {
 
         msg = "Max calculated distance: ";
         msg += calcdist;
-        Logger_send_udp(&msg);        
-        
+        Logger_send_udp(&msg);
+
         msg = "Packet seems to be invalid";
         Logger_send_udp(&msg);
 
@@ -71,19 +66,19 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
         shiftPackets();
         return false;
       }
-      else{
+      else {
 
         msg = "Max calculated distance: ";
         msg += calcdist;
-        Logger_send_udp(&msg);        
-        
+        Logger_send_udp(&msg);
+
 
         uint8_t cnt = ac[i].pkt_counter + 1;
 
         msg = "Packet seems to be valid - counter: ";
         msg += cnt;
-        Logger_send_udp(&msg);        
-        
+        Logger_send_udp(&msg);
+
         cleanUpPacket(i);
         shiftPackets();
         appendPacket(addr, lat1, lon1, timestamp, cnt);
@@ -95,51 +90,63 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
   Logger_send_udp(&msg);
   shiftPackets();
   appendPacket(addr, lat1, lon1, timestamp, 0);
-  return(false);
+  return (false);
 }
 
 
 static int distance(double lat1, double lon1, double lat2, double lon2) {
   double theta, dist;
+  double r = 6378137.0;
+
   if ((lat1 == lat2) && (lon1 == lon2)) {
     return 0;
   }
   else {
-    theta = lon1 - lon2;
-    dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
-    dist = acos(dist);
-    dist = rad2deg(dist);
-    dist = dist * 60 * 1.1515;
-    dist = dist * 1.609344;
-    }
 
-    return (int)(dist);
+    lat1 = deg2rad(lat1);
+    lon1 = deg2rad(lon1);
+    lat2 = deg2rad(lat2);
+    lon2 = deg2rad(lon2);
+
+    double dlat = lat2 - lat1;
+    double dlon = lon2 - lon1;
+
+    double dist = 2 * r * asin(sqrt(pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2)));
+
+    return (int)(dist); //distance in meter
   }
+}
 
 static int calcMaxDistance(double speed, time_t time_diff) {
-  return (int)((speed / 3.6 * time_diff) * 2 );
-  }  
-
-static bool appendPacket(uint32_t addr, double lat, double lon, time_t timestamp, uint8_t cnt){
-  ac[MAX_TRACKING_OBJECTS-1].timestamp = timestamp;
-  ac[MAX_TRACKING_OBJECTS-1].addr = addr;
-  ac[MAX_TRACKING_OBJECTS-1].latitude = lat;
-  ac[MAX_TRACKING_OBJECTS-1].longitude = lon;
-  ac[MAX_TRACKING_OBJECTS-1].pkt_counter = cnt;
+  int speed_ms = speed / 3.6;
+  // 20% more than calculated
+  return (int)((speed * time_diff) * 1.2 );
 }
 
-static void shiftPackets(void){
-  for(uint8_t i=0; i<MAX_TRACKING_OBJECTS-1; i++){
-    ac[i].timestamp = ac[i+1].timestamp;
-    ac[i].addr = ac[i+1].addr;
-    ac[i].latitude = ac[i+1].latitude;
-    ac[i].longitude = ac[i+1].longitude;
-    ac[i].pkt_counter = ac[i+1].pkt_counter;
+static bool appendPacket(uint32_t addr, double lat, double lon, time_t timestamp, uint8_t cnt) {
+  ac[MAX_TRACKING_OBJECTS - 1].timestamp = timestamp;
+  ac[MAX_TRACKING_OBJECTS - 1].addr = addr;
+  ac[MAX_TRACKING_OBJECTS - 1].latitude = lat;
+  ac[MAX_TRACKING_OBJECTS - 1].longitude = lon;
+  ac[MAX_TRACKING_OBJECTS - 1].pkt_counter = cnt;
+}
+
+static void shiftPackets(void) {
+  for (uint8_t i = 0; i < MAX_TRACKING_OBJECTS - 1; i++) {
+    ac[i].timestamp = ac[i + 1].timestamp;
+    ac[i].addr = ac[i + 1].addr;
+    ac[i].latitude = ac[i + 1].latitude;
+    ac[i].longitude = ac[i + 1].longitude;
+    ac[i].pkt_counter = ac[i + 1].pkt_counter;
   }
 }
 
-static void cleanUpPacket(uint8_t index){
+static void cleanUpPacket(uint8_t index) {
   ac[index].addr = 0x00000000;
+}
+
+static void cleanUpArray() {
+
 }
 
 static double deg2rad(double deg) {

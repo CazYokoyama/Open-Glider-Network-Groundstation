@@ -19,6 +19,7 @@
 #include "SoC.h"
 #include "Log.h"
 #include "EEPROM.h"
+#include "PNET.h"
 #include "global.h"
 
 
@@ -30,6 +31,14 @@ void Logger_send_udp(String* buf)
         byte debug_msg[debug_len];
         buf->getBytes(debug_msg, debug_len);
         SoC->WiFi_transmit_UDP_debug(ogn_debugport, debug_msg, debug_len);
+        
+        if(remotelogs_enable){
+          char *encrypted;
+          size_t encrypted_len;       
+          //PNETencrypt(debug_msg, debug_len, &encrypted, &encrypted_len);
+          //SoC->WiFi_transmit_UDP(remotelogs_server.c_str(), remotelogs_port, (byte*)encrypted, encrypted_len);
+          //free(encrypted);
+          }        
     }
 }
 
