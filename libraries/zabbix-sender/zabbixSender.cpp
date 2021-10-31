@@ -38,40 +38,41 @@ ZabbixSender::~ZabbixSender() {
 // String createPayload(const char *hostname, float voltage, float rssi, int uptime, int gnss, int timestamp, int lrx);
 
 String ZabbixSender::createPayload(const char *hostname, float voltage, float rssi, int uptime, int gnss, int timestamp, int lrx) {
-    DynamicJsonDocument root(1024);
+    StaticJsonDocument<1024> root;
+    
     root["request"] = "sender data";
     
-    DynamicJsonDocument data = root.createNestedArray("data");
+    JsonArray data = root.createNestedArray("data");
     
-    DynamicJsonDocument data_0(768);
+    JsonObject data_0 = data.createNestedObject();
     data_0["host"] = hostname;
     data_0["key"] = "voltage";
     data_0["value"] = voltage;
 
 
-    DynamicJsonDocument data_1 = data.createNestedObject();
+    JsonObject data_1 = data.createNestedObject();
     data_1["host"] = hostname;
     data_1["key"] = "rssi";
     data_1["value"] = rssi;
 
-    DynamicJsonDocument data_2 = data.createNestedObject();
+    JsonObject data_2 = data.createNestedObject();
     data_2["host"] = hostname;
     data_2["key"] = "uptime";
     data_2["value"] = uptime;
 
-    DynamicJsonDocument data_3 = data.createNestedObject();
+    JsonObject data_3 = data.createNestedObject();
     data_3["host"] = hostname;
     data_3["key"] = "gnss";
     data_3["value"] = gnss;
 
-    DynamicJsonDocument data_4 = data.createNestedObject();
+    JsonObject data_4 = data.createNestedObject();
     data_4["host"] = hostname;
     data_4["key"] = "timestamp";
     data_4["value"] = timestamp;
 
-    DynamicJsonDocument data_5 = data.createNestedObject();
+    JsonObject data_5 = data.createNestedObject();
     data_5["host"] = hostname;
-    data_5["key"] = "lrx";
+    data_5["key"] = "maxrange";
     data_5["value"] = lrx;
     
     

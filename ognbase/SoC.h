@@ -47,6 +47,11 @@ typedef struct SoC_ops_struct
     int (* WiFi_transmit_TCP)(String);
     int (* WiFi_receive_TCP)(char *, int);
     int (* WiFi_isconnected_TCP)();
+    int (* WiFi_connect_TCP2)(const char *, int);
+    int (* WiFi_disconnect_TCP2)();
+    int (* WiFi_transmit_TCP2)(String);
+    int (* WiFi_receive_TCP2)(char *, int);
+    int (* WiFi_isconnected_TCP2)();    
     void (* WiFiUDP_stopAll)();
     bool (* WiFi_hostname)(String);
     int (* WiFi_clients_count)();

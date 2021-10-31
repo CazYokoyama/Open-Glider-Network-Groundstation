@@ -24,11 +24,10 @@
 #include "zabbixSender.h"
 #include "global.h"
 #include "GNSS.h"
+#include "Log.h"
 
 #define hours() (millis() / 3600000)
 
-
-WiFiClient zclient;
 
 bool config_status;
 
@@ -39,13 +38,29 @@ void MONIT_send_trap()
     {
         ZabbixSender zs;
         String       jsonPayload;
+        String       msg;
+    
+        msg = "sending zabbix trap to ";
+        msg += zabbix_server.c_str();
+        msg += ":";
+        msg += zabbix_port;
+        Logger_send_udp(&msg);        
 
-        jsonPayload = zs.createPayload(zabbix_server.c_str(), Battery_voltage(), RF_last_rssi, int(hours()), gnss.satellites.value(), ThisAircraft.timestamp, largest_range);
+        jsonPayload = zs.createPayload(zabbix_key.c_str(), Battery_voltage(), RF_last_rssi, int(hours()), gnss.satellites.value(), ThisAircraft.timestamp, largest_range);
 
-        String msg = zs.createMessage(jsonPayload);
+        String zb_msg = zs.createMessage(jsonPayload);
 
-        if (zclient.connect(zabbix_server.c_str(), zabbix_port, timeout))
-            zclient.print(msg);
-        zclient.stop();
+        Logger_send_udp(&jsonPayload);
+
+        //byte buffer[zb_msg.length() + 1];
+        //zb_msg.getBytes(buffer, zb_msg.length() + 1);
+
+        SoC->WiFi_connect_TCP2(zabbix_server.c_str(), zabbix_port);
+        SoC->WiFi_transmit_TCP2(zb_msg);
+        SoC->WiFi_disconnect_TCP2();
+        
+        
+        //SoC->WiFi_transmit_UDP(zabbix_server.c_str(), zabbix_port, buffer, zb_msg.length() + 1);
+        
     }
 }

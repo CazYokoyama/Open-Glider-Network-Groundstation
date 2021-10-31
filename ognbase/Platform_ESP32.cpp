@@ -61,7 +61,9 @@ lmic_pinmap lmic_pins = {
 WebServer server(80);
 
 AXP20X_Class axp;
+
 WiFiClient   client;
+WiFiClient   zclient;
 
 static TFT_eSPI*                              tft  = NULL;
 
@@ -716,6 +718,56 @@ static int ESP32_WiFi_isconnected_TCP()
     return client.connected();
 }
 
+static int ESP32_WiFi_connect_TCP2(const char* host, int port)
+{
+    bool ret = Ping.ping(host, 2);
+
+    if (ret)
+    {
+        if (!zclient.connect(host, port, 5000))
+            return 0;
+        return 1;
+    }
+    return 0;
+}
+
+static int ESP32_WiFi_disconnect_TCP2()
+{
+    zclient.stop();
+}
+
+static int ESP32_WiFi_transmit_TCP2(String message)
+{
+    if (zclient.connected())
+    {
+        zclient.print(message);
+        return 0;
+    }
+    return 0;
+}
+
+static int ESP32_WiFi_receive_TCP2(char* RXbuffer, int RXbuffer_size)
+{
+    int i = 0;
+
+    if (zclient.connected())
+    {
+        while (zclient.available() && i < RXbuffer_size - 1) {
+            RXbuffer[i] = zclient.read();
+            i++;
+            RXbuffer[i] = '\0';
+        }
+        return i;
+    }
+    zclient.stop();
+    return -1;
+}
+
+static int ESP32_WiFi_isconnected_TCP2()
+{
+    return zclient.connected();
+}
+
 static void ESP32_WiFiUDP_stopAll()
 {
 /* not implemented yet */
@@ -933,6 +985,11 @@ const SoC_ops_t ESP32_ops = {
     ESP32_WiFi_transmit_TCP,
     ESP32_WiFi_receive_TCP,
     ESP32_WiFi_isconnected_TCP,
+    ESP32_WiFi_connect_TCP2,
+    ESP32_WiFi_disconnect_TCP2,
+    ESP32_WiFi_transmit_TCP2,
+    ESP32_WiFi_receive_TCP2,
+    ESP32_WiFi_isconnected_TCP2,    
     ESP32_WiFiUDP_stopAll,
     ESP32_WiFi_hostname,
     ESP32_WiFi_clients_count,

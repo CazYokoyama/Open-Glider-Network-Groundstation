@@ -365,6 +365,12 @@ Very rudimentary. Some parameters will be added in the future.
 
 ![alt text](https://ros-it.ch/wp-content/uploads/2020/12/zabbix_2-1024x205.png)
 
+If you have zabbix agent installed on you machine, you can test your server configuration with
+
+```
+zabbix_sender -z <you server ip> -p 10051 -s ogn_base -k voltage -o 5.25
+```
+
 I am always open to wishes and suggestions, but would also like to emphasize that I do this project in my spare time. I am not responsible for any damage caused by this software.  
 
 
