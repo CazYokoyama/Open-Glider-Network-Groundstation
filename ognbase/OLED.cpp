@@ -166,7 +166,7 @@ void OLED_info(bool ntp)
             snprintf(buf, sizeof(buf), "ID: %06X", ThisAircraft.addr);
             display.drawString(0, 0, buf);
 
-            snprintf(buf, sizeof(buf), "SSID: %s", WiFi.SSID());
+            snprintf(buf, sizeof(buf), "SSID: %s", WiFi.SSID().c_str());
             display.drawString(0, 9, buf);
 
             snprintf(buf, sizeof(buf), "CS: %s", ogn_callsign);
@@ -262,7 +262,7 @@ void OLED_info(bool ntp)
             for (int b=0; b <= bars; b++)
                 display.fillRect(100 + (b * 5), 40 - (b * 6), 3, b * 6);
 
-            snprintf(buf, sizeof(buf), "connected to %s", WiFi.SSID());
+            snprintf(buf, sizeof(buf), "connected to %s", WiFi.SSID().c_str());
             display.drawString(0, 54, buf);
 
             display.display();
