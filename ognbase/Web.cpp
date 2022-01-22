@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "git-version.h"
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
@@ -218,7 +219,7 @@ void Web_setup(ufo_t* this_aircraft)
 
     snprintf(offset, size, index_html,
              station_addr,
-             SOFTRF_FIRMWARE_VERSION,
+             GIT_VERSION,
              ogn_callsign,
              pos_lat,
              pos_lon,
