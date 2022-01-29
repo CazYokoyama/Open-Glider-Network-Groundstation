@@ -32,6 +32,7 @@ void WiFi_fini()
 
 #include <FS.h>
 #include <TimeLib.h>
+#include <WiFiMulti.h>
 
 #include "OTA.h"
 #include "GNSS.h"
@@ -48,6 +49,7 @@ void WiFi_fini()
 #include "global.h"
 #include "logos.h"
 
+WiFiMulti *wifiMulti;
 String host_name = HOSTNAME;
 
 IPAddress local_IP(192, 168, 1, 1);
@@ -131,37 +133,26 @@ void WiFi_setup()
 
         delay(1500);
 
+        wifiMulti = new WiFiMulti();
+        OLED_draw_Bitmap(85, 20, 1, true);
         for (int i=0; i < 5; i++) {
-            if (ogn_ssid[i] != "")
-            {
-                OLED_draw_Bitmap(85, 20, 1, true);
-                snprintf(buf, sizeof(buf), "try connecting");
-                OLED_write(buf, 0, 15, false);
+            if (ogn_ssid[i] != "") {
                 snprintf(buf, sizeof(buf), "%d: %s", i, ogn_ssid[i].c_str());
-                OLED_write(buf, 0, 26, false);
-
-                WiFi.begin(ogn_ssid[i].c_str(), ogn_wpass[i].c_str());
-                ssid_index = i;
-
-                //
-                unsigned long startTime = millis();
-
-                while (WiFi.status() != WL_CONNECTED && millis() - startTime < 15000)
-                {
-                    Serial.write('.');
-                    Serial.print(WiFi.status());
-                    delay(500);
-                }
+                OLED_write(buf, 0, i * 9, false);
+                wifiMulti->addAP(ogn_ssid[i].c_str(), ogn_wpass[i].c_str());
             }
-
-            // Check connection
-            if (WiFi.status() == WL_CONNECTED)
-            {
+        }
+        // Check connection
+        for (int n = 0; n < 20; n++) { /* retry */
+            if (wifiMulti->run() == WL_CONNECTED) {
                 // ... print IP Address
-                Serial.print(F("IP address: "));
-                Serial.println(WiFi.localIP());
-                snprintf(buf, sizeof(buf), "success..");
-                OLED_write(buf, 0, 44, false);
+                Serial.print("Connect "); Serial.print(WiFi.SSID());
+                Serial.print(" at "); Serial.println(WiFi.localIP());
+                snprintf(buf, sizeof(buf), "Connect %s",  WiFi.SSID().c_str());
+                OLED_write(buf, 0, 45, false);
+                snprintf(buf, sizeof(buf), " at %s",
+			 WiFi.localIP().toString().c_str());
+                OLED_write(buf, 0, 54, false);
                 host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
                 SoC->WiFi_hostname(host_name);
 
@@ -169,13 +160,15 @@ void WiFi_setup()
                 Serial.println("Hostname: " + host_name);
                 break;
             }
-            if (WiFi.status() != WL_CONNECTED)
-            {
-                Serial.println();
-                Serial.println(F("Can not connect to WiFi station"));
-                snprintf(buf, sizeof(buf), "failed..");
-                OLED_write(buf, 0, 44, false);
-            }
+            Serial.write('.');
+            Serial.print(WiFi.status());
+            delay(500);
+        }
+        if (wifiMulti->run() != WL_CONNECTED) {
+            Serial.println();
+            Serial.println(F("Can not connect to WiFi station"));
+            snprintf(buf, sizeof(buf), "failed..");
+            OLED_write(buf, 0, 44, false);
         }
     }
     else
@@ -267,6 +260,7 @@ void WiFi_fini()
     Uni_Udp.stop();
 
     WiFi.mode(WIFI_OFF);
+    delete wifiMulti;
 }
 
 #endif /* EXCLUDE_WIFI */
