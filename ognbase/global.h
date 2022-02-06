@@ -45,3 +45,6 @@ extern bool  private_network;
 extern bool  new_protocol_enable;
 extern String new_protocol_server;
 extern uint32_t new_protocol_port;
+
+extern bool ognrelay_enable;
+extern bool ognrelay_base;

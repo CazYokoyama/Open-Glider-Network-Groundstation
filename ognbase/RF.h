@@ -98,6 +98,8 @@ size_t RF_Encode_Fanet_s(ufo_t *);
 
 bool RF_Transmit(size_t, bool);
 
+bool RF_Transmit_raw(size_t, bool);
+
 bool RF_Receive(void);
 
 void RF_Shutdown(void);

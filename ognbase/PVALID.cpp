@@ -30,6 +30,8 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
   double theta, dist;
   String msg;
 
+  speed = speed * 1.852;
+
   /*V0.1.0-24*/
 
   for (uint8_t i = 0; i < MAX_TRACKING_OBJECTS; i++) {
@@ -43,13 +45,18 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
 
     if (addr == ac[i].addr) {
 
-      msg = "ADDR found in database..";
+      msg = "ADDR: ";
+      msg += String(addr, HEX);
+      msg += " found in database..";
       Logger_send_udp(&msg);
 
       int dist = distance(lat1, lon1, ac[i].latitude, ac[i].longitude);
 
       msg = "Transmitted distance: ";
       msg += dist;
+      msg = "Transmitted speed: ";
+      msg += speed / 3.6;
+      msg += " m/s";      
       Logger_send_udp(&msg);
 
       int calcdist = calcMaxDistance(speed, timestamp - ac[i].timestamp);
@@ -57,6 +64,11 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
 
         msg = "Max calculated distance: ";
         msg += calcdist;
+        msg += "m Distance: ";
+        msg += dist;
+        msg += " m";
+        msg += " timediff: ";
+        msg += timestamp - ac[i].timestamp;
         Logger_send_udp(&msg);
 
         msg = "Packet seems to be invalid";
@@ -70,6 +82,9 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
 
         msg = "Max calculated distance: ";
         msg += calcdist;
+        msg += "m Distance: ";
+        msg += dist;
+        msg += "m";
         Logger_send_udp(&msg);
 
 
@@ -93,7 +108,7 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
   return (false);
 }
 
-
+/*
 static int distance(double lat1, double lon1, double lat2, double lon2) {
   double theta, dist;
   double r = 6378137.0;
@@ -113,14 +128,28 @@ static int distance(double lat1, double lon1, double lat2, double lon2) {
 
     double dist = 2 * r * asin(sqrt(pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2)));
 
-    return (int)(dist); //distance in meter
+    return (int)(dist); //distance in km
   }
+}
+*/
+
+static int distance(double lat1, double lon1, double lat2, double lon2) {
+  double p = 0.017453292519943295;    // Math.PI / 180
+  double a = 0.5 - cos((lat2 - lat1) * p)/2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p))/2;
+  return (int)(12742 * asin(sqrt(a)) * 1000);
 }
 
 static int calcMaxDistance(double speed, time_t time_diff) {
-  int speed_ms = speed / 3.6;
-  // 20% more than calculated
-  return (int)((speed * time_diff) * 1.2 );
+  int speed_ms = speed;
+  
+  if(speed == 0){
+    // GPS precision ...
+    return (int)(10);
+  }
+  else{
+    // 20% more than calculated
+    return (int)((speed * time_diff / 3.6) * 1.2 );
+  }
 }
 
 static bool appendPacket(uint32_t addr, double lat, double lon, time_t timestamp, uint8_t cnt) {

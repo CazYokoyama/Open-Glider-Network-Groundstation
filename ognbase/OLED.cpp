@@ -169,7 +169,10 @@ void OLED_info(bool ntp)
             snprintf(buf, sizeof(buf), "SSID: %s", WiFi.SSID().c_str());
             display.drawString(0, 9, buf);
 
-            snprintf(buf, sizeof(buf), "CS: %s", ogn_callsign);
+            if(ognrelay_enable)
+              snprintf(buf, sizeof(buf), "CS-R: %s", ogn_callsign);
+            else
+              snprintf(buf, sizeof(buf), "CS: %s", ogn_callsign);
             display.drawString(0, 18, buf);
 
             snprintf(buf, sizeof(buf), "Band: %s", ISO3166_CC[ogn_band]);
@@ -241,7 +244,10 @@ void OLED_info(bool ntp)
 
 
             display.display();
-            oled_site = 2;
+            if(!ognrelay_enable )
+              oled_site = 2;
+            else
+              oled_site = 3;
             display.displayOn();
             return;
         }
@@ -290,7 +296,13 @@ void OLED_info(bool ntp)
             display.drawString(0, 36, buf);
 
             snprintf(buf, sizeof(buf), "GPS-FIX: %s", isValidFix() ? "true" : "false");
-            display.drawString(0, 45, buf);                                                                
+            display.drawString(0, 45, buf);       
+
+            if(ognrelay_base)
+              snprintf(buf, sizeof(buf), "RELAY-B: %s", ognrelay_base ? "true" : "false");
+            if(ognrelay_enable)
+              snprintf(buf, sizeof(buf), "RELAY: %s", ognrelay_enable ? "true" : "false");              
+            display.drawString(0, 54, buf);                                                                           
 
             display.display();
             if (beers_show)

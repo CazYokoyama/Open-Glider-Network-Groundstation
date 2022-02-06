@@ -16,14 +16,14 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 ## Harwdare
 * LILYGO TTGO T-Beam (Lora, GPS, Bluetooth, Wifi, OLED)
 	* [TTGO T-Beam Aliexpress](https://s.click.aliexpress.com/e/_dTnxWSv)
-* TTGO LoRa32 (**TESTING** - Lora, Bluetooth, Wifi, OLED)
+* TTGO LoRa32 (Lora, Bluetooth, Wifi, OLED)
 
 ## Features:
 * Power consumption around 20 mA in sleep mode - 120mA on normal mode  
 	* 40 - 60 mA without GPS
 * OLED status messages
 * ntp time sync - no gps needed
-* Deep Sleep
+* Deep Sleep (only TTGO)
 	* Auto wakeup on RX packages
 	* Wakeup Timer
 * No additional computer necessary - only Wifi ;
@@ -31,6 +31,9 @@ There are also a few drawbacks to the traditional OGN receivers. Several protoco
 * low cost hardware
 * Frequency hopping in legacy mode and ogn (868.2 / 868.4) - Thanks Nick
 	* needs GPS fix
+* Relay function - send data over air to basestation (2 TTGO/TBEAM needed)
+* Private mode - encrypt FANET data with you own key
+	* modified SoftRF needed
 
 ## Planed Features
 * Protocol hopping - aprs messages are sent every 5 seconds - **in progress**
@@ -59,7 +62,9 @@ NBP can also be encrypted. V0.1.0-25
 
 ### Packet validation in LEGACY mode V0.1.0-24
 
-It is possible that a legacy packet is marked as valid by the crc check, although it is damaged. This can result in position jumps. A new validation routine was built in, which checks whether a position package can be valid based on the speed of the aircraft.
+It is possible that a legacy packet is marked as valid by the crc check, although it is damaged. This can result in position jumps. A new validation routine was built in, which checks whether a position package can be valid based on the speed and position of the aircraft.
+
+ESP will calculate the flight distance from last two position packets and check if its possible with time and speed. Minimum two packets must be received and validated, otherwise position data not transmitted to ogn.
 
 ### Private network - V0.1.0-25
 
@@ -71,6 +76,33 @@ RF position packets AES128 encrypted
 
 **Precise instructions and a modified SoftRF version will follow.**
 
+### Relay  function - V0.1.0-28
+
+If no internet connection is available, send received data to ogn base, base will transmit packets to ogn.
+*	relay protocol based on fanet
+* 2 devices needed - 1 Relay - 1 Basestation (Base with internet access)
+	* line of sight from Relay to Base
+
+```json
+"ognrelay":{
+	 "enable":1,
+	 "basestation":0
+},
+```
+* enable
+	* Set to 1 for relay station
+* basestation
+	* set to 1 for basestation (connected to ogn)
+
+**If enable set to 1, basesation will be automatically deactivated. If you want to run base, set enable to 0 and basesation to 1.**
+
+Relay will receive position data and send this every 2.5 seconds to basestation (on different frequency). Basestation will listen only on relay frequency and transmit packets via APRS to ogn. So you can create network with one basesation and many relays spread over different hills. In ogn you will only see the basesation.
+
+The protocol for relay connection are the same as configured on relay. If you receive legacy, relay will send legacy packets to base, only on different frequency.
+
+**In relay mode gps (if set static position) and Wifi will be disabled after 5 minutes.** 
+
+
 ## Known bugs / Missing features
 * SNR calculation not correct
 * No RAM and CPU data in APRS status messages
@@ -78,12 +110,14 @@ RF position packets AES128 encrypted
 * no turn rate in APRS messages (always zero)
 * disable sleep mode if everyone is connected to webserver
 * **DEEPSLEEP_RESET gets stuck after a few resets - arduino-esp32 #796**
+	* works only with TTGO without problems
 * and a lot more...
 
 
 ## If you find a bug...
 * create an issue or send me an email.
 * describe your problem in a few sentences
+* create a pull request
 * I will try to deal with **all issues**, maybe it will take a little longer sometimes, just be patient
 
 ## Build Instructions
@@ -91,7 +125,14 @@ RF position packets AES128 encrypted
 * install latest Arduino IDE
 * git clone https://github.com/roema/Open-Glider-Network-Groundstation.git --recursive
 * make sure the arduino ide is using the correct libraries.  
-* **take a look at pictures folder for arduino configuration***
+* take a look ath ognbase.ino
+ 	* #define TTGO / TBEAM
+
+### TTGO
+![alt text](https://raw.githubusercontent.com/roema/Open-Glider-Network-Groundstation/main/pictures/TTGO.png)
+### TBEAM
+
+![alt text](https://raw.githubusercontent.com/roema/Open-Glider-Network-Groundstation/main/pictures/TBEAM.png)
 
 
 ## Installation
@@ -106,16 +147,18 @@ RF position packets AES128 encrypted
 ## Easy Installation / Upgrade
 
 * Download [binary image](https://github.com/roema/Open-Glider-Network-Groundstation/releases) and install it with web-updater
+	* SoftRF updater works too
 * Connect to Wifi OGN-XXXXXX with password 987654321
 * Type 192.168.1.1 in you browser and you will see a file-upload page (only on first startup)
 * Upload index.html, update.html and style.css
+	* html files are not necessary. Only the config.json is required for operation.
+	* not all functions are available on webinterface
 * **new config.json is required!**
 * Reset and connect again
 
 ### Upgrade
-**Since there were more and more faulty files during an update, the SPIFFS memory is formatted during a firmware update.**
 
-TTGO T-Beam supports firmware upgrades via SDCARD. Take a look on ReadMe.txt in SDCARd folder.
+TTGO T-Beam supports firmware upgrades via SDCARD. Take a look on ReadMe.txt in SDCARD folder.
 
 ## Configuration File - config.json
 
@@ -132,7 +175,7 @@ TTGO T-Beam supports firmware upgrades via SDCARD. Take a look on ReadMe.txt in 
          "xxxxxxx"
       ],
       "pass":[
-         "password",
+         "pass",
          "xxxxxxx",
          "xxxxxxx",
          "xxxxxxx",
@@ -147,8 +190,8 @@ TTGO T-Beam supports firmware upgrades via SDCARD. Take a look on ReadMe.txt in 
       "geoidsep":55
    },
    "zabbix":{
-      "enable":false,
-      "server":"127.0.0.1",
+      "enable":true,
+      "server":"5.150.254.37",
       "port":10051,
       "key":"ogn_base"
    },
@@ -156,9 +199,9 @@ TTGO T-Beam supports firmware upgrades via SDCARD. Take a look on ReadMe.txt in 
       "enable":false
    },
    "remotelogs":{
-      "enable":false,
-      "server":"5.150.254.37",
-      "port":12000
+      "enable":true,
+      "server":"10.0.1.200",
+      "port":12014
    },      
    "aprs":{
       "callsign":"Neuenburg",
@@ -190,8 +233,9 @@ TTGO T-Beam supports firmware upgrades via SDCARD. Take a look on ReadMe.txt in 
    "oled":{
       "disable":0
    },
-   "testmode":{
-   		"enable":1
+   "ognrelay":{
+   		"enable":1,
+   		"basestation":0
    },   
    "beers":{
       "show":0

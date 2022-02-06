@@ -24,6 +24,7 @@
 #include "Protocol_Legacy.h"
 #include "OLED.h"
 #include "global.h"
+#include "Log.h"
 
 
 unsigned long UpdateTrafficTimeMarker = 0;
@@ -141,13 +142,33 @@ void ParseData()
     rx_size = rx_size > sizeof(fo.raw) ? sizeof(fo.raw) : rx_size;
 
     char buf[16];
+    String msg;
 
-#if DEBUG
-    Hex2Bin(TxDataTemplate, RxBuffer);
-#endif
+    msg = "RXBuffer: ";
 
     memset(fo.raw, 0, sizeof(fo.raw));
     memcpy(fo.raw, RxBuffer, rx_size);
+    memcpy(TxBuffer, RxBuffer, rx_size);
+
+    /*
+    Serial.print("RxBuffer: ");
+    
+    for(int i=0;i<rx_size;i++){
+      Serial.print(RxBuffer[i], HEX); 
+      msg += String(RxBuffer[i], HEX);
+    }    
+
+    Serial.println();
+    Logger_send_udp(&msg);
+
+    */
+    
+    if(ognrelay_enable){
+      RF_Transmit(rx_size, true);
+      return;
+    }
+
+    
 
     if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo))
     {

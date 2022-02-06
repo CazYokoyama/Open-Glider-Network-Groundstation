@@ -90,6 +90,9 @@
 
 #include <TimeLib.h>
 
+#define TBEAM
+//#define TTGO
+
 #if defined(ENABLE_AHRS)
 #include "AHRS.h"
 #endif /* ENABLE_AHRS */
@@ -130,8 +133,11 @@
 #define TimeToRefreshWeb() (seconds() - ExportTimeWebRefresh >= TIME_TO_REFRESH_WEB)
 
 //testing
-#define TIME_TO_SLEEP  60
 #define TimeToSleep() (seconds() - ExportTimeSleep >= ogn_rxidle)
+
+//testing
+#define TIME_TO_DIS_WIFI  60
+#define TimeToDisWifi() (seconds() - ExportTimeDisWifi >= TIME_TO_DIS_WIFI)
 
 //testing
 #define TimeToDisableOled() (seconds() - ExportTimeOledDisable >= oled_disable)
@@ -171,6 +177,7 @@ unsigned long ExportTimeKeepAliveOGN = 0;
 unsigned long ExportTimeStatusOGN = 0;
 unsigned long ExportTimeSwitch = 0;
 unsigned long ExportTimeSleep = 0;
+unsigned long ExportTimeDisWifi = 0;
 unsigned long ExportTimeWebRefresh = 0;
 unsigned long ExportTimeFanetService = 0;
 unsigned long ExportTimeCheckKeepAliveOGN = 0;
@@ -224,8 +231,8 @@ void setup()
 
   EEPROM_setup();
   OLED_setup();
-  WiFi_setup();
 
+  WiFi_setup();
 
   SoC->Button_setup();
 
@@ -242,7 +249,10 @@ void setup()
 
   delay(100);
 
+#if defined(TBEAM)
   hw_info.gnss = GNSS_setup();
+#endif
+  
   ThisAircraft.aircraft_type = settings->aircraft_type;
   Battery_setup();
   Traffic_setup();
@@ -260,8 +270,9 @@ void setup()
     aes_init();
   }
 
-  /*T-BEAM only*/
-  //pinMode(BUTTON, INPUT);
+#if defined(TBEAM)
+  pinMode(BUTTON, INPUT);
+#endif  
 }
 
 void loop()
@@ -303,11 +314,10 @@ void shutdown(const char *msg)
   Web_fini();
 
   WiFi_fini();
-
-  if (settings->mode != SOFTRF_MODE_UAV) {
-    GNSS_fini();
-  }
-
+  
+#if defined(TBEAM)
+  GNSS_fini();
+#endif
 
   RF_Shutdown();
 
@@ -343,7 +353,7 @@ void ground()
     Logger_send_udp(&msg);
   }
 
-  if((WiFi.getMode() == WIFI_AP)){
+  if((WiFi.getMode() == WIFI_AP) && !ognrelay_enable){
     OLED_write("Setup mode..", 0, 9, true);
     snprintf (buf, sizeof(buf), "SSID: %s", host_name.c_str());
     OLED_write(buf, 0, 18, false);
@@ -364,8 +374,8 @@ void ground()
   if (success && isValidFix() || success && position_is_set){
     Logger_send_udp(&msg);    
     
-   
     ParseData();
+    
     ExportTimeSleep = seconds();
   }
 
@@ -377,8 +387,10 @@ void ground()
     ThisAircraft.speed = 0;
     ThisAircraft.hdop = 0;
     ThisAircraft.geoid_separation = ogn_geoid_separation;
-    
+
+#if defined(TBEAM)
     GNSS_sleep();
+#endif
 
     msg = "found position data LAT: ";
     msg += ogn_lat;
@@ -425,71 +437,102 @@ void ground()
     delay(1000);
   }
 
+#if defined(TBEAM)
   GNSS_loop();
+#endif
 
   ThisAircraft.timestamp = now();
 
-  if ((TimeToRegisterOGN() && (position_is_set) && WiFi.getMode() != WIFI_AP ) || (ground_registred == 0  && (position_is_set) && WiFi.getMode() != WIFI_AP))
-  {  
-    ground_registred = OGN_APRS_Register(&ThisAircraft);
-    ExportTimeRegisterOGN = seconds();
-  }
+  //only as basestation
 
-  if(ground_registred ==  -1){
-    OLED_write("server registration failed!", 0, 18, true);
-    OLED_write("please check json file!", 0, 27, false);
-    snprintf (buf, sizeof(buf), "%s : %d", ogn_server.c_str(), ogn_port);
-    OLED_write(buf, 0, 36, false);
-    ground_registred = -2; 
-  }
+  if (!ognrelay_enable){
 
-  if(ground_registred == -2){
-    //lost wifi?
-    OGN_APRS_check_Wifi();
-    ExportTimeReRegister = seconds();
-    while(TimeToReRegisterOGN()){
-      os_runstep();
+    if ((TimeToRegisterOGN() && (position_is_set) && WiFi.getMode() != WIFI_AP ) || (ground_registred == 0  && (position_is_set) && WiFi.getMode() != WIFI_AP))
+    {  
+      ground_registred = OGN_APRS_Register(&ThisAircraft);
+      ExportTimeRegisterOGN = seconds();
     }
-    ground_registred = 0;
-  }
-
-  if (TimeToExportOGN() && ground_registred == 1)
-  {
-    if(new_protocol_enable && testmode_enable){
-      RSM_ExportAircraftPosition();
+  
+    if(ground_registred ==  -1){
+      OLED_write("server registration failed!", 0, 18, true);
+      OLED_write("please check json file!", 0, 27, false);
+      snprintf (buf, sizeof(buf), "%s : %d", ogn_server.c_str(), ogn_port);
+      OLED_write(buf, 0, 36, false);
+      ground_registred = -2; 
     }
-    OGN_APRS_Export();
+  
+    if(ground_registred == -2){
+      OGN_APRS_check_Wifi();
+      ExportTimeReRegister = seconds();
+      while(TimeToReRegisterOGN()){
+        os_runstep();
+      }
+      ground_registred = 0;
+    }
+  
+    if (TimeToExportOGN() && ground_registred == 1)
+    {
+      if(new_protocol_enable && testmode_enable){
+        RSM_ExportAircraftPosition();
+      }
+      OGN_APRS_Export();
+      OLED_info(position_is_set);
+      ExportTimeOGN = seconds();
+    }
+  
+    if (TimeToKeepAliveOGN() && ground_registred == 1)
+    {
+      disp = "keepalive OGN...";
+      OLED_write(disp, 0, 24, true);
+      
+      OGN_APRS_KeepAlive();
+      ExportTimeKeepAliveOGN = seconds();
+    }
+  
+    if (TimeToStatusOGN() && ground_registred == 1 && (position_is_set ))
+    {
+  
+      disp = "status OGN...";
+      OLED_write(disp, 0, 24, true);
+      
+      OGN_APRS_Status(&ThisAircraft);
+  
+      msg = "Version: ";
+      msg += String(_VERSION);
+      msg += " Power: ";
+      msg += String(SoC->Battery_voltage());
+      msg += String(" Uptime: ");
+      msg += String(millis() / 3600000);
+      msg += String(" GNSS: ");
+      msg += String(gnss.satellites.value());
+      Logger_send_udp(&msg);
+      ExportTimeStatusOGN = seconds();
+    }  
+  
+    if(TimeToCheckKeepAliveOGN() && ground_registred == 1){
+      ground_registred = OGN_APRS_check_messages();
+      ExportTimeCheckKeepAliveOGN = seconds();
+      MONIT_send_trap();
+    }
+    
+    if( TimeToCheckWifi() && !ognrelay_enable){
+      OLED_draw_Bitmap(39, 5, 3 , true);
+      OLED_write("check connections..", 15, 45, false);
+      if(OGN_APRS_check_Wifi()){
+        OLED_write("success", 35, 54, false);
+      }
+      else{
+        OLED_write("error", 35, 54, false);
+      }
+      ExportTimeCheckWifi = seconds();
+    }  
+
+  }
+  
+
+  if (TimeToExportOGN() && ognrelay_enable){
     OLED_info(position_is_set);
     ExportTimeOGN = seconds();
-  }
-
-  if (TimeToKeepAliveOGN() && ground_registred == 1)
-  {
-    disp = "keepalive OGN...";
-    OLED_write(disp, 0, 24, true);
-    
-    OGN_APRS_KeepAlive();
-    ExportTimeKeepAliveOGN = seconds();
-  }
-
-  if (TimeToStatusOGN() && ground_registred == 1 && (position_is_set ))
-  {
-
-    disp = "status OGN...";
-    OLED_write(disp, 0, 24, true);
-    
-    OGN_APRS_Status(&ThisAircraft);
-
-    msg = "Version: ";
-    msg += String(_VERSION);
-    msg += " Power: ";
-    msg += String(SoC->Battery_voltage());
-    msg += String(" Uptime: ");
-    msg += String(millis() / 3600000);
-    msg += String(" GNSS: ");
-    msg += String(gnss.satellites.value());
-    Logger_send_udp(&msg);
-    ExportTimeStatusOGN = seconds();
   }
 
   
@@ -505,10 +548,15 @@ void ground()
     OLED_disable();
     
     if (ogn_sleepmode == 1){
-      GNSS_sleep(); 
+      
+#if defined(TBEAM)      
+      GNSS_sleep();
+#endif 
     }
+    
     ground_registred = 0;
-    SoC->WiFi_disconnect_TCP();
+    if(!ognrelay_enable)
+      SoC->WiFi_disconnect_TCP();
     esp_deep_sleep_start();
   }
 
@@ -529,38 +577,29 @@ void ground()
     Logger_send_udp(&msg);
   }
 
-  if(TimeToCheckKeepAliveOGN() && ground_registred == 1){
-    ground_registred = OGN_APRS_check_messages();
-    ExportTimeCheckKeepAliveOGN = seconds();
-    MONIT_send_trap();
-  }
-  
-  if( TimeToCheckWifi() ){
-    OLED_draw_Bitmap(39, 5, 3 , true);
-    OLED_write("check connections..", 15, 45, false);
-    if(OGN_APRS_check_Wifi()){
-      OLED_write("success", 35, 54, false);
-    }
-    else{
-      OLED_write("error", 35, 54, false);
-    }
-    ExportTimeCheckWifi = seconds();
-  }
-
   // Handle Air Connect
-  //NMEA_loop();
+#if defined(TBEAM) 
   ClearExpired();
+#endif   
+
+
+  if( TimeToDisWifi() && ognrelay_enable ){
+    WiFi.mode(WIFI_OFF);
+    ExportTimeDisWifi = seconds();
+    //Serial.print("disabling Wifi");
+  }
 
   if( TimeToDisableOled() ){
     if (oled_disable > 0){
      OLED_disable(); 
     }
   }
-  /*
+  
+#if defined(TBEAM) 
   if (!digitalRead(BUTTON)){
     while(!digitalRead(BUTTON)){delay(100);}
     OLED_enable();
     ExportTimeOledDisable = seconds();
   }
-  */
+#endif 
 }

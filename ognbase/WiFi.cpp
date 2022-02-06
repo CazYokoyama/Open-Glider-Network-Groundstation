@@ -127,7 +127,7 @@ void WiFi_setup()
         delay(10);
     }
 
-    if (OGN_read_config())
+    if (OGN_read_config() && !ognrelay_enable)
     {
         Serial.println(F("WiFi config changed."));
 
@@ -175,9 +175,6 @@ void WiFi_setup()
     {
         station_ssid = MY_ACCESSPOINT_SSID;
         station_psk  = MY_ACCESSPOINT_PSK;
-        Serial.println(F("No WiFi connection information available."));
-        snprintf(buf, sizeof(buf), "no config file found..");
-        OLED_write(buf, 0, 25, false);
         WiFi.begin();
         delay(1000);
     }

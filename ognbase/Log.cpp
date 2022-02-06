@@ -25,7 +25,7 @@
 
 void Logger_send_udp(String* buf)
 {
-    if (ogn_debug)
+    if (ogn_debug && !ognrelay_enable)
     {
         int  debug_len = buf->length() + 1;
         byte debug_msg[debug_len];

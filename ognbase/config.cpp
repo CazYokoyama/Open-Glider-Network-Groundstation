@@ -101,7 +101,10 @@ bool new_protocol_enable;
 String new_protocol_server;
 uint32_t new_protocol_port;
 
-//#define TTGO
+//relay
+bool ognrelay_enable = false;
+bool ognrelay_base = false;
+
 
 #ifdef TTGO
 
@@ -288,6 +291,12 @@ bool OGN_read_config(void)
         if (1)
         {
             ogn_callsign = obj["aprs"]["callsign"].as<String>();
+            ogn_callsign.trim();
+            ogn_callsign.replace("_","");
+            if(ogn_callsign.length() > 9){
+              ogn_callsign = ogn_callsign.substring(0,9);
+            }
+                        
             ogn_server   = obj["aprs"]["server"].as<String>();
             ogn_port     = obj["aprs"]["port"];
 
@@ -351,7 +360,20 @@ bool OGN_read_config(void)
         {
             testmode_enable = obj["testmode"]["enable"];
         }
-    }      
+    }
+
+    if (obj.containsKey(F("ognrelay")))
+    {
+        //Serial.println(F("found relay config!"));
+        if (1)
+        {
+            ognrelay_enable = obj["ognrelay"]["enable"];
+            if(ognrelay_enable)
+              ognrelay_base = 0;
+            else
+              ognrelay_base = obj["ognrelay"]["basestation"];
+        }
+    }            
 
     if (obj.containsKey(F("fanetservice")))
     {

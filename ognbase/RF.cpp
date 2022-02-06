@@ -176,6 +176,11 @@ void RF_SetChannel(void)
     tmElements_t tm;
     time_t       Time;
 
+    if (RF_ready && rf_chip && ognrelay_base){
+      rf_chip->channel(4);
+      return;
+    }
+
     switch (settings->mode)
     {
         case SOFTRF_MODE_GROUND:
@@ -295,7 +300,7 @@ void RF_SetChannel(void)
     Serial.println(OGN);
     Serial.print("Channel: ");
     Serial.println(chan);
- #endif
+#endif
  
     if (RF_ready && rf_chip)
         rf_chip->channel(chan);
@@ -363,6 +368,32 @@ bool RF_Transmit(size_t size, bool wait)
                 SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
 
             TxTimeMarker = millis();
+
+            return true;
+        }
+    }
+    return false;
+}
+
+bool RF_Transmit_raw(size_t size, bool wait)
+{
+    if (RF_ready && rf_chip && (size > 0))
+    {
+        RF_tx_size = size;
+
+        if (settings->txpower == RF_TX_POWER_OFF)
+            settings->txpower = RF_TX_POWER_FULL;
+
+        if (!wait || (millis() - TxTimeMarker) > TxRandomValue)
+        {
+            time_t timestamp = now();
+
+            rf_chip->transmit();
+
+            tx_packets_counter++;
+            RF_tx_size = 0;
+
+             TxTimeMarker = millis();
 
             return true;
         }
@@ -951,6 +982,7 @@ static void sx12xx_tx(unsigned char* buf, size_t size, osjobcb_t func)
     u1_t crc8;
     u2_t crc16;
 
+
     switch (LMIC.protocol->crc_type)
     {
         case RF_CHECKSUM_TYPE_GALLAGER:
@@ -1059,6 +1091,12 @@ static void sx12xx_txdone_func(osjob_t* job)
 
 static void sx12xx_tx_func(osjob_t* job)
 {
-    if (RF_tx_size > 0)
-        sx12xx_tx((unsigned char *) &TxBuffer[0], RF_tx_size, sx12xx_txdone_func);
+    if (RF_tx_size > 0){
+      if(ognrelay_enable){
+        rf_chip->channel(4);        
+      }
+      sx12xx_tx((unsigned char *) &TxBuffer[0], RF_tx_size, sx12xx_txdone_func);
+      rf_chip->channel(0);
+    }
+        
 }

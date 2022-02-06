@@ -50,7 +50,7 @@ void MONIT_send_trap()
 
         String zb_msg = zs.createMessage(jsonPayload);
 
-        Logger_send_udp(&jsonPayload);
+        //Logger_send_udp(&jsonPayload);
 
         //byte buffer[zb_msg.length() + 1];
         //zb_msg.getBytes(buffer, zb_msg.length() + 1);

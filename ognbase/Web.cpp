@@ -320,6 +320,11 @@ void Web_setup(ufo_t* this_aircraft)
     wserver.on("/get", HTTP_GET, [](AsyncWebServerRequest* request) {
         if (request->hasParam("callsign"))
             ogn_callsign = request->getParam("callsign")->value().c_str();
+            ogn_callsign.trim();
+            ogn_callsign.replace("_","");
+            if(ogn_callsign.length() > 9){
+              ogn_callsign = ogn_callsign.substring(0,9);
+            }
         if (request->hasParam("ogn_lat"))
             ogn_lat = request->getParam("ogn_lat")->value().toFloat();
 
@@ -433,7 +438,10 @@ void Web_loop(void)
     if (globalClient != NULL && globalClient->status() == WS_CONNECTED)
     {
         String values;
-        values  =+SoC->Battery_voltage();
+        if(SoC->Battery_voltage() > 3.2)
+          values  =+SoC->Battery_voltage();
+        else
+          values += 0.0;
         values += "_";
         values += RF_last_rssi;
         values += "_";
