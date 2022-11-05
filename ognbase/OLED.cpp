@@ -268,7 +268,8 @@ void OLED_info(bool ntp)
             for (int b=0; b <= bars; b++)
                 display.fillRect(100 + (b * 5), 40 - (b * 6), 3, b * 6);
 
-            snprintf(buf, sizeof(buf), "connected to %s", WiFi.SSID().c_str());
+            snprintf(buf, sizeof(buf), "IP: %s",
+		     WiFi.localIP().toString().c_str());
             display.drawString(0, 54, buf);
 
             display.display();
