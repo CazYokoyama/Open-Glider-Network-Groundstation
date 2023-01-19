@@ -65,6 +65,7 @@ void aes_init() {
     for(size_t i=0;i<N_BLOCK;i++){
       Serial.print(aes_iv[i], HEX);
     }
+    Serial.println();
         
     aesLib.gen_iv(aes_iv);
     aesLib.set_paddingmode((paddingMode)0);
