@@ -290,16 +290,11 @@ void RF_SetChannel(void)
     // HOP Testing - time and channel
     //Serial.printf("Time: %d, %d\r\n", Time,chan);
 #if DEBUG
-    Serial.print("GSP Fix: ");
-    Serial.println(isValidFix());
-    Serial.print("Plan: ");
-    Serial.println(RF_FreqPlan.Plan);
-    Serial.print("Slot: ");
-    Serial.println(Slot);
-    Serial.print("OGN: ");
-    Serial.println(OGN);
-    Serial.print("Channel: ");
-    Serial.println(chan);
+    Serial.print("GSP Fix: "); Serial.print(isValidFix());
+    Serial.print(", Plan: "); Serial.print(RF_FreqPlan.Plan);
+    Serial.print(", Slot: "); Serial.print(Slot);
+    Serial.print(", OGN: "); Serial.print(OGN);
+    Serial.print(", Channel: "); Serial.println(chan);
 #endif
  
     if (RF_ready && rf_chip)

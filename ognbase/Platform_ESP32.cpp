@@ -653,9 +653,6 @@ static void ESP32_WiFi_transmit_UDP(const char* host, int port, byte* buf, size_
     switch (mode)
     {
         case WIFI_STA:
-            Serial.println("Transmitting UDP Packet");
-            Serial.println(host);
-            Serial.println(port);
             Uni_Udp.beginPacket(host, port);
             Uni_Udp.write(buf, size);
             Uni_Udp.endPacket();

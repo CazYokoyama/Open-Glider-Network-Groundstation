@@ -639,10 +639,10 @@ void GNSSTimeSync()
         {
   #if 1
             Serial.print("Valid: ");
-            Serial.println(gnss.time.isValid());
-            Serial.print("isUpdated: ");
-            Serial.println(gnss.time.isUpdated());
-            Serial.print("age: ");
+            Serial.print(gnss.time.isValid());
+            Serial.print(", isUpdated: ");
+            Serial.print(gnss.time.isUpdated());
+            Serial.print(", age: ");
             Serial.println(gnss.time.age());
   #endif
             setTime(gnss.time.hour(), gnss.time.minute(), gnss.time.second(), gnss.date.day(), gnss.date.month(), gnss.date.year());
