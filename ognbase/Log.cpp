@@ -27,6 +27,9 @@ void Logger_send_udp(String* buf)
 {
     if (ogn_debug && !ognrelay_enable)
     {
+        buf->replace("\r", "");
+        buf->replace("\n", "");
+        *buf += "\n";
         int  debug_len = buf->length() + 1;
         byte debug_msg[debug_len];
         buf->getBytes(debug_msg, debug_len);
