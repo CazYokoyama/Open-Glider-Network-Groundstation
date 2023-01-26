@@ -303,7 +303,8 @@ void OLED_info(bool ntp)
               snprintf(buf, sizeof(buf), "RELAY-B: %s", ognrelay_base ? "true" : "false");
             if(ognrelay_enable)
               snprintf(buf, sizeof(buf), "RELAY: %s", ognrelay_enable ? "true" : "false");              
-            display.drawString(0, 54, buf);                                                                           
+            if (ognrelay_base || ognrelay_enable)
+              display.drawString(0, 54, buf);
 
             display.display();
             if (beers_show)
