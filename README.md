@@ -265,25 +265,31 @@ After the html and css files have been uploaded, the T-Beam can be restarted.   
 
 ## UDP Debugging
 
-A simple Python script is sufficient to debug the APRS messages. APRS messages are not output via the serial interface.
+Netcat command, netcat or nc is sufficient to see the APRS messages. APRS messages are not output via the serial interface.
 
-When the T-Beam is connected to the wifi it will send the debug messages to the ip address ending with 200.
+When the T-Beam is connected to the wifi, it will send the debug messages to the ip address ending with *APRS debug IP* of your subnet. For example, if your subnet is 10.0.0.0/24, the ip address is 10.0.0.100. 
 
-As an an example
+The destination port is selected on debugIP in the configuration file, config.json. 12000 is used as the default port.
 
-* 10.0.0.200
-* 192.168.1.200
-* 172.21.1.200
-
-The destination port can be freely selected in the web interface. 12000 is used as the default port. Change IP and run
+should look something like this.. In the mathine which has 10.0.0.100 for example,
 
 ```
-python3 -m venv venv
-source venv/bin/activate
-python3 udp_server.py 12000
-```
+$ nc -ul 12000
+good morning, startup esp32 groundstation version 0.1.0-28 after Vbat power on reset
+current time 1674762060
+activating receive...
+Receive complete...
 
-If you have several ESP32 running, they will be displayed with different colors.
+activating receive...
+activating receive...
+checking database: 0 CNT: 10
+checking database: 0 CNT: 11
+checking database: f0bec4 CNT: 7
+ADDR: f0bec4 found in database..
+Transmitted speed: 0.56 m/s
+Max calculated distance: 3m Distance: 1m
+Packet seems to be valid - counter: 8
+```
 
 **Please note that no core dumps are shown here! A serial connection is necessary for this.**
 
@@ -297,64 +303,6 @@ A new section in config.json enables remote log server.
 	 "server":"xxx.xxxx.xxxx.xxxx",
 	 "port":12000
 },
-```
-
-
-```python
-import socket
-import sys
-from datetime import datetime
-
-from termcolor import colored, cprint
-
-colors =['blue','green','yellow','cyan','magenta','']
-
-if len(sys.argv) > 1:
-    UDP_PORT_NO = int(sys.argv[1])
-else:
-    print("usage: python3 udp_server.py <port>")
-    sys.exit(1)
-
-
-UDP_IP_ADDRESS = "xxx.xxx.xxx.200" #change ip
-
-serverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-serverSock.bind((UDP_IP_ADDRESS, UDP_PORT_NO))
-
-stations = []
-
-while True:
-    data, addr = serverSock.recvfrom(512)
-
-    if addr[0] not in stations:
-        stations.append(addr[0]);
-
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-
-    index = stations.index(addr[0])
-    print_c = lambda x: cprint(x, colors[index])
-    print_c("%s Message: %s from %s"%(current_time, data.decode("utf-8"), addr[0]))
-```
-should look something like this..
-
-```
-17:23:49 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:23:43 GMT GLIDERN1 51.178.19.212:14580
- from 10.0.0.30
-17:24:09 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:03 GMT GLIDERN1 51.178.19.212:14580
- from 10.0.0.30
-17:24:09 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:03 GMT GLIDERN1 51.178.19.212:14580
- from 10.0.0.30
-17:24:29 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:23 GMT GLIDERN1 51.178.19.212:14580
- from 10.0.0.30
-17:24:29 Message: # aprsc 2.1.5-g8af3cdc 29 Dec 2020 16:24:23 GMT GLIDERN1 51.178.19.212:14580
- from 10.0.0.30
-17:24:47 Message: user XXXXXXX pass XXXXX vers ESP32 0.1.0-2 m/100
- from 10.0.0.30
-17:24:48 Message: MUHLB>APRS,TCPIP*,qAC,248280:/162447h4657.37NI00715.50E&/A=001814
- from 10.0.0.30
-17:24:49 Message: entering sleep mode for 43200 seconds - good night from 10.0.0.30
-17:28:46 Message: good morning, startup esp32 groundstation after Deep Sleep reset digital core from 10.0.0.30
 ```
 
 ## OGN Debugging
