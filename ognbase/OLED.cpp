@@ -39,11 +39,12 @@ bool display_enabled = true;
 int rssi      = 0;
 int oled_site = 0;
 
-enum
-{
-    OLED_PAGE_RADIO,
-    OLED_PAGE_OTHER,
-    OLED_PAGE_COUNT
+enum OLED_SITE {
+    OLED_PAGE_ID,
+    OLED_PAGE_RSSI,
+    OLED_PAGE_SSID,
+    OLED_PAGE_POSITION,
+    OLED_PAGE_BEER
 };
 
 const char* OLED_Protocol_ID[] = {
@@ -161,8 +162,8 @@ void OLED_info(bool ntp)
         display.setFont(ArialMT_Plain_10);
 
 
-        if (!oled_site)
-        {
+        switch (oled_site) {
+        case OLED_PAGE_ID:
             snprintf(buf, sizeof(buf), "ID: %06X", ThisAircraft.addr);
             display.drawString(0, 0, buf);
 
@@ -200,13 +201,8 @@ void OLED_info(bool ntp)
                snprintf (buf, sizeof(buf), "Range: %s", buf);
                display.drawString(0, 63, buf);
              */
-            oled_site = 1;
-            display.display();
-            display.displayOn();
-            return;
-        }
-        if (oled_site == 1)
-        {
+            break;
+        case OLED_PAGE_RSSI:
             disp_value = RF_last_rssi;
             snprintf(buf, sizeof(buf), "RSSI: %d", disp_value);
             display.drawString(0, 0, buf);
@@ -242,18 +238,10 @@ void OLED_info(bool ntp)
             snprintf(buf, sizeof(buf), "Version: %s", _VERSION);
             display.drawString(0, 54, buf);
 
-
-            display.display();
-            if(!ognrelay_enable )
-              oled_site = 2;
-            else
-              oled_site = 3;
-            display.displayOn();
-            return;
-        }
-
-        if (oled_site == 2)
-        {
+            if (ognrelay_enable )
+              oled_site++;
+            break;
+        case OLED_PAGE_SSID:
             display.clear();
             snprintf(buf, sizeof(buf), "SSID List");
             display.drawString(0, 0, buf);
@@ -271,15 +259,8 @@ void OLED_info(bool ntp)
             snprintf(buf, sizeof(buf), "IP: %s",
 		     WiFi.localIP().toString().c_str());
             display.drawString(0, 54, buf);
-
-            display.display();
-            display.displayOn();
-            oled_site = 3;
-            return;
-        }
-
-        if (oled_site == 3)
-        {
+            break;
+        case OLED_PAGE_POSITION:
             display.clear();
             snprintf(buf, sizeof(buf), "POSITION DATA");
             display.drawString(0, 0, buf);
@@ -306,20 +287,13 @@ void OLED_info(bool ntp)
             if (ognrelay_base || ognrelay_enable)
               display.drawString(0, 54, buf);
 
-            display.display();
-            if (beers_show)
-                oled_site = 4;
-            else
-                oled_site = 0;
-            display.displayOn();
-            return;
-        }  
-
-        if (oled_site == 4)
-        {
+            if (!beers_show)
+                oled_site++;
+            break;
+        case  OLED_PAGE_BEER:
             String beer_supporters[] = {"guy", "jozef", "camille", "caz", "uwe"};
             display.clear();
-            snprintf(buf, sizeof(buf), "Bier supporters");
+            snprintf(buf, sizeof(buf), "Beer supporters");
             display.drawString(0, 0, buf);
             for (int i=0; i < sizeof(beer_supporters); i++) {
                 snprintf(buf, sizeof(buf), "%s", beer_supporters[i]);
@@ -330,10 +304,12 @@ void OLED_info(bool ntp)
             display.drawString(0, 52, buf);
 
             OLED_draw_Bitmap(75, 0, 100, false);
-            display.display();
-            oled_site = 0;
-            display.displayOn();
-            return;
+            break;
         }
+        display.display();
+        display.displayOn();
+        if (++oled_site > OLED_PAGE_BEER)
+            oled_site = OLED_PAGE_ID;
     }
+    return;
 }
