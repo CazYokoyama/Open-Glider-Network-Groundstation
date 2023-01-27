@@ -123,7 +123,7 @@
 #define APRS_CHECK_WIFI_TIME 600
 #define TimeToCheckWifi() (seconds() - ExportTimeCheckWifi >= APRS_CHECK_WIFI_TIME)
 
-#define APRS_STATUS_REC 1800
+#define APRS_STATUS_REC (5 * 60) /* tramsit status packet every 5 min */
 #define TimeToStatusOGN() (seconds() - ExportTimeStatusOGN >= APRS_STATUS_REC)
 
 #define APRS_PROTO_SWITCH 2
