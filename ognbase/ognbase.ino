@@ -443,8 +443,22 @@ void ground()
 
   //only as basestation
 
-  if (!ognrelay_enable){
 
+  if (ognrelay_enable) {
+    if (TimeToCheckWifi()) {
+      OLED_draw_Bitmap(39, 5, 3 , true);
+      OLED_write("check connections..", 15, 45, false);
+      if(OGN_APRS_check_Wifi())
+        OLED_write("success", 35, 54, false);
+      else
+        OLED_write("error", 35, 54, false);
+      ExportTimeCheckWifi = seconds();
+    }
+    if (TimeToExportOGN()) {
+      OLED_info(position_is_set);
+      ExportTimeOGN = seconds();
+    }
+  } else {
     if ((TimeToRegisterOGN() && (position_is_set) && WiFi.getMode() != WIFI_AP) ||
         (ground_registred == APRS_NOT_REGISTERED && (position_is_set) &&
         WiFi.getMode() != WIFI_AP)) {
@@ -510,28 +524,7 @@ void ground()
         MONIT_send_trap();
       }
     } /* ground_registred == APRS_REGISTERED */
-
-
-    if( TimeToCheckWifi() && !ognrelay_enable){
-      OLED_draw_Bitmap(39, 5, 3 , true);
-      OLED_write("check connections..", 15, 45, false);
-      if(OGN_APRS_check_Wifi()){
-        OLED_write("success", 35, 54, false);
-      }
-      else{
-        OLED_write("error", 35, 54, false);
-      }
-      ExportTimeCheckWifi = seconds();
-    }  
-
-  }
-  
-
-  if (TimeToExportOGN() && ognrelay_enable){
-    OLED_info(position_is_set);
-    ExportTimeOGN = seconds();
-  }
-
+  } /* ognrelay_enable */
   
   if ( TimeToSleep() && ogn_sleepmode )
   {
