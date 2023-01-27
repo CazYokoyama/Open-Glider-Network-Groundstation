@@ -559,7 +559,7 @@ void ground()
       RSM_receiver();
     }
     else{
-      fanet_transmitter = RSM_Setup(ogn_debugport+1);
+      fanet_transmitter = RSM_Setup(ogn_debugIP+1);
     }
     ExportTimeFanetService = seconds();
   }

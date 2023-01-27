@@ -254,7 +254,7 @@ void Web_setup(ufo_t* this_aircraft)
 
              (ogn_debug == true ? "selected" : ""),
              (ogn_debug == false ? "selected" : ""),
-             String(ogn_debugport),
+             String(ogn_debugIP),
 
              (ogn_itrackbit == true ? "selected" : ""), "True",
              (ogn_itrackbit == false ? "selected" : ""), "False",
@@ -361,8 +361,8 @@ void Web_setup(ufo_t* this_aircraft)
         if (request->hasParam("ogn_aprs_debug"))
             ogn_debug= request->getParam("ogn_aprs_debug")->value().toInt();
 
-        if (request->hasParam("aprs_debug_port"))
-            ogn_debugport = request->getParam("aprs_debug_port")->value().toInt();
+        if (request->hasParam("aprs_debug_IP"))
+            ogn_debugIP = request->getParam("aprs_debug_IP")->value().toInt();
 
         if (request->hasParam("ogn_range"))
             ogn_range = request->getParam("ogn_range")->value().toInt();

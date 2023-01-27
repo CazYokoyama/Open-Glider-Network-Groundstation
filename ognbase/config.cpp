@@ -54,6 +54,7 @@ uint8_t  ogn_protocol_1  = 0;
 uint8_t  ogn_protocol_2  = 1;
 bool     ogn_debug       = false;
 uint16_t ogn_debugport   = 12000;
+uint16_t ogn_debugIP     = 100;
 bool     ogn_itrackbit   = false;
 bool     ogn_istealthbit = false;
 uint16_t  ogn_range       = 100;
@@ -305,6 +306,7 @@ bool OGN_read_config(void)
             ogn_protocol_2  = obj["aprs"]["protocol_2"];
             ogn_debug       = obj["aprs"]["debug"];
             ogn_debugport   = obj["aprs"]["debugport"];
+            ogn_debugIP     = obj["aprs"]["debugIP"];
             ogn_itrackbit   = obj["aprs"]["itrackbit"];
             ogn_istealthbit = obj["aprs"]["istealthbit"];
             ogn_sleepmode   = obj["aprs"]["sleepmode"];
@@ -471,6 +473,7 @@ bool OGN_save_config(void)
     obj["aprs"]["protocol_2"]  = ogn_protocol_2;
     obj["aprs"]["debug"]       = ogn_debug;
     obj["aprs"]["debugport"]   = ogn_debugport;
+    obj["aprs"]["debugIP"]     = ogn_debugIP;
     obj["aprs"]["itrackbit"]   = ogn_itrackbit;
     obj["aprs"]["istealthbit"] = ogn_istealthbit;
     obj["aprs"]["sleepmode"]   = ogn_sleepmode;

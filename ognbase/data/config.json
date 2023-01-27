@@ -45,6 +45,7 @@
       "protocol_2":1,
       "debug":true,
       "debugport":12000,
+      "debugIP":100,
       "itrackbit":false,
       "istealthbit":false,
       "sleepmode":false,

@@ -19,6 +19,7 @@ extern uint8_t  ogn_protocol_1;
 extern uint8_t  ogn_protocol_2;
 extern bool     ogn_debug;
 extern uint16_t ogn_debugport;
+extern uint16_t ogn_debugIP;
 extern bool     ogn_itrackbit;
 extern bool     ogn_istealthbit;
 extern bool     ogn_sleepmode;

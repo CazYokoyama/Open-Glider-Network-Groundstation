@@ -212,9 +212,9 @@ void OLED_info(bool ntp)
             snprintf(buf, sizeof(buf), "Debug: %d", disp_value);
             display.drawString(0, 9, buf);
 
-            //ogndebugp
-            disp_value = ogn_debug;
-            snprintf(buf, sizeof(buf), "DebugP: %d", disp_value);
+            //ogndebugIP
+            disp_value = ogn_debugIP;
+            snprintf(buf, sizeof(buf), "DebugIP: %d", disp_value);
             display.drawString(0, 18, buf);
 
             //bool ignore_stealth;
