@@ -469,49 +469,49 @@ void ground()
       ground_registred = APRS_NOT_REGISTERED;
     }
   
-    if (TimeToExportOGN() && ground_registred == APRS_REGISTERED) {
-      if(new_protocol_enable && testmode_enable){
-        RSM_ExportAircraftPosition();
+    if (ground_registred == APRS_REGISTERED) {
+      if (TimeToExportOGN()) {
+        if (new_protocol_enable && testmode_enable)
+          RSM_ExportAircraftPosition();
+        OGN_APRS_Export();
+        OLED_info(position_is_set);
+        ExportTimeOGN = seconds();
       }
-      OGN_APRS_Export();
-      OLED_info(position_is_set);
-      ExportTimeOGN = seconds();
-    }
   
-    if (TimeToKeepAliveOGN() && ground_registred == APRS_REGISTERED) {
-      disp = "keepalive OGN...";
-      OLED_write(disp, 0, 24, true);
+      if (TimeToKeepAliveOGN()) {
+        disp = "keepalive OGN...";
+        OLED_write(disp, 0, 24, true);
       
-      OGN_APRS_KeepAlive();
-      ExportTimeKeepAliveOGN = seconds();
-    }
+        OGN_APRS_KeepAlive();
+        ExportTimeKeepAliveOGN = seconds();
+      }
   
-    if (TimeToStatusOGN() && ground_registred == APRS_REGISTERED &&
-        (position_is_set)) {
-  
-      disp = "status OGN...";
-      OLED_write(disp, 0, 24, true);
+      if (TimeToStatusOGN() && position_is_set) {
+        disp = "status OGN...";
+        OLED_write(disp, 0, 24, true);
       
-      OGN_APRS_Status(&ThisAircraft);
+        OGN_APRS_Status(&ThisAircraft);
   
-      msg = "Version: ";
-      msg += String(_VERSION);
-      msg += " Power: ";
-      msg += String(SoC->Battery_voltage());
-      msg += String(" Uptime: ");
-      msg += String(millis() / 3600000);
-      msg += String(" GNSS: ");
-      msg += String(gnss.satellites.value());
-      Logger_send_udp(&msg);
-      ExportTimeStatusOGN = seconds();
-    }  
+        msg = "Version: ";
+        msg += String(_VERSION);
+        msg += " Power: ";
+        msg += String(SoC->Battery_voltage());
+        msg += String(" Uptime: ");
+        msg += String(millis() / 3600000);
+        msg += String(" GNSS: ");
+        msg += String(gnss.satellites.value());
+        Logger_send_udp(&msg);
+        ExportTimeStatusOGN = seconds();
+      }
   
-    if (TimeToCheckKeepAliveOGN() && ground_registred == APRS_REGISTERED) {
-      ground_registred = OGN_APRS_check_messages();
-      ExportTimeCheckKeepAliveOGN = seconds();
-      MONIT_send_trap();
-    }
-    
+      if (TimeToCheckKeepAliveOGN()) {
+        ground_registred = OGN_APRS_check_messages();
+        ExportTimeCheckKeepAliveOGN = seconds();
+        MONIT_send_trap();
+      }
+    } /* ground_registred == APRS_REGISTERED */
+
+
     if( TimeToCheckWifi() && !ognrelay_enable){
       OLED_draw_Bitmap(39, 5, 3 , true);
       OLED_write("check connections..", 15, 45, false);
