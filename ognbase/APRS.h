@@ -88,6 +88,13 @@ enum
     OGN_ON,
 };
 
+enum aprs_reg_state {
+    APRS_WILL_REGISTER = -2,
+    APRS_FAILED,
+    APRS_NOT_REGISTERED,
+    APRS_REGISTERED
+};
+
 static bool OGN_APRS_Connect();
 
 static bool OGN_APRS_DisConnect();
@@ -97,7 +104,7 @@ void OGN_APRS_Export();
 
 void OGN_APRS_Weather();
 
-int OGN_APRS_Register(ufo_t* this_aircraft);
+enum aprs_reg_state OGN_APRS_Register(ufo_t* this_aircraft);
 
 void OGN_APRS_KeepAlive();
 
@@ -107,6 +114,6 @@ void OGN_APRS_Status(ufo_t* this_aircraft);
 
 static int OGN_APRS_check_reg(String *);
 
-int OGN_APRS_check_messages();
+enum aprs_reg_state OGN_APRS_check_messages();
 
 #endif /* OGNHELPER_H */

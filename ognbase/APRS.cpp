@@ -35,7 +35,7 @@
 
 int MIN_SPEED = 0;
 
-int  aprs_registred   = 0;
+enum aprs_reg_state aprs_registred = APRS_NOT_REGISTERED;
 bool aprs_connected   = false;
 int  last_packet_time = 0; // seconds
 int  ap_uptime        = 0;
@@ -144,7 +144,8 @@ bool OGN_APRS_check_Wifi()
     return false;
 }
 
-int OGN_APRS_check_messages()
+enum aprs_reg_state
+OGN_APRS_check_messages()
 {
     char*  RXbuffer  = (char *) malloc(512);
     int    recStatus = SoC->WiFi_receive_TCP(RXbuffer, 512);
@@ -172,7 +173,7 @@ int OGN_APRS_check_messages()
         msg = "no packet since > 60 seconds...reconnecting";
         Logger_send_udp(&msg);
         SoC->WiFi_disconnect_TCP();
-        aprs_registred = 0;
+        aprs_registred = APRS_NOT_REGISTERED;
     }
 
 
@@ -312,7 +313,8 @@ void OGN_APRS_Export()
         Container[i] = EmptyFO;
 }
 
-int OGN_APRS_Register(ufo_t* this_aircraft)
+enum aprs_reg_state
+OGN_APRS_Register(ufo_t* this_aircraft)
 {
     if (OGN_APRS_Connect())
     {
@@ -339,18 +341,17 @@ int OGN_APRS_Register(ufo_t* this_aircraft)
         Logger_send_udp(&LoginPacket);
         SoC->WiFi_transmit_TCP(LoginPacket);
 
-        aprs_registred = 1;
+        aprs_registred = APRS_REGISTERED;
     }
 
     else
     {
         Serial.println("OGN connection failed");
-        aprs_registred = 0;
-        return -1;
+        aprs_registred = APRS_NOT_REGISTERED;
+        return APRS_FAILED;
     }
 
-    if (aprs_registred == 1)
-    {
+    if (aprs_registred == APRS_REGISTERED) {
         /* RUSSIA>APRS,TCPIP*,qAC,248280:/220757h626.56NI09353.92E&/A=000446 */
 
         struct  aprs_reg_packet APRS_REG;

@@ -155,7 +155,7 @@
 
 ufo_t ThisAircraft;
 bool groundstation = false;
-int ground_registred = 0;
+enum aprs_reg_state ground_registred = APRS_NOT_REGISTERED;
 bool fanet_transmitter = false;
 bool time_synced = false;
 int proto_in_use = 0;
@@ -445,31 +445,31 @@ void ground()
 
   if (!ognrelay_enable){
 
-    if ((TimeToRegisterOGN() && (position_is_set) && WiFi.getMode() != WIFI_AP ) || (ground_registred == 0  && (position_is_set) && WiFi.getMode() != WIFI_AP))
-    {  
+    if ((TimeToRegisterOGN() && (position_is_set) && WiFi.getMode() != WIFI_AP) ||
+        (ground_registred == APRS_NOT_REGISTERED && (position_is_set) &&
+        WiFi.getMode() != WIFI_AP)) {
       ground_registred = OGN_APRS_Register(&ThisAircraft);
       ExportTimeRegisterOGN = seconds();
     }
   
-    if(ground_registred ==  -1){
+    if (ground_registred == APRS_FAILED) {
       OLED_write("server registration failed!", 0, 18, true);
       OLED_write("please check json file!", 0, 27, false);
       snprintf (buf, sizeof(buf), "%s : %d", ogn_server.c_str(), ogn_port);
       OLED_write(buf, 0, 36, false);
-      ground_registred = -2; 
+      ground_registred = APRS_WILL_REGISTER;
     }
   
-    if(ground_registred == -2){
+    if (ground_registred == APRS_WILL_REGISTER) {
       OGN_APRS_check_Wifi();
       ExportTimeReRegister = seconds();
       while(TimeToReRegisterOGN()){
         os_runstep();
       }
-      ground_registred = 0;
+      ground_registred = APRS_NOT_REGISTERED;
     }
   
-    if (TimeToExportOGN() && ground_registred == 1)
-    {
+    if (TimeToExportOGN() && ground_registred == APRS_REGISTERED) {
       if(new_protocol_enable && testmode_enable){
         RSM_ExportAircraftPosition();
       }
@@ -478,8 +478,7 @@ void ground()
       ExportTimeOGN = seconds();
     }
   
-    if (TimeToKeepAliveOGN() && ground_registred == 1)
-    {
+    if (TimeToKeepAliveOGN() && ground_registred == APRS_REGISTERED) {
       disp = "keepalive OGN...";
       OLED_write(disp, 0, 24, true);
       
@@ -487,8 +486,8 @@ void ground()
       ExportTimeKeepAliveOGN = seconds();
     }
   
-    if (TimeToStatusOGN() && ground_registred == 1 && (position_is_set ))
-    {
+    if (TimeToStatusOGN() && ground_registred == APRS_REGISTERED &&
+        (position_is_set)) {
   
       disp = "status OGN...";
       OLED_write(disp, 0, 24, true);
@@ -507,7 +506,7 @@ void ground()
       ExportTimeStatusOGN = seconds();
     }  
   
-    if(TimeToCheckKeepAliveOGN() && ground_registred == 1){
+    if (TimeToCheckKeepAliveOGN() && ground_registred == APRS_REGISTERED) {
       ground_registred = OGN_APRS_check_messages();
       ExportTimeCheckKeepAliveOGN = seconds();
       MONIT_send_trap();
@@ -552,13 +551,13 @@ void ground()
 #endif 
     }
     
-    ground_registred = 0;
+    ground_registred = APRS_NOT_REGISTERED;
     if(!ognrelay_enable)
       SoC->WiFi_disconnect_TCP();
     esp_deep_sleep_start();
   }
 
-  if(ground_registred == 1 && TimeToExportFanetService()){
+  if (ground_registred == APRS_REGISTERED && TimeToExportFanetService()) {
 
     
     OLED_draw_Bitmap(14, 0, 2 , true);
