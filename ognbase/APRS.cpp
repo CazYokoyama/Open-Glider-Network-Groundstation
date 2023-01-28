@@ -419,6 +419,9 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     APRS_STAT.platform      = "v";
     APRS_STAT.platform      += SOFTRF_FIRMWARE_VERSION;
     APRS_STAT.platform      += "-ESP32";
+
+    APRS_STAT.ram_max       = "320";
+    APRS_STAT.ram_usage     = String(APRS_STAT.ram_max.toInt() - SoC->getFreeHeap()/1024);
     
     APRS_STAT.realtime_clock = String(0.0);
     APRS_STAT.board_voltage  = String(Battery_voltage()) + "V";
@@ -433,6 +436,11 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
     StatusPacket += APRS_STAT.timestamp;
     StatusPacket += " ";
     StatusPacket += APRS_STAT.platform;
+    StatusPacket += " RAM:";
+    StatusPacket += APRS_STAT.ram_usage;
+    StatusPacket += "/";
+    StatusPacket += APRS_STAT.ram_max;
+    StatusPacket += "KB";
     StatusPacket += " ";
     StatusPacket += APRS_STAT.board_voltage;
     //StatusPacket += " ";

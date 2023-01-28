@@ -105,7 +105,7 @@ The protocol for relay connection are the same as configured on relay. If you re
 
 ## Known bugs / Missing features
 * SNR calculation not correct
-* No RAM and CPU data in APRS status messages
+* CPU data in APRS status messages. The term, CPU load is not available on Arduino while it is on OS.
 * no GPS signal quality data in APRS messages
 * no turn rate in APRS messages (always zero)
 * disable sleep mode if everyone is connected to webserver
