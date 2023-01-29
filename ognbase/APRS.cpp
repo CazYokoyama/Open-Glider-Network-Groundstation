@@ -186,8 +186,24 @@ void OGN_APRS_Export()
     struct aprs_airc_packet APRS_AIRC;
     time_t                  this_moment = now();
 
-    String symbol_table[16] = {"/", "/", "\\", "/", "\\", "\\", "/", "/", "\\", "J", "/", "/", "M", "/", "\\", "\\"}; // 0x79 -> aircraft type 1110 dec 14 & 0x51 -> aircraft type 4
-    String symbol[16]       = {"z", "^", "^", "X", "", "^", "g", "g", "^", "^", "^", "O", "^", "\'", "", "n", };
+    String symbol[16] = {
+      " ", /* AIRCRAFT_TYPE_UNKNOWN */
+      "g", /* AIRCRAFT_TYPE_GLIDER */
+      "'", /* AIRCRAFT_TYPE_TOWPLANE */
+      "'", /* AIRCRAFT_TYPE_HELICOPTER */
+      "'", /* AIRCRAFT_TYPE_PARACHUTE */
+      "'", /* AIRCRAFT_TYPE_DROPPLANE */
+      "g", /* AIRCRAFT_TYPE_HANGGLIDER */
+      "g", /* AIRCRAFT_TYPE_PARAGLIDER */
+      "^", /* AIRCRAFT_TYPE_POWERED */
+      "^", /* AIRCRAFT_TYPE_JET */
+      "'", /* AIRCRAFT_TYPE_UFO */
+      "O", /* AIRCRAFT_TYPE_BALLOON */
+      "O", /* AIRCRAFT_TYPE_ZEPPELIN */
+      "'", /* AIRCRAFT_TYPE_UAV */
+      "\"", /* AIRCRAFT_TYPE_RESERVED */
+      "n"  /* AIRCRAFT_TYPE_STATIC */
+    };
 
 
     for (int i = 0; i < MAX_TRACKING_OBJECTS; i++)
@@ -234,7 +250,6 @@ void OGN_APRS_Export()
 
             APRS_AIRC.sender_details = zeroPadding(String(Container[i].aircraft_type << 2 | (Container[i].stealth << 7) | (Container[i].no_track << 6) | Container[i].addr_type, HEX), 2);
 
-            APRS_AIRC.symbol_table = symbol_table[Container[i].aircraft_type];
             APRS_AIRC.symbol       = symbol[Container[i].aircraft_type];
 
             APRS_AIRC.snr = String(SnrCalc(Container[i].rssi), 1);
@@ -279,7 +294,7 @@ void OGN_APRS_Export()
                 AircraftPacket += "S";
             else
                 AircraftPacket += "N";
-            AircraftPacket += APRS_AIRC.symbol_table;
+            AircraftPacket += "/";
             AircraftPacket += APRS_AIRC.lon_deg;
             AircraftPacket += APRS_AIRC.lon_min;
             if (Container[i].longitude < 0)
