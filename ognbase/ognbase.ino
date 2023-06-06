@@ -372,8 +372,6 @@ void ground()
   
   success = RF_Receive();
   if (success && isValidFix() || success && position_is_set){
-    Logger_send_udp(&msg);    
-    
     ParseData();
     
     ExportTimeSleep = seconds();
@@ -572,9 +570,6 @@ void ground()
       fanet_transmitter = RSM_Setup(ogn_debugport+1);
     }
     ExportTimeFanetService = seconds();
-    msg = "current system time  ";
-    msg += String(now());
-    Logger_send_udp(&msg);
   }
 
   // Handle Air Connect

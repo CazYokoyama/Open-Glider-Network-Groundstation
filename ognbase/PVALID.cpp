@@ -33,14 +33,6 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
   speed = speed * 1.852;
 
   /*V0.1.0-24*/
-
-  for (uint8_t i = 0; i < MAX_TRACKING_OBJECTS; i++) {
-    msg = "checking database: ";
-    msg += String(ac[i].addr, HEX);
-    msg += " CNT: ";
-    msg += String(ac[i].pkt_counter);
-    Logger_send_udp(&msg);
-  }
   for (uint8_t i = 0; i < MAX_TRACKING_OBJECTS; i++) {
 
     if (addr == ac[i].addr) {
@@ -69,9 +61,7 @@ bool isPacketValid(uint32_t addr, double lat1, double lon1, double speed, time_t
         msg += " m";
         msg += " timediff: ";
         msg += timestamp - ac[i].timestamp;
-        Logger_send_udp(&msg);
-
-        msg = "Packet seems to be invalid";
+        msg += ", invalid packet";
         Logger_send_udp(&msg);
 
         cleanUpPacket(i);

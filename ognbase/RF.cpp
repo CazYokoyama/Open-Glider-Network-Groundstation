@@ -741,8 +741,6 @@ static bool sx12xx_receive()
 
     if (!sx12xx_receive_active)
     {
-        msg = "activating receive...";
-        Logger_send_udp(&msg);    
         sx12xx_setvars();
         sx12xx_rx(sx12xx_rx_func);
         sx12xx_receive_active = true;
@@ -755,8 +753,6 @@ static bool sx12xx_receive()
 
     if (sx12xx_receive_complete == true)
     {
-        msg = "Receive complete...";
-        Logger_send_udp(&msg);    
         u1_t size = LMIC.dataLen - LMIC.protocol->payload_offset - LMIC.protocol->crc_size;
 
         if (size > sizeof(RxBuffer))

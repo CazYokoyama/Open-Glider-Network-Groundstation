@@ -146,9 +146,7 @@ bool legacy_decode(void* legacy_pkt, ufo_t* this_aircraft, ufo_t* fop)
         pkt_parity += parity(*(((unsigned char *) pkt) + ndx));
     if (pkt_parity % 2)
     {
-        msg = "bad parity of decoded legacy packet";
-        Logger_send_udp(&msg);
-        msg = "decoding failed";
+        msg = "bad parity of decoded legacy packet. decoding failed";
         Logger_send_udp(&msg);
         return false;
     }

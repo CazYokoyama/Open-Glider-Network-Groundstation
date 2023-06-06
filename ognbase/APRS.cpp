@@ -304,8 +304,6 @@ void OGN_APRS_Export()
             AircraftPacket += "\r\n";
 
             Logger_send_udp(&AircraftPacket);
-            Logger_send_udp(&APRS_AIRC.pos_precision);
-
             if (!Container[i].stealth && !Container[i].no_track || ogn_itrackbit && ogn_istealthbit)
                 SoC->WiFi_transmit_TCP(AircraftPacket);
         }
