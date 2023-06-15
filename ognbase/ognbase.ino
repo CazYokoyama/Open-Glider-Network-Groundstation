@@ -459,9 +459,8 @@ void ground()
       ExportTimeOGN = seconds();
     }
   } else {
-    if ((TimeToRegisterOGN() && (position_is_set) && WiFi.getMode() != WIFI_AP) ||
-        (ground_registred == APRS_NOT_REGISTERED && (position_is_set) &&
-        WiFi.getMode() != WIFI_AP)) {
+    if (position_is_set && WiFi.getMode() != WIFI_AP &&
+        (TimeToRegisterOGN() || ground_registred == APRS_NOT_REGISTERED)) {
       ground_registred = OGN_APRS_Register(&ThisAircraft);
       ExportTimeRegisterOGN = seconds();
     }
