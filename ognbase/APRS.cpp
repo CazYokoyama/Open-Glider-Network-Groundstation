@@ -149,11 +149,11 @@ OGN_APRS_check_messages()
 {
     char*  RXbuffer  = (char *) malloc(512);
     int    recStatus = SoC->WiFi_receive_TCP(RXbuffer, 512);
-    String msg;
+    String msg = "Received on login request:[";
 
     for (int i = 0; i < recStatus; i++)
         msg += RXbuffer[i];
-
+    msg += "]";
 
     if (recStatus > 0)
     {
