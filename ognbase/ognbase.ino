@@ -335,12 +335,8 @@ void ground()
    char buf[32];
 
    if (!groundstation) {
-
-   
-    RF_Transmit(RF_Encode(&ThisAircraft), true);
     groundstation = true;
 
- 
     msg = "good morning, startup esp32 groundstation ";
     msg += "version ";
     msg += String(_VERSION);
