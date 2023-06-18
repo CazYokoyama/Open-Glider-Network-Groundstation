@@ -408,7 +408,8 @@ void ground()
 
   sys_hour = hour(); /* in UTC */
   sys_hour = convert_localtime(sys_hour, LOCALTIME_DIFF);
-  if (ogn_sleepmode != OSM_DISABLED && isNight(sys_hour)) {
+  if (ogn_sleepmode != OSM_DISABLED && isNight(sys_hour) &&
+      WiFi.getMode() != WIFI_AP) {
     how_long = NIGHT_END - sys_hour;
     if (how_long < 0)
         how_long += 24;
@@ -571,7 +572,8 @@ void ground()
     } /* ground_registred == APRS_REGISTERED */
   } /* ognrelay_enable */
   
-  if (ogn_sleepmode != OSM_DISABLED && TimeToSleep())
+  if (ogn_sleepmode != OSM_DISABLED && TimeToSleep() &&
+      WiFi.getMode() != WIFI_AP)
     ogn_goto_sleep(ogn_wakeuptimer, ogn_sleepmode == OSM_FULL);
 
   if (ground_registred == APRS_REGISTERED && TimeToExportFanetService()) {
