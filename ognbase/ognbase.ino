@@ -155,20 +155,9 @@
 /*
    TODO: make them configurable
 */
-#define LOCALTIME_DIFF (-7)
 #define NIGHT_START 21
 #define NIGHT_END 6
 #define isNight(hour) (hour < NIGHT_END || NIGHT_START <= hour)
-
-inline short
-convert_localtime(short hour, short time_diff) {
-  hour += time_diff;
-  if (hour < 0)
-    hour += 24;
-  else if (24 <= hour)
-    hour -= 24;
-  return hour;
-}
 
 ufo_t ThisAircraft;
 bool groundstation = false;
@@ -350,16 +339,21 @@ ogn_goto_sleep(int how_long, bool gnss_sleep)
     struct tm timeinfo;
     char timeStringBuff[50]; //50 chars should be enough
 
-    msg = "entering sleep mode for ";
+    msg = "sleep ";
     msg += String(how_long);
-    msg += " seconds - good night";
-    msg += ": ";
+    msg += " seconds until ";
     if (getLocalTime(&timeinfo)) {
+      time_t t = mktime(&timeinfo) + how_long;
+      struct tm *tm2 = localtime(&t);
       strftime(timeStringBuff, sizeof(timeStringBuff),
-               "%A, %B %d %Y %H:%M:%S", &timeinfo);
+               "%Y-%m-%d %H:%M:%S", tm2);
       msg += timeStringBuff;
     } else
       msg += "can't get local time";
+    msg += " from ";
+    strftime(timeStringBuff, sizeof(timeStringBuff),
+             "%Y-%m-%d %H:%M:%S", &timeinfo);
+    msg += timeStringBuff;
     Logger_send_udp(&msg);
 
     esp_sleep_enable_timer_wakeup(how_long*1000000LL);
@@ -381,10 +375,11 @@ void ground()
    char *disp;
    String msg;
    char buf[32];
-   short sys_hour = -1;
    int how_long;
    struct tm timeinfo;
    char timeStringBuff[50]; //50 chars should be enough
+
+   getLocalTime(&timeinfo);
 
    if (!groundstation) {
     groundstation = true;
@@ -397,9 +392,9 @@ void ground()
     Logger_send_udp(&msg);
 
     msg = "current time ";
-    if (getLocalTime(&timeinfo)) {
+    if (timeinfo.tm_year > 0) {
       strftime(timeStringBuff, sizeof(timeStringBuff),
-               "%A, %B %d %Y %H:%M:%S", &timeinfo);
+               "%Y-%m-%d %H:%M:%S", &timeinfo);
       msg += timeStringBuff;
     } else
       msg += "can't get local time";
@@ -422,16 +417,20 @@ void ground()
       }
     }
 
-  sys_hour = hour(); /* in UTC */
-  sys_hour = convert_localtime(sys_hour, LOCALTIME_DIFF);
-  if (ogn_sleepmode != OSM_DISABLED && isNight(sys_hour) &&
-      WiFi.getMode() != WIFI_AP) {
-    how_long = NIGHT_END - sys_hour;
+  if (ogn_sleepmode != OSM_DISABLED && timeinfo.tm_year > 0 &&
+      isNight(timeinfo.tm_hour) && WiFi.getMode() != WIFI_AP) {
+    struct tm tm2; /* tomorrow NIGHT_END */
+    time_t t = mktime(&timeinfo);
+    how_long = NIGHT_END - timeinfo.tm_hour;
     if (how_long < 0)
         how_long += 24;
-    else if (how_long >= 24)
-        how_long -= 24;
-    ogn_goto_sleep(how_long * 60 * 60, true);
+    t += how_long * 60 * 60;
+    localtime_r(&t, &tm2);
+    tm2.tm_sec = 0;
+    tm2.tm_min = 2;
+    tm2.tm_hour = NIGHT_END;
+    how_long = difftime(mktime(&tm2), mktime(&timeinfo));
+    ogn_goto_sleep(how_long, true);
   }
 
   if (RF_Receive()) {
