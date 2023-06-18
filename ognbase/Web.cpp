@@ -268,9 +268,9 @@ void Web_setup(ufo_t* this_aircraft)
              /*Hide Wifi Password*/
              "hidepass",
 
-             (ogn_sleepmode == 0 ? "selected" : ""), "Disabled",
-             (ogn_sleepmode == 1 ? "selected" : ""), "Full",
-             (ogn_sleepmode == 2 ? "selected" : ""), "without GPS", //zabbix_trap_en
+             (ogn_sleepmode == OSM_DISABLED ? "selected" : ""), "Disabled",
+             (ogn_sleepmode == OSM_FULL ? "selected" : ""), "Full",
+             (ogn_sleepmode == OSM_WITHOUT_GPS ? "selected" : ""), "without GPS", //zabbix_trap_en
 
              String(ogn_rxidle),
              String(ogn_wakeuptimer),

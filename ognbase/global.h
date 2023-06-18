@@ -22,7 +22,7 @@ extern uint16_t ogn_debugport;
 extern uint16_t ogn_debugIP;
 extern bool     ogn_itrackbit;
 extern bool     ogn_istealthbit;
-extern bool     ogn_sleepmode;
+extern uint8_t  ogn_sleepmode;
 extern uint16_t ogn_rxidle;
 extern uint16_t ogn_wakeuptimer;
 extern uint16_t ogn_range;

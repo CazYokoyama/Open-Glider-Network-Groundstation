@@ -23,6 +23,10 @@
 #ifndef CONFIGHELPER_H
 #define CONFIGHELPER_H
 
+#define OSM_DISABLED    0
+#define OSM_FULL        1
+#define OSM_WITHOUT_GPS 2
+
 bool OGN_save_config(void);
 
 bool OGN_read_config(void);

@@ -60,7 +60,7 @@ bool     ogn_istealthbit = false;
 uint16_t  ogn_range       = 100;
 
 //sleep mode
-bool     ogn_sleepmode   = false;
+uint8_t  ogn_sleepmode   = OSM_DISABLED;
 uint16_t ogn_rxidle      = 3600;
 uint16_t ogn_wakeuptimer = 3600;
 

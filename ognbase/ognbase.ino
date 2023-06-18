@@ -532,8 +532,7 @@ void ground()
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_26,1);
     OLED_disable();
     
-    if (ogn_sleepmode == 1){
-      
+    if (ogn_sleepmode == OSM_FULL) {
 #if defined(TBEAM)      
       GNSS_sleep();
 #endif 
