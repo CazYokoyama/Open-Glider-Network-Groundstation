@@ -112,19 +112,19 @@
 #define TimeToExportOGN() (seconds() - ExportTimeOGN >= APRS_EXPORT_AIRCRAFT)
 
 #define APRS_REGISTER_REC 300
-#define TimeToRegisterOGN() (seconds() - ExportTimeRegisterOGN >= APRS_REGISTER_REC)
+#define TimeToRegisterOGN() (now() - ExportTimeRegisterOGN >= APRS_REGISTER_REC)
 
 #define APRS_KEEPALIVE_TIME 240
 #define TimeToKeepAliveOGN() (seconds() - ExportTimeKeepAliveOGN >= APRS_KEEPALIVE_TIME)
 
-#define APRS_CHECK_KEEPALIVE_TIME 20
-#define TimeToCheckKeepAliveOGN() (seconds() - ExportTimeCheckKeepAliveOGN >= APRS_CHECK_KEEPALIVE_TIME)
+#define APRS_CHECK_KEEPALIVE_TIME APRS_REGISTER_REC
+#define TimeToCheckKeepAliveOGN() (now() - ExportTimeCheckKeepAliveOGN >= APRS_CHECK_KEEPALIVE_TIME)
 
 #define APRS_CHECK_WIFI_TIME 600
 #define TimeToCheckWifi() (seconds() - ExportTimeCheckWifi >= APRS_CHECK_WIFI_TIME)
 
 #define APRS_STATUS_REC (5 * 60) /* tramsit status packet every 5 min */
-#define TimeToStatusOGN() (seconds() - ExportTimeStatusOGN >= APRS_STATUS_REC)
+#define TimeToStatusOGN() (now() - ExportTimeStatusOGN >= APRS_STATUS_REC)
 
 #define APRS_PROTO_SWITCH 2
 #define TimeToswitchProto() (seconds() - ExportTimeSwitch >= APRS_PROTO_SWITCH)
@@ -152,10 +152,27 @@
 
 #define BUTTON 38
 
+/*
+   TODO: make them configurable
+*/
+#define LOCALTIME_DIFF (-7)
+#define NIGHT_START 21
+#define NIGHT_END 6
+#define isNight(hour) (hour < NIGHT_END || NIGHT_START <= hour)
+
+inline short
+convert_localtime(short hour, short time_diff) {
+  hour += time_diff;
+  if (hour < 0)
+    hour += 24;
+  else if (24 <= hour)
+    hour -= 24;
+  return hour;
+}
 
 ufo_t ThisAircraft;
 bool groundstation = false;
-enum aprs_reg_state ground_registred = APRS_NOT_REGISTERED;
+RTC_DATA_ATTR enum aprs_reg_state ground_registred = APRS_NOT_REGISTERED;
 bool fanet_transmitter = false;
 bool time_synced = false;
 int proto_in_use = 0;
@@ -172,15 +189,15 @@ unsigned long LEDTimeMarker = 0;
 unsigned long ExportTimeMarker = 0;
 
 unsigned long ExportTimeOGN = 0;
-unsigned long ExportTimeRegisterOGN = 0;
+RTC_DATA_ATTR unsigned long ExportTimeRegisterOGN = 0;
 unsigned long ExportTimeKeepAliveOGN = 0;
-unsigned long ExportTimeStatusOGN = 0;
+RTC_DATA_ATTR unsigned long ExportTimeStatusOGN = 0;
 unsigned long ExportTimeSwitch = 0;
 unsigned long ExportTimeSleep = 0;
 unsigned long ExportTimeDisWifi = 0;
 unsigned long ExportTimeWebRefresh = 0;
 unsigned long ExportTimeFanetService = 0;
-unsigned long ExportTimeCheckKeepAliveOGN = 0;
+RTC_DATA_ATTR unsigned long ExportTimeCheckKeepAliveOGN = 0;
 unsigned long ExportTimeCheckWifi = 0;
 unsigned long ExportTimeOledDisable = 0;
 unsigned long ExportTimeReRegister = 0;
@@ -326,13 +343,37 @@ void shutdown(const char *msg)
   SoC_fini();
 }
 
+void
+ogn_goto_sleep(int how_long, bool gnss_sleep)
+{
+    String msg;
+
+    msg = "entering sleep mode for ";
+    msg += String(how_long);
+    msg += " seconds - good night";
+    Logger_send_udp(&msg);
+
+    esp_sleep_enable_timer_wakeup(how_long*1000000LL);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_26,1);
+    OLED_disable();
+#if defined(TBEAM)
+    if (gnss_sleep)
+      GNSS_sleep();
+#endif
+
+    if (!ognrelay_enable)
+        SoC->WiFi_disconnect_TCP();
+    esp_deep_sleep_start();
+}
+
 void ground()
 {
 
    char *disp;
-   bool success;
    String msg;
    char buf[32];
+   short sys_hour = -1;
+   int how_long;
 
    if (!groundstation) {
     groundstation = true;
@@ -365,12 +406,21 @@ void ground()
       }
     }
 
-  
-  success = RF_Receive();
-  if (success && isValidFix() || success && position_is_set){
-    ParseData();
-    
+  sys_hour = hour(); /* in UTC */
+  sys_hour = convert_localtime(sys_hour, LOCALTIME_DIFF);
+  if (ogn_sleepmode != OSM_DISABLED && isNight(sys_hour)) {
+    how_long = NIGHT_END - sys_hour;
+    if (how_long < 0)
+        how_long += 24;
+    else if (how_long >= 24)
+        how_long -= 24;
+    ogn_goto_sleep(how_long * 60 * 60, true);
+  }
+
+  if (RF_Receive()) {
     ExportTimeSleep = seconds();
+    if (isValidFix() || position_is_set)
+      ParseData();
   }
 
   if (ogn_lat != 0 && ogn_lon != 0 && !position_is_set) {
@@ -458,7 +508,7 @@ void ground()
     if (position_is_set && WiFi.getMode() != WIFI_AP &&
         (TimeToRegisterOGN() || ground_registred == APRS_NOT_REGISTERED)) {
       ground_registred = OGN_APRS_Register(&ThisAircraft);
-      ExportTimeRegisterOGN = seconds();
+      ExportTimeRegisterOGN = now();
     }
   
     if (ground_registred == APRS_FAILED) {
@@ -510,39 +560,19 @@ void ground()
         msg += String(" GNSS: ");
         msg += String(gnss.satellites.value());
         Logger_send_udp(&msg);
-        ExportTimeStatusOGN = seconds();
+        ExportTimeStatusOGN = now();
       }
   
       if (TimeToCheckKeepAliveOGN()) {
         ground_registred = OGN_APRS_check_messages();
-        ExportTimeCheckKeepAliveOGN = seconds();
+        ExportTimeCheckKeepAliveOGN = now();
         MONIT_send_trap();
       }
     } /* ground_registred == APRS_REGISTERED */
   } /* ognrelay_enable */
   
-  if ( TimeToSleep() && ogn_sleepmode )
-  {
-    msg = "entering sleep mode for ";
-    msg += String(ogn_wakeuptimer); 
-    msg += " seconds - good night";
-    Logger_send_udp(&msg);
-    
-    esp_sleep_enable_timer_wakeup(ogn_wakeuptimer*1000000LL);
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_26,1);
-    OLED_disable();
-    
-    if (ogn_sleepmode == OSM_FULL) {
-#if defined(TBEAM)      
-      GNSS_sleep();
-#endif 
-    }
-    
-    ground_registred = APRS_NOT_REGISTERED;
-    if(!ognrelay_enable)
-      SoC->WiFi_disconnect_TCP();
-    esp_deep_sleep_start();
-  }
+  if (ogn_sleepmode != OSM_DISABLED && TimeToSleep())
+    ogn_goto_sleep(ogn_wakeuptimer, ogn_sleepmode == OSM_FULL);
 
   if (ground_registred == APRS_REGISTERED && TimeToExportFanetService()) {
 

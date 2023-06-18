@@ -323,9 +323,9 @@ bool OGN_read_config(void)
         {
             ogn_sleepmode   = obj["aprs"]["sleepmode"];
             ogn_rxidle      = obj["aprs"]["rxidle"];
-            if(ogn_rxidle < 600){ogn_rxidle = 600;}
+            if(ogn_rxidle < 60){ogn_rxidle = 60;}
             ogn_wakeuptimer = obj["aprs"]["wakeuptimer"];
-            if(ogn_wakeuptimer < 600){ogn_wakeuptimer = 600;}
+            if(ogn_wakeuptimer < 60){ogn_wakeuptimer = 60;}
         }
     }    
 
