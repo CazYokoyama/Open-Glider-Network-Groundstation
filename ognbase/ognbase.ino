@@ -347,10 +347,19 @@ void
 ogn_goto_sleep(int how_long, bool gnss_sleep)
 {
     String msg;
+    struct tm timeinfo;
+    char timeStringBuff[50]; //50 chars should be enough
 
     msg = "entering sleep mode for ";
     msg += String(how_long);
     msg += " seconds - good night";
+    msg += ": ";
+    if (getLocalTime(&timeinfo)) {
+      strftime(timeStringBuff, sizeof(timeStringBuff),
+               "%A, %B %d %Y %H:%M:%S", &timeinfo);
+      msg += timeStringBuff;
+    } else
+      msg += "can't get local time";
     Logger_send_udp(&msg);
 
     esp_sleep_enable_timer_wakeup(how_long*1000000LL);
@@ -374,6 +383,8 @@ void ground()
    char buf[32];
    short sys_hour = -1;
    int how_long;
+   struct tm timeinfo;
+   char timeStringBuff[50]; //50 chars should be enough
 
    if (!groundstation) {
     groundstation = true;
@@ -386,7 +397,12 @@ void ground()
     Logger_send_udp(&msg);
 
     msg = "current time ";
-    msg += now();
+    if (getLocalTime(&timeinfo)) {
+      strftime(timeStringBuff, sizeof(timeStringBuff),
+               "%A, %B %d %Y %H:%M:%S", &timeinfo);
+      msg += timeStringBuff;
+    } else
+      msg += "can't get local time";
     Logger_send_udp(&msg);
   }
 
