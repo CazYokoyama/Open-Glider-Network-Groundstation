@@ -229,11 +229,10 @@ void setup()
   Serial.flush();
 
   if (resetInfo) {
-    Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
-    }
-  Serial.println(SoC->getResetReason());
+    Serial.print(F("Reset reason: ")); Serial.print(resetInfo->reason);
+    Serial.print(F("(")); Serial.print(SoC->getResetReason()); Serial.println(F(")"));
+  }
   Serial.print(F("Free heap size: ")); Serial.println(SoC->getFreeHeap());
-  Serial.println(SoC->getResetInfo()); Serial.println("");
 
   EEPROM_setup();
   OLED_setup();
