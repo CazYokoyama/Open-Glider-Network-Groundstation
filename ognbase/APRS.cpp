@@ -181,30 +181,36 @@ OGN_APRS_check_messages()
     return aprs_registred;
 }
 
+/*
+From http://wiki.glidernet.org/wiki:ogn-flavoured-aprs
+  "/z",  //  0 = ?
+  "/'",  //  1 = (moto-)glider    (most frequent)
+  "/'",  //  2 = tow plane        (often)
+  "/X",  //  3 = helicopter       (often)
+  "/g" , //  4 = parachute        (rare but seen - often mixed with drop plane)
+  "\\^", //  5 = drop plane       (seen)
+  "/g" , //  6 = hang-glider      (rare but seen)  <<< Angel's code had "/_"
+  "/g" , //  7 = para-glider      (rare but seen)
+  "\\^", //  8 = powered aircraft (often)
+  "/^",  //  9 = jet aircraft     (rare but seen)
+  "/z",  //  A = UFO              (people set for fun)
+  "/O",  //  B = balloon          (seen once)
+  "/O",  //  C = airship          (seen once)
+  "/'",  //  D = UAV              (drones, can become very common)
+  "/z",  //  E = ground support   (ground vehicles at airfields)
+  "\\n"  //  F = static object    (ground relay ?)
+*/
+static const char* symbol_table[16] =
+    {"/", "/", "/", "/",   "/", "\\", "/", "/",
+     "\\", "/", "/", "/",  "/", "/", "/", "\\"};
+static const char* symbol[16] =
+    {"z", "'", "'", "X",   "g", "^", "_", "g",
+     "^", "^", "z", "O",   "O", "'", "z", "n"};
+
 void OGN_APRS_Export()
 {
     struct aprs_airc_packet APRS_AIRC;
     time_t                  this_moment = now();
-
-    String symbol[16] = {
-      " ", /* AIRCRAFT_TYPE_UNKNOWN */
-      "g", /* AIRCRAFT_TYPE_GLIDER */
-      "'", /* AIRCRAFT_TYPE_TOWPLANE */
-      "'", /* AIRCRAFT_TYPE_HELICOPTER */
-      "'", /* AIRCRAFT_TYPE_PARACHUTE */
-      "'", /* AIRCRAFT_TYPE_DROPPLANE */
-      "g", /* AIRCRAFT_TYPE_HANGGLIDER */
-      "g", /* AIRCRAFT_TYPE_PARAGLIDER */
-      "^", /* AIRCRAFT_TYPE_POWERED */
-      "^", /* AIRCRAFT_TYPE_JET */
-      "'", /* AIRCRAFT_TYPE_UFO */
-      "O", /* AIRCRAFT_TYPE_BALLOON */
-      "O", /* AIRCRAFT_TYPE_ZEPPELIN */
-      "'", /* AIRCRAFT_TYPE_UAV */
-      "\"", /* AIRCRAFT_TYPE_RESERVED */
-      "n"  /* AIRCRAFT_TYPE_STATIC */
-    };
-
 
     for (int i = 0; i < MAX_TRACKING_OBJECTS; i++)
         if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME && Container[i].distance < ogn_range * 1000)
@@ -250,7 +256,8 @@ void OGN_APRS_Export()
 
             APRS_AIRC.sender_details = zeroPadding(String(Container[i].aircraft_type << 2 | (Container[i].stealth << 7) | (Container[i].no_track << 6) | Container[i].addr_type, HEX), 2);
 
-            APRS_AIRC.symbol       = symbol[Container[i].aircraft_type];
+            APRS_AIRC.symbol_table = String(symbol_table[Container[i].aircraft_type]);
+            APRS_AIRC.symbol       = String(symbol[Container[i].aircraft_type]);
 
             APRS_AIRC.snr = String(SnrCalc(Container[i].rssi), 1);
 
@@ -284,9 +291,7 @@ void OGN_APRS_Export()
             AircraftPacket += APRS_AIRC.callsign;
             APRS_AIRC.sender_details.toUpperCase();
 
-            AircraftPacket += ">APRS,qAS,";
-            AircraftPacket += APRS_AIRC.rec_callsign;
-            AircraftPacket += ":/";
+            AircraftPacket += ">OGFLR,qOR:/";
             AircraftPacket += APRS_AIRC.timestamp;
             AircraftPacket += APRS_AIRC.lat_deg;
             AircraftPacket += APRS_AIRC.lat_min;
@@ -314,10 +319,9 @@ void OGN_APRS_Export()
             AircraftPacket += APRS_AIRC.callsign;
             AircraftPacket += " ";
             AircraftPacket += APRS_AIRC.climbrate;
-            AircraftPacket += "fpm +0.0rot ";
+            AircraftPacket += "fpm ";
             AircraftPacket += APRS_AIRC.snr;
-            AircraftPacket += "dB 0e -0.0kHz";
-            AircraftPacket += "\r\n";
+            AircraftPacket += "dB\r\n";
 
             Logger_send_udp(&AircraftPacket);
             if (!Container[i].stealth && !Container[i].no_track || ogn_itrackbit && ogn_istealthbit)
