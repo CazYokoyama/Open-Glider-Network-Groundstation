@@ -449,21 +449,20 @@ void OGN_APRS_Status(ufo_t* this_aircraft)
 
     String StatusPacket = "";
     StatusPacket += APRS_STAT.origin;
-    StatusPacket += ">APRS,TCPIP*,qAC,";
-    StatusPacket += APRS_STAT.callsign;
+    StatusPacket += ">";
+    StatusPacket += TOCALL;
     StatusPacket += ":>";
     StatusPacket += APRS_STAT.timestamp;
     StatusPacket += " ";
     StatusPacket += APRS_STAT.platform;
     StatusPacket += " RAM:";
-    StatusPacket += APRS_STAT.ram_usage;
-    StatusPacket += "/";
-    StatusPacket += APRS_STAT.ram_max;
-    StatusPacket += "KB";
-    StatusPacket += " ";
+    StatusPacket += String(SoC->getFreeHeap()/1024);
+    StatusPacket += "KB free ";
     StatusPacket += APRS_STAT.board_voltage;
-    //StatusPacket += " ";
-    //StatusPacket += ThisAircraft.timestamp;
+    StatusPacket += " ";
+    StatusPacket += String(gnss.satellites.value());
+    StatusPacket += "sat";
+
     StatusPacket += "\r\n";
     SoC->WiFi_transmit_TCP(StatusPacket);
     Logger_send_udp(&StatusPacket);
