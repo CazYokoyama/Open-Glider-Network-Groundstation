@@ -341,7 +341,7 @@ OGN_APRS_Register(ufo_t* this_aircraft)
 
         APRS_LOGIN.user    = String(this_aircraft->addr, HEX);
         APRS_LOGIN.pass    = String(AprsPasscode(APRS_LOGIN.user.c_str()));
-        APRS_LOGIN.appname = "ESP32";
+        APRS_LOGIN.appname = "ognbase";
         APRS_LOGIN.version = SOFTRF_FIRMWARE_VERSION;
 
         String LoginPacket = "user ";
@@ -367,9 +367,12 @@ OGN_APRS_Register(ufo_t* this_aircraft)
     {
         Serial.println("OGN connection failed");
         aprs_registred = APRS_NOT_REGISTERED;
-        return APRS_FAILED;
     }
+    return aprs_registred;
+}
 
+bool OGN_APRS_Location(ufo_t *this_aircraft)
+{
     if (aprs_registred == APRS_REGISTERED) {
         /* RUSSIA>APRS,TCPIP*,qAC,248280:/220757h626.56NI09353.92E&/A=000446 */
 
@@ -391,8 +394,8 @@ OGN_APRS_Register(ufo_t* this_aircraft)
 
         String RegisterPacket = "";
         RegisterPacket += APRS_REG.origin;
-        RegisterPacket += ">APRS,TCPIP*,qAC,";
-        RegisterPacket += APRS_REG.callsign;
+        RegisterPacket += ">";
+        RegisterPacket += TOCALL;
         RegisterPacket += ":/";
         RegisterPacket += APRS_REG.timestamp;
         RegisterPacket += APRS_REG.lat_deg + APRS_REG.lat_min;
@@ -411,10 +414,9 @@ OGN_APRS_Register(ufo_t* this_aircraft)
         RegisterPacket += APRS_REG.alt;
         RegisterPacket += "\r\n";
 
-        SoC->WiFi_transmit_TCP(RegisterPacket);
         Logger_send_udp(&RegisterPacket);
+        return SoC->WiFi_transmit_TCP(RegisterPacket);
     }
-    return aprs_registred;
 }
 
 void OGN_APRS_KeepAlive()

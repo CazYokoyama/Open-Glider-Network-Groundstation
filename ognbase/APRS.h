@@ -107,6 +107,7 @@ void OGN_APRS_Export();
 void OGN_APRS_Weather();
 
 enum aprs_reg_state OGN_APRS_Register(ufo_t* this_aircraft);
+bool OGN_APRS_Location(ufo_t *this_aircraft);
 
 void OGN_APRS_KeepAlive();
 

@@ -564,6 +564,7 @@ void ground()
         disp = "status OGN...";
         OLED_write(disp, 0, 24, true);
       
+        OGN_APRS_Location(&ThisAircraft);
         OGN_APRS_Status(&ThisAircraft);
   
         msg = "Version: ";
